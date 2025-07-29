@@ -1,10 +1,12 @@
 "use client";
 
+import type React from "react";
+
 import { filmFormSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FilmType, IFilm } from "@/types";
+import { FilmType, type IFilm } from "@/types";
 import { useForm } from "react-hook-form";
-import z from "zod";
+import type z from "zod";
 import "./styles.css";
 import {
   Form,
@@ -13,6 +15,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,8 +27,14 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { GENRES } from "@/lib/constants";
-import { Checkbox } from "@/components/ui/checkbox";
-// import { supabase } from "@/lib/supabase"; // bu yerni o'z path'ing bo'yicha tuzat
+import { MultiSelect } from "@/components/ui/multi-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   initialData: IFilm | null;
@@ -33,7 +42,9 @@ interface Props {
 }
 
 const FilmForm = ({ initialData, pageTitle }: Props) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    initialData?.backgroundImage || null
+  );
   const [file, setFile] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof filmFormSchema>>({
@@ -48,16 +59,29 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
   });
 
   async function handleUpload(file: File) {
-    // Upload files
+    // Upload files implementation
+    // Return the uploaded file URL
+    return "uploaded-file-url";
   }
 
   async function onSubmit(values: z.infer<typeof filmFormSchema>) {
-    if (!file) return console.warn("No file selected");
+    try {
+      let imageUrl = initialData?.backgroundImage || "";
 
-    const imageUrl = await handleUpload(file);
+      if (file) {
+        imageUrl = await handleUpload(file);
+      }
 
-    console.log({ ...values, backgroundImage: imageUrl });
-    // You can send to your API or Supabase table now
+      const filmData = {
+        ...values,
+        backgroundImage: imageUrl,
+      };
+
+      console.log("Film data:", filmData);
+      // Send to your API or Supabase table
+    } catch (error) {
+      console.error("Submit error:", error);
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +98,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
         <h1 className="font-bold text-2xl">{pageTitle}</h1>
       </div>
       <Separator className="mt-2 mb-4" />
+
       <div className="w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -83,7 +108,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
               <div className="w-full h-[500px] flex items-center justify-center rounded-md cursor-pointer relative overflow-hidden labelContainer">
                 {previewUrl && (
                   <Image
-                    src={previewUrl}
+                    src={previewUrl || "/placeholder.svg"}
                     alt="Preview"
                     className="object-cover"
                     fill
@@ -104,10 +129,10 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   htmlFor="uploadbg"
                   className={cn(
                     "w-full h-full flex items-center justify-center labelContainer",
-                    !file && "border-2 border-dashed "
+                    !file && !previewUrl && "border-2 border-dashed"
                   )}
                 >
-                  {!previewUrl && !initialData && (
+                  {!previewUrl && (
                     <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
                       <div className="rounded-full border border-dashed p-3">
                         <UploadIcon
@@ -139,62 +164,61 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Title..." {...field} />
+                    <Input placeholder="Enter film title..." {...field} />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* GENRES */}
+            {/* FILM TYPE */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select film type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={FilmType.SERIES}>Series</SelectItem>
+                      <SelectItem value={FilmType.MOVIE}>Movie</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* GENRES - Fixed MultiSelect Integration */}
             <FormField
               control={form.control}
               name="genres"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
-                  <div className="mb-4">
-                    <FormLabel className="text-base">Genres</FormLabel>
-                    <FormDescription>
-                      Select the genres that apply to this film.
-                    </FormDescription>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {/* {GENRES.map((genre, idx) => (
-                      <FormField
-                        key={idx}
-                        control={form.control}
-                        name="genres"
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={genre._id}
-                              className="flex flex-row items-start space-x-3 space-y-0"
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value?.includes(genre._id)}
-                                  onCheckedChange={(checked) => {
-                                    return checked
-                                      ? field.onChange([
-                                          ...field.value,
-                                          genre._id,
-                                        ])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== genre._id
-                                          )
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <FormLabel className="text-sm font-normal">
-                                {genre.name}
-                              </FormLabel>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))} */}
-                  </div>
+                  <FormLabel>Genres</FormLabel>
+                  <FormDescription>
+                    Select the genres that apply to this film.
+                  </FormDescription>
+                  <FormControl>
+                    <MultiSelect
+                      options={GENRES}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      placeholder="Select genres"
+                      variant="default"
+                      animation={0}
+                      maxCount={3}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -207,8 +231,13 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Description..." {...field} />
+                    <Textarea
+                      placeholder="Enter film description..."
+                      className="min-h-[120px]"
+                      {...field}
+                    />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -237,7 +266,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
             {/* SUBMIT */}
             <Button type="submit" className="w-full">
-              {initialData ? "Save" : "Create"}
+              {initialData ? "Update Film" : "Create Film"}
             </Button>
           </form>
         </Form>
