@@ -59,7 +59,7 @@ export interface INotification {
 }
 
 export interface IGenres {
-  id: number;
+  _id: string;
   name: string;
   slug: string;
 }

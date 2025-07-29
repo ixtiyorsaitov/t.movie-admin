@@ -9,6 +9,7 @@ import "./styles.css";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -21,6 +22,9 @@ import { UploadIcon } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { GENRES } from "@/lib/constants";
+import { Checkbox } from "@/components/ui/checkbox";
 // import { supabase } from "@/lib/supabase"; // bu yerni o'z path'ing bo'yicha tuzat
 
 interface Props {
@@ -35,26 +39,16 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
   const form = useForm<z.infer<typeof filmFormSchema>>({
     resolver: zodResolver(filmFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      type: FilmType.SERIES,
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      type: initialData?.type || FilmType.SERIES,
+      genres: initialData?.genres?.map((genre) => genre._id) || [],
+      published: initialData?.published || false,
     },
   });
 
   async function handleUpload(file: File) {
-    // const { data, error } = await supabase.storage
-    //   .from("films") // storage bucket nomi
-    //   .upload(`backgrounds/${file.name}`, file, {
-    //     cacheControl: "3600",
-    //     upsert: true,
-    //   });
-    // if (error) {
-    //   console.error("Upload error:", error.message);
-    //   return null;
-    // }
-    // const url = supabase.storage.from("films").getPublicUrl(data.path)
-    //   .data.publicUrl;
-    // return url;
+    // Upload files
   }
 
   async function onSubmit(values: z.infer<typeof filmFormSchema>) {
@@ -151,6 +145,60 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
               )}
             />
 
+            {/* GENRES */}
+            <FormField
+              control={form.control}
+              name="genres"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel className="text-base">Genres</FormLabel>
+                    <FormDescription>
+                      Select the genres that apply to this film.
+                    </FormDescription>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {/* {GENRES.map((genre, idx) => (
+                      <FormField
+                        key={idx}
+                        control={form.control}
+                        name="genres"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={genre._id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(genre._id)}
+                                  onCheckedChange={(checked) => {
+                                    return checked
+                                      ? field.onChange([
+                                          ...field.value,
+                                          genre._id,
+                                        ])
+                                      : field.onChange(
+                                          field.value?.filter(
+                                            (value) => value !== genre._id
+                                          )
+                                        );
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {genre.name}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        }}
+                      />
+                    ))} */}
+                  </div>
+                </FormItem>
+              )}
+            />
+
             {/* DESCRIPTION */}
             <FormField
               control={form.control}
@@ -165,8 +213,32 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
               )}
             />
 
+            {/* PUBLISHED */}
+            <FormField
+              control={form.control}
+              name="published"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Published</FormLabel>
+                    <FormDescription>
+                      Make this film visible to the public.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
             {/* SUBMIT */}
-            <Button type="submit">Submit</Button>
+            <Button type="submit" className="w-full">
+              {initialData ? "Save" : "Create"}
+            </Button>
           </form>
         </Form>
       </div>

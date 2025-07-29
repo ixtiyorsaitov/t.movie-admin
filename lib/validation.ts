@@ -9,6 +9,8 @@ export const filmFormSchema = z.object({
   image: z.any().refine((file) => file instanceof File && file.size > 0, {
     message: "Image file is required",
   }),
+  genres: z.array(z.string()),
+  published: z.boolean(),
   backgroundImage: z
     .any()
     .refine((file) => file instanceof File && file.size > 0, {
