@@ -13,9 +13,15 @@ const BrowseLayout = ({ children }: { children: React.ReactNode }) => {
     <div>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset className="md:m-2 md:ml-0 p-2 md:rounded-md overflow-hidden bg-sidebar shadow border">
-          <Navbar />
-          {children}
+        <SidebarInset
+          className="md:ml-0 m-2 md:rounded-md overflow-auto bg-sidebar shadow border w-full flex items-center"
+          style={{ maxHeight: "calc(100vh - 1rem)" }} // 1rem = m-2 (2*0.5rem)
+        >
+          <div className="max-w-[1600px] w-full">
+            <Navbar />
+            {children}
+          </div>
+
           <SearchCommand />
         </SidebarInset>
       </SidebarProvider>

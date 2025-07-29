@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -21,9 +22,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${inter.className} antialiased`}
+        className={`${inter.variable} ${inter.className} antialiased overflow-hidden`}
         suppressHydrationWarning
       >
+        <NextTopLoader />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

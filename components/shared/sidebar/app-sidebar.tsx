@@ -39,12 +39,13 @@ import {
 } from "lucide-react";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
 import { user } from "@/lib/constants";
+import Link from "next/link";
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/dashboard/overview",
     icon: Home,
   },
   {
@@ -102,10 +103,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link href={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

@@ -1,0 +1,15 @@
+.labelContainer:hover .hoverContent {
+  opacity: 1;
+}
+.hoverContent {
+  opacity: 0;
+  animation: hoverAnimation 1s;
+}
+/* @keyframes hoverAnimation {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+} */
