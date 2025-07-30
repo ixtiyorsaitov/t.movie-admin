@@ -91,7 +91,7 @@ export async function PUT(
       });
     }
 
-    return NextResponse.json({ success: true, film: updatedFilm });
+    return NextResponse.json({ success: true, film: updatedFilm, form: datas });
   } catch (error) {
     console.log(error);
     return NextResponse.json(

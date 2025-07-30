@@ -69,6 +69,25 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
   const [updatingStep, setUpdatingStep] = useState<1 | 2 | 3 | "final" | null>(
     null
   );
+  const [updatedUrls, setUpdatedUrls] = useState<{
+    backgroundImage: {
+      name: string;
+      url: string;
+    };
+    image: {
+      name: string;
+      url: string;
+    };
+  }>({
+    backgroundImage: {
+      name: "",
+      url: "",
+    },
+    image: {
+      name: "",
+      url: "",
+    },
+  });
   const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<
     string | null
   >(initialDataState?.images.backgroundImage.url || null);
@@ -134,10 +153,6 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
   const updateMutation = useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      let images = { ...initialDataState?.images } as {
-        backgroundImage: { url: string; name: string };
-        image: { url: string; name: string };
-      };
       if (backgroundFile && initialDataState) {
         const removedBg = (await handleRemoveImage(
           [initialDataState.images.backgroundImage.name],
@@ -153,15 +168,25 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
           success: boolean;
         };
         if (!uploadedBg.success) return setUpdatingStep(null);
-        images = {
-          ...images,
-          backgroundImage: { url: uploadedBg.url, name: uploadedBg.fileName },
-        };
+
+        setInitialDataState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            images: {
+              ...prev.images,
+              backgroundImage: {
+                name: uploadedBg.fileName,
+                url: uploadedBg.url,
+              },
+            },
+          };
+        });
       }
       if (cardFile && initialDataState) {
         const removedImg = (await handleRemoveImage(
           [initialDataState.images.image.name],
-          "backgrounds"
+          "images"
         )) as { success: boolean };
         if (!removedImg.success) return setUpdatingStep(null);
         const uploadedImg = (await handleUpload(cardFile, "images")) as {
@@ -170,15 +195,24 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
           success: boolean;
         };
         if (!uploadedImg.success) return setUpdatingStep(null);
-        images = {
-          ...images,
-          image: { url: uploadedImg.url, name: uploadedImg.fileName },
-        };
+        setInitialDataState((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            images: {
+              ...prev.images,
+              image: {
+                name: uploadedImg.fileName,
+                url: uploadedImg.url,
+              },
+            },
+          };
+        });
       }
+      console.log(initialDataState);
       const formData = {
         ...initialDataState,
         ...values,
-        images,
         genres: selectedGenres,
       };
       console.log(formData);
