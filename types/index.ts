@@ -22,7 +22,7 @@ export interface IFilm {
   image: string;
   additionImages?: string[];
   backgroundImage: string;
-  genres: IGenres[];
+  genres: IGenre[];
 }
 
 export interface IUser {
@@ -58,7 +58,7 @@ export interface INotification {
   read: boolean;
 }
 
-export interface IGenres {
+export interface IGenre {
   _id: string;
   name: string;
   slug: string;

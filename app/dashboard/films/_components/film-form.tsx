@@ -1,7 +1,5 @@
 "use client";
-
 import type React from "react";
-
 import { filmFormSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FilmType, type IFilm } from "@/types";
@@ -21,13 +19,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { UploadIcon } from "lucide-react";
+import { ChevronDown, UploadIcon } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { GENRES } from "@/lib/constants";
-import { MultiSelect } from "@/components/ui/multi-select";
 import {
   Select,
   SelectContent,
@@ -35,6 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import MultiSelect from "@/components/ui/multi-select";
+import { useSelectGenre } from "@/hooks/use-select-genre";
 
 interface Props {
   initialData: IFilm | null;
@@ -42,10 +40,19 @@ interface Props {
 }
 
 const FilmForm = ({ initialData, pageTitle }: Props) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialData?.backgroundImage || null
+  // Background image states
+  const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<
+    string | null
+  >(initialData?.backgroundImage || null);
+  const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
+
+  // Card image states
+  const [cardPreviewUrl, setCardPreviewUrl] = useState<string | null>(
+    initialData?.image || null
   );
-  const [file, setFile] = useState<File | null>(null);
+  const [cardFile, setCardFile] = useState<File | null>(null);
+
+  const { setOpen } = useSelectGenre();
 
   const form = useForm<z.infer<typeof filmFormSchema>>({
     resolver: zodResolver(filmFormSchema),
@@ -53,10 +60,11 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
       title: initialData?.title || "",
       description: initialData?.description || "",
       type: initialData?.type || FilmType.SERIES,
-      genres: initialData?.genres?.map((genre) => genre._id) || [],
       published: initialData?.published || false,
     },
   });
+
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   async function handleUpload(file: File) {
     // Upload files implementation
@@ -66,30 +74,44 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
   async function onSubmit(values: z.infer<typeof filmFormSchema>) {
     try {
-      let imageUrl = initialData?.backgroundImage || "";
+      // let backgroundImageUrl = initialData?.backgroundImage || "";
+      // let cardImageUrl = initialData?.image || "";
 
-      if (file) {
-        imageUrl = await handleUpload(file);
-      }
+      // if (backgroundFile) {
+      //   backgroundImageUrl = await handleUpload(backgroundFile);
+      // }
 
-      const filmData = {
-        ...values,
-        backgroundImage: imageUrl,
-      };
+      // if (cardFile) {
+      //   cardImageUrl = await handleUpload(cardFile);
+      // }
 
-      console.log("Film data:", filmData);
+      // const filmData = {
+      //   ...values,
+      //   backgroundImage: backgroundImageUrl,
+      //   cardImage: cardImageUrl,
+      // };
+
+      // console.log("Film data:", filmData);
       // Send to your API or Supabase table
     } catch (error) {
       console.error("Submit error:", error);
     }
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBackgroundFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
+    setBackgroundFile(selectedFile);
+    setBackgroundPreviewUrl(URL.createObjectURL(selectedFile));
+  };
 
-    setFile(selectedFile);
-    setPreviewUrl(URL.createObjectURL(selectedFile));
+  const handleCardFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+    setCardFile(selectedFile);
+    setCardPreviewUrl(URL.createObjectURL(selectedFile));
   };
 
   return (
@@ -98,7 +120,6 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
         <h1 className="font-bold text-2xl">{pageTitle}</h1>
       </div>
       <Separator className="mt-2 mb-4" />
-
       <div className="w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -106,15 +127,15 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
             <FormItem>
               <FormLabel>Background image</FormLabel>
               <div className="w-full h-[500px] flex items-center justify-center rounded-md cursor-pointer relative overflow-hidden labelContainer">
-                {previewUrl && (
+                {backgroundPreviewUrl && (
                   <Image
-                    src={previewUrl || "/placeholder.svg"}
-                    alt="Preview"
+                    src={backgroundPreviewUrl || "/placeholder.svg"}
+                    alt="Background Preview"
                     className="object-cover"
                     fill
                   />
                 )}
-                {previewUrl && (
+                {backgroundPreviewUrl && (
                   <div className="hoverContent rounded-md w-full h-full absolute top-0 left-0 flex items-center justify-center bg-black/40 backdrop-blur-[5px] transition">
                     <FormLabel
                       htmlFor="uploadbg"
@@ -129,10 +150,12 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   htmlFor="uploadbg"
                   className={cn(
                     "w-full h-full flex items-center justify-center labelContainer",
-                    !file && !previewUrl && "border-2 border-dashed"
+                    !backgroundFile &&
+                      !backgroundPreviewUrl &&
+                      "border-2 border-dashed"
                   )}
                 >
-                  {!previewUrl && (
+                  {!backgroundPreviewUrl && (
                     <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
                       <div className="rounded-full border border-dashed p-3">
                         <UploadIcon
@@ -149,11 +172,69 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     id="uploadbg"
                     type="file"
                     accept="image/*"
-                    onChange={handleFileChange}
+                    onChange={handleBackgroundFileChange}
                     className="hidden"
                   />
                 </FormLabel>
               </div>
+            </FormItem>
+
+            {/* CARD IMAGE */}
+            <FormItem>
+              <FormLabel>Card image</FormLabel>
+              <div className="w-full max-w-sm h-[300px] flex items-center justify-center rounded-md cursor-pointer relative overflow-hidden labelContainer">
+                {cardPreviewUrl && (
+                  <Image
+                    src={cardPreviewUrl || "/placeholder.svg"}
+                    alt="Card Preview"
+                    className="object-cover"
+                    fill
+                  />
+                )}
+                {cardPreviewUrl && (
+                  <div className="hoverContent rounded-md w-full h-full absolute top-0 left-0 flex items-center justify-center bg-black/40 backdrop-blur-[5px] transition">
+                    <FormLabel
+                      htmlFor="uploadcard"
+                      className="flex items-center justify-center flex-col space-y-1 border bg-sidebar/40 text-white rounded-md px-6 py-3"
+                    >
+                      <UploadIcon className="!w-5 !h-5" />
+                      <h1 className="mt-1 text-sm">Upload another</h1>
+                    </FormLabel>
+                  </div>
+                )}
+                <FormLabel
+                  htmlFor="uploadcard"
+                  className={cn(
+                    "w-full h-full flex items-center justify-center labelContainer",
+                    !cardFile && !cardPreviewUrl && "border-2 border-dashed"
+                  )}
+                >
+                  {!cardPreviewUrl && (
+                    <div className="flex flex-col items-center justify-center gap-3 sm:px-4">
+                      <div className="rounded-full border border-dashed p-2">
+                        <UploadIcon
+                          className="text-muted-foreground size-5"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <p className="text-muted-foreground font-medium text-center text-sm">
+                        Upload card image
+                      </p>
+                    </div>
+                  )}
+                  <Input
+                    id="uploadcard"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCardFileChange}
+                    className="hidden"
+                  />
+                </FormLabel>
+              </div>
+              <FormDescription>
+                This image will be used as the main card image for the film
+                (recommended: 300x450px)
+              </FormDescription>
             </FormItem>
 
             {/* TITLE */}
@@ -183,7 +264,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={"w-full"}>
                         <SelectValue placeholder="Select film type" />
                       </SelectTrigger>
                     </FormControl>
@@ -197,31 +278,24 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
               )}
             />
 
-            {/* GENRES - Fixed MultiSelect Integration */}
-            <FormField
-              control={form.control}
-              name="genres"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Genres</FormLabel>
-                  <FormDescription>
-                    Select the genres that apply to this film.
-                  </FormDescription>
-                  <FormControl>
-                    <MultiSelect
-                      options={GENRES}
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      placeholder="Select genres"
-                      variant="default"
-                      animation={0}
-                      maxCount={3}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* GENRES */}
+            <div className="w-full">
+              <Button
+                type="button"
+                variant={"outline"}
+                className="w-full flex items-center justify-between"
+                onClick={() => setOpen(true)}
+              >
+                <p>Select genres</p>
+                <p className="text-muted-foreground">
+                  <ChevronDown size={10} />
+                </p>
+              </Button>
+              <MultiSelect
+                selectedGenres={selectedGenres}
+                setSelectedGenres={setSelectedGenres}
+              />
+            </div>
 
             {/* DESCRIPTION */}
             <FormField
