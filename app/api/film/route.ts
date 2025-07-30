@@ -107,11 +107,11 @@ export async function PUT(req: NextRequest) {
         images: {
           image: {
             url: datas.images.image.url,
-            fileName: datas.images.image.name,
+            name: datas.images.image.name,
           },
           backgroundImage: {
             url: datas.images.backgroundImage.url,
-            fileName: datas.images.backgroundImage.name,
+            name: datas.images.backgroundImage.name,
           },
           additionImage: datas.images.additionImages || [],
         },
@@ -127,6 +127,19 @@ export async function PUT(req: NextRequest) {
     }
 
     return NextResponse.json({ success: true, film: editedFilm });
+  } catch (error) {
+    console.log(error);
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const datas = await Film.find();
+    return NextResponse.json(datas);
   } catch (error) {
     console.log(error);
     return NextResponse.json(

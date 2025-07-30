@@ -1,10 +1,19 @@
 import { notFound } from "next/navigation";
 import FilmForm from "./film-form";
-import { FILMS } from "@/lib/constants";
 
 type TProductViewPageProps = {
   filmId: string;
 };
+
+async function getData(filmId: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/film/${filmId}`,
+    {
+      cache: "no-store",
+    }
+  );
+  return res.json();
+}
 
 export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
   let film = null;
@@ -12,12 +21,13 @@ export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
 
   if (filmId !== "new") {
     pageTitle = `Edit Product`;
-    const findedFilm = FILMS.find((c) => c._id === filmId);
-    if (findedFilm) {
-      film = findedFilm;
-    } else {
-      notFound();
+    const data = await getData(filmId);
+    console.log("data", data);
+
+    if (!data) {
+      return notFound();
     }
+    film = data;
   }
 
   return <FilmForm initialData={film} pageTitle={pageTitle} />;

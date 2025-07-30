@@ -40,7 +40,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { FILMS } from "@/lib/constants";
 import { IFilm } from "@/types";
 import Link from "next/link";
 
@@ -139,7 +138,7 @@ export const columns: ColumnDef<IFilm>[] = [
   },
 ];
 
-export function DataTableDemo() {
+export function DataTableDemo({ films }: { films: IFilm[] }) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -148,7 +147,7 @@ export function DataTableDemo() {
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const table = useReactTable({
-    data: FILMS,
+    data: films,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
