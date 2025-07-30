@@ -5,6 +5,7 @@ import { Button } from "./button";
 import { useSelectGenre } from "@/hooks/use-select-genre";
 import { GENRES } from "@/lib/constants";
 import { Checkbox } from "./checkbox";
+import { useQuery } from "@tanstack/react-query";
 import {
   Dispatch,
   SetStateAction,
@@ -14,6 +15,7 @@ import {
   useState,
 } from "react";
 import { IGenre } from "@/types";
+import axios from "axios";
 
 interface Props {
   selectedGenres: string[];
@@ -28,13 +30,23 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
     ...selectedGenres,
   ]);
 
-  const filteredGenres = useMemo(
-    () =>
-      GENRES.filter((genre) =>
-        genre.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [searchTerm]
-  );
+  // ✅ Genres fetch
+  const { data: genres, isLoading } = useQuery({
+    queryKey: ["genres"],
+    queryFn: async () => {
+      const { data } = await axios.get<IGenre[]>("/api/genre");
+
+      return data;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const filteredGenres = useMemo(() => {
+    if (!genres) return [];
+    return genres.filter((genre) =>
+      genre.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, genres]);
 
   useEffect(() => {
     if (open) {
@@ -42,14 +54,15 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
     }
   }, [open]);
 
-  useEffect(() => console.log(currentSelectedGenres), [currentSelectedGenres]);
-
-  if (!open) return null;
-
   const onChange = (genre: IGenre, checked: boolean) => {
     setCurrentSelectedGenres((prev) =>
       checked ? [...prev, genre._id] : prev.filter((id) => id !== genre._id)
     );
+  };
+
+  const onCancel = () => {
+    if (!isLoading) setCurrentSelectedGenres([...selectedGenres]);
+    setOpen(false);
   };
 
   return (
@@ -65,7 +78,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setOpen(false)}
+            onClick={onCancel}
             className="h-8 w-8 p-0"
           >
             <X className="h-4 w-4" />
@@ -91,16 +104,27 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredGenres.map((genre) => (
-              <GenreItem
-                key={genre._id}
-                genre={genre}
-                selected={currentSelectedGenres.some((g) => g === genre._id)}
-                onChange={onChange}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[...Array(20)].map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-10 bg-white/5 animate-pulse rounded-lg"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredGenres.map((genre) => (
+                <GenreItem
+                  key={genre._id}
+                  genre={genre}
+                  selected={currentSelectedGenres.includes(genre._id)}
+                  onChange={onChange}
+                />
+              ))}
+            </div>
+          )}
 
           {filteredGenres.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
@@ -111,11 +135,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t ">
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            className="px-6"
-          >
+          <Button variant="outline" onClick={onCancel} className="px-6">
             Cancel
           </Button>
           <Button

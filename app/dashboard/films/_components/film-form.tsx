@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, Loader, UploadIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +38,15 @@ import { useSelectGenre } from "@/hooks/use-select-genre";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 
 interface Props {
   initialData: IFilm | null;
@@ -51,6 +60,9 @@ const supabase = createClient(
 
 const FilmForm = ({ initialData, pageTitle }: Props) => {
   // Background image states
+  const [creatingStep, setCreatingStep] = useState<1 | 2 | 3 | "final" | null>(
+    null
+  );
   const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<
     string | null
   >(initialData?.images.backgroundImage.url || null);
@@ -62,7 +74,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
   );
   const [cardFile, setCardFile] = useState<File | null>(null);
 
-  const { setOpen } = useSelectGenre();
+  const selectGenreModal = useSelectGenre();
 
   const form = useForm<z.infer<typeof filmFormSchema>>({
     resolver: zodResolver(filmFormSchema),
@@ -100,14 +112,67 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
     }
   }
 
-  const { mutate, isPending } = useMutation({
+  const editMutation = useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
+      // const uploadBg = (await handleUpload(backgroundFile!, "backgrounds")) as {
+      //   url: string;
+      //   fileName: string;
+      //   success: boolean;
+      // };
+      // if (!uploadBg.success) {
+      //   return toast.error("Something went wrong with upload background image");
+      // }
+      // const uploadImg = (await handleUpload(cardFile!, "images")) as {
+      //   url: string;
+      //   fileName: string;
+      //   success: boolean;
+      // };
+      // if (!uploadImg.success) {
+      //   return toast.error("Something went wrong with upload image");
+      // }
+      const formData = {
+        ...values,
+        genres: selectedGenres,
+      };
+      const { data } = await axios.put("/api/film", formData);
+      if (data.success) {
+        toast.success("Film created successfuly!");
+        form.reset();
+        setSelectedGenres([]);
+        setBackgroundFile(null);
+        setBackgroundPreviewUrl(null);
+        setCardFile(null);
+        setCardPreviewUrl(null);
+      } else {
+        toast.error(data.error);
+      }
+      return data;
+    },
+    onSuccess: (res) => {
+      console.log(res);
+    },
+  });
+  const createMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
+      setCreatingStep(1);
+      const { data: createdData } = await axios.post("/api/film", {
+        ...values,
+        genres: selectedGenres,
+      });
+      if (!createdData.success) {
+        setCreatingStep(null);
+        toast.error(createdData.error);
+        return;
+      }
+      setCreatingStep(2);
+
       const uploadBg = (await handleUpload(backgroundFile!, "backgrounds")) as {
         url: string;
         fileName: string;
         success: boolean;
       };
       if (!uploadBg.success) {
+        setCreatingStep(null);
         return toast.error("Something went wrong with upload background image");
       }
       const uploadImg = (await handleUpload(cardFile!, "images")) as {
@@ -116,23 +181,41 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
         success: boolean;
       };
       if (!uploadImg.success) {
+        setCreatingStep(null);
         return toast.error("Something went wrong with upload image");
       }
-      const formData = {
+      setCreatingStep(3);
+      const finallyFormData = {
         ...values,
         genres: selectedGenres,
         images: {
           backgroundImage: {
-            fileName: uploadBg.fileName,
+            name: uploadBg.fileName,
             url: uploadBg.url,
           },
           image: {
-            fileName: uploadImg.fileName,
-            url: uploadBg.url,
+            name: uploadImg.fileName,
+            url: uploadImg.url,
           },
         },
       };
-      return formData;
+      const { data: finallyData } = await axios.put(
+        "/api/film",
+        finallyFormData
+      );
+
+      if (finallyData.success) {
+        setCreatingStep("final");
+        toast.success("Film created successfully!");
+        form.reset();
+        setSelectedGenres([]);
+        setBackgroundFile(null);
+        setBackgroundPreviewUrl(null);
+        setCardFile(null);
+        setCardPreviewUrl(null);
+      }
+
+      return finallyData;
     },
     onSuccess: (res) => {
       console.log(res);
@@ -141,9 +224,13 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
   async function onSubmit(values: z.infer<typeof filmFormSchema>) {
     try {
-      if (!backgroundFile) return;
-      if (!cardFile) return;
-      mutate(values);
+      if (!backgroundFile && !initialData) return;
+      if (!cardFile && !initialData) return;
+      if (initialData) {
+        editMutation.mutate(values);
+      } else {
+        createMutation.mutate(values);
+      }
     } catch (error) {
       console.error("Submit error:", error);
       toast.error("Submit error");
@@ -165,6 +252,9 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
     setCardFile(selectedFile);
     setCardPreviewUrl(URL.createObjectURL(selectedFile));
   };
+  useEffect(() => {
+    console.log(creatingStep);
+  }, [creatingStep]);
 
   return (
     <div className="w-full px-10 pt-5">
@@ -191,7 +281,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   <div
                     className={cn(
                       "hoverContent rounded-md w-full h-full absolute top-0 left-0 items-center justify-center bg-black/40 backdrop-blur-[5px] transition",
-                      isPending ? "hidden" : "flex"
+                      createMutation.isPending ? "hidden" : "flex"
                     )}
                   >
                     <FormLabel
@@ -210,7 +300,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     !backgroundFile &&
                       !backgroundPreviewUrl &&
                       "border-2 border-dashed",
-                    isPending ? "hidden" : "flex"
+                    createMutation.isPending ? "hidden" : "flex"
                   )}
                 >
                   {!backgroundPreviewUrl && (
@@ -232,7 +322,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     accept="image/*"
                     onChange={handleBackgroundFileChange}
                     className="hidden"
-                    disabled={isPending}
+                    disabled={createMutation.isPending}
                   />
                 </FormLabel>
               </div>
@@ -250,7 +340,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     fill
                   />
                 )}
-                {cardPreviewUrl && !isPending && (
+                {cardPreviewUrl && !createMutation.isPending && (
                   <div className="hoverContent rounded-md w-full h-full absolute top-0 left-0 flex items-center justify-center bg-black/40 backdrop-blur-[5px] transition">
                     <FormLabel
                       htmlFor="uploadcard"
@@ -266,7 +356,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   className={cn(
                     "w-full h-full items-center justify-center labelContainer",
                     !cardFile && !cardPreviewUrl && "border-2 border-dashed",
-                    isPending ? "hidden" : "flex"
+                    createMutation.isPending ? "hidden" : "flex"
                   )}
                 >
                   {!cardPreviewUrl && (
@@ -288,7 +378,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                     accept="image/*"
                     onChange={handleCardFileChange}
                     className="hidden"
-                    disabled={isPending}
+                    disabled={createMutation.isPending}
                   />
                 </FormLabel>
               </div>
@@ -307,7 +397,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      disabled={createMutation.isPending}
                       placeholder="Enter film title..."
                       {...field}
                     />
@@ -327,7 +417,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={isPending}
+                    disabled={createMutation.isPending}
                   >
                     <FormControl>
                       <SelectTrigger className={"w-full"}>
@@ -346,23 +436,35 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
             {/* GENRES */}
             <div className="w-full">
-              <Button
-                type="button"
-                variant={"outline"}
-                className="w-full flex items-center justify-between"
-                onClick={() => setOpen(true)}
-                disabled={isPending}
-              >
-                <p>Select genres</p>
-                <p className="text-muted-foreground">
-                  <ChevronDown size={10} />
-                </p>
-              </Button>
-              {!isPending && (
-                <MultiSelect
-                  selectedGenres={selectedGenres}
-                  setSelectedGenres={setSelectedGenres}
-                />
+              {!createMutation.isPending && (
+                <Dialog
+                  open={selectGenreModal.open}
+                  onOpenChange={selectGenreModal.setOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant={"outline"}
+                      className="w-full flex items-center justify-between"
+                      disabled={createMutation.isPending}
+                    >
+                      <p>Select genres</p>
+                      <p className="text-muted-foreground">
+                        <ChevronDown size={10} />
+                      </p>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle />
+                      <DialogDescription />
+                    </DialogHeader>
+                    <MultiSelect
+                      selectedGenres={selectedGenres}
+                      setSelectedGenres={setSelectedGenres}
+                    />
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
 
@@ -375,7 +477,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea
-                      disabled={isPending}
+                      disabled={createMutation.isPending}
                       placeholder="Enter film description..."
                       className="min-h-[120px]"
                       {...field}
@@ -400,7 +502,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
                   </div>
                   <FormControl>
                     <Switch
-                      disabled={isPending}
+                      disabled={createMutation.isPending}
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
@@ -410,9 +512,13 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
             />
 
             {/* SUBMIT */}
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createMutation.isPending}
+            >
               {initialData ? "Update Film" : "Create Film"}
-              {isPending && <Loader className="animate-spin" />}
+              {createMutation.isPending && <Loader className="animate-spin" />}
             </Button>
           </form>
         </Form>

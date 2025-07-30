@@ -9,8 +9,6 @@ type PageProps = { params: Promise<{ filmId: string }> };
 
 export default async function Page(props: PageProps) {
   const params = await props.params;
-  console.log(params);
-
   return (
     <div className="flex-1 space-y-4">
       <Suspense fallback={<>Loading...</>}>
