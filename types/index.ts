@@ -3,6 +3,14 @@ export enum FilmType {
   MOVIE = "movie",
 }
 
+export interface ChildProps {
+  children: React.ReactNode;
+}
+
+export interface IError extends Error {
+  response: { data: { message: string } };
+}
+
 export interface IFilm {
   _id: string;
   title: string;
@@ -19,11 +27,18 @@ export interface IFilm {
   };
   slug: string;
   published: boolean;
-  image: string;
-  additionImages?: string[];
-  backgroundImage: string;
+  images: {
+    image: ImageType;
+    additionImages?: ImageType[];
+    backgroundImage: ImageType;
+  };
   genres: IGenre[];
 }
+
+type ImageType = {
+  url: string;
+  name: string;
+};
 
 export interface IUser {
   _id: string;
