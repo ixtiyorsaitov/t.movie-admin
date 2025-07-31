@@ -138,7 +138,7 @@ export async function PUT(req: NextRequest) {
 
 export async function GET() {
   try {
-    const datas = await Film.find();
+    const datas = await Film.find().populate("genres");
     return NextResponse.json(datas);
   } catch (error) {
     console.log(error);

@@ -12,7 +12,7 @@ export async function GET(
   try {
     await connectToDatabase();
     const { filmId } = params;
-    const film = await Film.findById(filmId);
+    const film = await Film.findById(filmId).populate("genres");
 
     return NextResponse.json(film ? film : null);
   } catch (error) {
