@@ -138,11 +138,20 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
   const updateMutation = useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      const backgroundImage = {} as {
+      const backgroundImage = {
+        url: initialDataState?.images.backgroundImage.url,
+        name: initialDataState?.images.backgroundImage.name,
+      } as {
         url: string | null;
         name: string | null;
       };
-      const cardImage = {};
+      const cardImage = {
+        url: initialDataState?.images.image.url,
+        name: initialDataState?.images.image.name,
+      } as {
+        url: string | null;
+        name: string | null;
+      };
       if (initialDataState && backgroundFile !== null) {
         await handleRemoveImage(
           [initialDataState.images.backgroundImage.name],
@@ -159,6 +168,23 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
           return toast.error("Error with upload background image");
         }
       }
+      if (initialDataState && cardFile !== null) {
+        await handleRemoveImage(
+          [initialDataState.images.image.name],
+          BUCKETS.IMAGES
+        );
+        const uploadedImg = (await handleUpload(cardFile, BUCKETS.IMAGES)) as {
+          fileName: string;
+          url: string;
+          success: boolean;
+        };
+        if (uploadedImg.success) {
+          cardImage.url = uploadedImg.url;
+          cardImage.name = uploadedImg.fileName;
+        } else {
+          return toast.error("Error with upload image");
+        }
+      }
       const formData = {
         ...initialDataState,
         ...values,
@@ -166,6 +192,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
         images: {
           ...initialDataState?.images,
           backgroundImage,
+          image: cardImage,
         },
       };
       console.log(formData);
