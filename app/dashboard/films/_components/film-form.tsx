@@ -2,7 +2,7 @@
 import type React from "react";
 import { filmFormSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FilmType, type IFilm } from "@/types";
+import { BUCKETS, FilmType, type IFilm } from "@/types";
 import { useForm } from "react-hook-form";
 import type z from "zod";
 import "./styles.css";
@@ -69,25 +69,6 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
   const [updatingStep, setUpdatingStep] = useState<1 | 2 | 3 | "final" | null>(
     null
   );
-  const [updatedUrls, setUpdatedUrls] = useState<{
-    backgroundImage: {
-      name: string;
-      url: string;
-    };
-    image: {
-      name: string;
-      url: string;
-    };
-  }>({
-    backgroundImage: {
-      name: "",
-      url: "",
-    },
-    image: {
-      name: "",
-      url: "",
-    },
-  });
   const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<
     string | null
   >(initialDataState?.images.backgroundImage.url || null);
@@ -111,12 +92,16 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
     },
   });
 
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<string[]>(
+    initialDataState ? initialDataState.genres.map((genre) => genre._id) : []
+  );
 
-  async function handleUpload(file: File, bucketName: string) {
-    // Upload files implementation
-    // Return the uploaded file URL
+  useEffect(() => {
+    console.log("selectedGenres", selectedGenres);
+    console.log(initialData);
+  }, [selectedGenres]);
 
+  async function handleUpload(file: File, bucketName: BUCKETS) {
     const fileName = uuidv4();
     const { data, error } = await supabase.storage
       .from(bucketName)
@@ -136,7 +121,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
       };
     }
   }
-  async function handleRemoveImage(fileName: string[], bucketName: string) {
+  async function handleRemoveImage(fileName: string[], bucketName: BUCKETS) {
     // Upload files implementation
     // Return the uploaded file URL
     const { data, error } = await supabase.storage
@@ -153,87 +138,55 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
 
   const updateMutation = useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      if (backgroundFile && initialDataState) {
-        const removedBg = (await handleRemoveImage(
+      const backgroundImage = {} as {
+        url: string | null;
+        name: string | null;
+      };
+      const cardImage = {};
+      if (initialDataState && backgroundFile !== null) {
+        await handleRemoveImage(
           [initialDataState.images.backgroundImage.name],
-          "backgrounds"
-        )) as { success: boolean };
-        if (!removedBg.success) return setUpdatingStep(null);
+          BUCKETS.BACKGROUNDS
+        );
         const uploadedBg = (await handleUpload(
           backgroundFile,
-          "backgrounds"
-        )) as {
-          url: string;
-          fileName: string;
-          success: boolean;
-        };
-        if (!uploadedBg.success) return setUpdatingStep(null);
-
-        setInitialDataState((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            images: {
-              ...prev.images,
-              backgroundImage: {
-                name: uploadedBg.fileName,
-                url: uploadedBg.url,
-              },
-            },
-          };
-        });
+          BUCKETS.BACKGROUNDS
+        )) as { fileName: string; url: string; success: boolean };
+        if (uploadedBg.success) {
+          backgroundImage.url = uploadedBg.url;
+          backgroundImage.name = uploadedBg.fileName;
+        } else {
+          return toast.error("Error with upload background image");
+        }
       }
-      if (cardFile && initialDataState) {
-        const removedImg = (await handleRemoveImage(
-          [initialDataState.images.image.name],
-          "images"
-        )) as { success: boolean };
-        if (!removedImg.success) return setUpdatingStep(null);
-        const uploadedImg = (await handleUpload(cardFile, "images")) as {
-          url: string;
-          fileName: string;
-          success: boolean;
-        };
-        if (!uploadedImg.success) return setUpdatingStep(null);
-        setInitialDataState((prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            images: {
-              ...prev.images,
-              image: {
-                name: uploadedImg.fileName,
-                url: uploadedImg.url,
-              },
-            },
-          };
-        });
-      }
-      console.log(initialDataState);
       const formData = {
         ...initialDataState,
         ...values,
         genres: selectedGenres,
+        images: {
+          ...initialDataState?.images,
+          backgroundImage,
+        },
       };
       console.log(formData);
 
-      const { data } = await axios.put(
-        `/api/film/${initialDataState?._id}`,
-        formData
-      );
-      console.log(data);
+      // const { data } = await axios.put(
+      //   `/api/film/${initialDataState?._id}`,
+      //   formData
+      // );
+      // console.log(data);
 
-      if (data.success) {
-        toast.success("Film updated successfuly!");
-        setInitialDataState(data.film);
-        setBackgroundFile(null);
-        setBackgroundPreviewUrl(null);
-        setCardFile(null);
-        setCardPreviewUrl(null);
-      } else {
-        toast.error(data.error);
-      }
-      return data;
+      // if (data.success) {
+      //   toast.success("Film updated successfuly!");
+      //   setInitialDataState(data.film);
+      //   setBackgroundFile(null);
+      //   setBackgroundPreviewUrl(null);
+      //   setCardFile(null);
+      //   setCardPreviewUrl(null);
+      // } else {
+      //   toast.error(data.error);
+      // }
+      return "data";
     },
     onSuccess: (res) => {
       console.log(res);
@@ -253,7 +206,10 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
       }
       setCreatingStep(2);
 
-      const uploadBg = (await handleUpload(backgroundFile!, "backgrounds")) as {
+      const uploadBg = (await handleUpload(
+        backgroundFile!,
+        BUCKETS.BACKGROUNDS
+      )) as {
         url: string;
         fileName: string;
         success: boolean;
@@ -262,7 +218,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
         setCreatingStep(null);
         return toast.error("Something went wrong with upload background image");
       }
-      const uploadImg = (await handleUpload(cardFile!, "images")) as {
+      const uploadImg = (await handleUpload(cardFile!, BUCKETS.IMAGES)) as {
         url: string;
         fileName: string;
         success: boolean;

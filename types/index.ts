@@ -78,3 +78,8 @@ export interface IGenre {
   name: string;
   slug: string;
 }
+
+export enum BUCKETS {
+  BACKGROUNDS = "backgrounds",
+  IMAGES = "images",
+}
