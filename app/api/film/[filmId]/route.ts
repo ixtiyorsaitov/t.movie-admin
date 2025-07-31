@@ -72,11 +72,11 @@ export async function PUT(
         images: {
           image: {
             url: datas.images.image.url,
-            fileName: datas.images.image.name,
+            name: datas.images.image.name,
           },
           backgroundImage: {
             url: datas.images.backgroundImage.url,
-            fileName: datas.images.backgroundImage.name,
+            name: datas.images.backgroundImage.name,
           },
           additionImage: datas.images.additionImages,
         },

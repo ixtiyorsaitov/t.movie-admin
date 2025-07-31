@@ -197,22 +197,20 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
       };
       console.log(formData);
 
-      // const { data } = await axios.put(
-      //   `/api/film/${initialDataState?._id}`,
-      //   formData
-      // );
-      // console.log(data);
+      const { data } = await axios.put(
+        `/api/film/${initialDataState?._id}`,
+        formData
+      );
+      console.log(data);
 
-      // if (data.success) {
-      //   toast.success("Film updated successfuly!");
-      //   setInitialDataState(data.film);
-      //   setBackgroundFile(null);
-      //   setBackgroundPreviewUrl(null);
-      //   setCardFile(null);
-      //   setCardPreviewUrl(null);
-      // } else {
-      //   toast.error(data.error);
-      // }
+      if (data.success) {
+        toast.success("Film updated successfuly!");
+        setInitialDataState(data.film);
+        setBackgroundFile(null);
+        setCardFile(null);
+      } else {
+        toast.error(data.error);
+      }
       return "data";
     },
     onSuccess: (res) => {
@@ -269,6 +267,8 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
           },
         },
       };
+      console.log(finallyFormData);
+
       const { data: finallyData } = await axios.put(
         "/api/film",
         finallyFormData
@@ -407,7 +407,7 @@ const FilmForm = ({ initialData, pageTitle }: Props) => {
             {/* CARD IMAGE */}
             <FormItem>
               <FormLabel>Card image</FormLabel>
-              <div className="w-full max-w-sm h-[300px] flex items-center justify-center rounded-md cursor-pointer relative overflow-hidden labelContainer">
+              <div className="w-full max-w-[300px] h-[400px] flex items-center justify-center rounded-md cursor-pointer relative overflow-hidden labelContainer">
                 {cardPreviewUrl && (
                   <Image
                     src={cardPreviewUrl || "/placeholder.svg"}
