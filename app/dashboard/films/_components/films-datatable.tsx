@@ -17,8 +17,10 @@ import {
   ArrowUpDown,
   ChevronDown,
   Edit,
+  FilmIcon,
   MoreHorizontal,
   Trash2,
+  TvIcon,
 } from "lucide-react";
 import ReactStars from "react-stars";
 
@@ -126,6 +128,21 @@ export const columns: ColumnDef<IFilm>[] = [
                 Update
               </DropdownMenuItem>
             </Link>
+            {film.type === "series" ? (
+              <Link href={`/dashboard/films/${film._id}/control`}>
+                <DropdownMenuItem>
+                  <TvIcon />
+                  Series
+                </DropdownMenuItem>
+              </Link>
+            ) : (
+              <Link href={`/dashboard/films/${film._id}/control`}>
+                <DropdownMenuItem>
+                  <FilmIcon />
+                  Movie
+                </DropdownMenuItem>
+              </Link>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Trash2 />

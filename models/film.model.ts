@@ -28,6 +28,11 @@ const FilmSchema = new mongoose.Schema(
       additionImage: [{ url: String, name: String }],
     },
     genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "Genre" }],
+    seasons: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Season" }],
+      default: [],
+      required: true,
+    },
   },
   { timestamps: true }
 );
