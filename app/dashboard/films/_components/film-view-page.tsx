@@ -5,7 +5,7 @@ type TProductViewPageProps = {
   filmId: string;
 };
 
-async function getData(filmId: string) {
+export async function getData(filmId: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/film/${filmId}`,
     {

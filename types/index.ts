@@ -82,4 +82,5 @@ export interface IGenre {
 export enum BUCKETS {
   BACKGROUNDS = "backgrounds",
   IMAGES = "images",
+  MOVIES = "movies",
 }
