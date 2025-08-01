@@ -22,7 +22,7 @@ import { FileVideo, Save, Upload } from "lucide-react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import z, { file } from "zod";
+import z from "zod";
 
 interface Props {
   filmId: string;
@@ -54,7 +54,6 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
       const videoDuration = await getVideoDuration(videoFile);
 
       const uploadedVideo = await uploadVideo(videoFile, BUCKETS.SERIES);
-      console.log("uploadVideo", uploadedVideo);
       if (!uploadedVideo?.success) {
         return toast.error("Error uploading video");
       }
@@ -70,8 +69,13 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
 
       const { data: response } = await axios.post(
         `/api/film/${filmId}/control/episode?season=${seasonId}`,
-        { ...values }
+        formData
       );
+      if (response.success) {
+        setDatas((prev) => [...prev, response.data]);
+        toast.success("Episode created successfuly!");
+        form.reset();
+      }
       console.log(response);
     },
   });

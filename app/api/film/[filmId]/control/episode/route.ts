@@ -23,7 +23,7 @@ export async function POST(
     if (!season) {
       return NextResponse.json({ error: "Season not found", success: false });
     }
-    const newEpisode = await Episode.create(datas);
+    const newEpisode = await Episode.create({ ...datas, season: season._id });
     season.episodes.push(newEpisode._id);
     await season.save();
     return NextResponse.json({ success: true, data: newEpisode });
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     if (!season) {
       return NextResponse.json({ error: "Season not found", success: false });
     }
-    return NextResponse.json({ success: true, data: season.episodes });
+    return NextResponse.json(season.episodes);
   } catch (error) {
     console.log(error);
     return NextResponse.json(

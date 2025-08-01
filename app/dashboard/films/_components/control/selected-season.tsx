@@ -23,8 +23,8 @@ const SelectedSeason = ({
         `/api/film/${filmId}/control/episode?season=${data._id}`
       );
 
-      console.log(response);
       setEpisodes(response);
+      return null;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: data.episodes.length > 0, // ✅ faqat epizodlar mavjud bo‘lsa ishlaydi
@@ -45,7 +45,9 @@ const SelectedSeason = ({
       {/* Episodes List */}
       {data.episodes.length > 0 ? (
         <div className="space-y-4 mb-6">
-          <EpisodeCard />
+          {episodes.map((item) => (
+            <EpisodeCard key={item._id} data={item} />
+          ))}
         </div>
       ) : (
         <div className="text-center py-12">

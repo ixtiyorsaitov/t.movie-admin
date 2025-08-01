@@ -62,7 +62,7 @@ export const uploadVideo = async (file: File, bucketName: BUCKETS) => {
       const { data: publicUrlData } = supabase.storage
         .from(bucketName)
         .getPublicUrl(fileName);
-      return { success: true, videoUrl: publicUrlData, fileName };
+      return { success: true, videoUrl: publicUrlData.publicUrl, fileName };
     }
   } catch (error) {
     return { success: false };
