@@ -1,17 +1,12 @@
 "use client";
 
 import SeasonModal from "@/components/modals/season.modal";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { IFilm } from "@/types";
-import { FileVideo, Folder, Play, Plus, Save, Tv, Upload } from "lucide-react";
+import { IFilm, ISeason } from "@/types";
+import { Folder, Tv } from "lucide-react";
 import { useState } from "react";
-import EpisodeForm from "./episode-form";
+import SelectedSeason from "./selected-season";
 
 const SeriesControl = ({ data }: { data: IFilm }) => {
   const [currentData, setCurrentData] = useState<IFilm>(data);
@@ -20,48 +15,6 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
       ? currentData.seasons[currentData.seasons.length - 1]._id
       : null
   );
-  console.log(currentData);
-
-  const [showEpisodeForm, setShowEpisodeForm] = useState(false);
-  const [episodeForm, setEpisodeForm] = useState({
-    title: "",
-    description: "",
-    episodeNumber: 1,
-    videoFile: null as File | null,
-  });
-
-  // const addEpisode = () => {
-  //   if (!selectedSeason || !episodeForm.title || !episodeForm.videoFile) return;
-
-  //   const newEpisode: Episode = {
-  //     id: Date.now().toString(),
-  //     title: episodeForm.title,
-  //     description: episodeForm.description,
-  //     episodeNumber: episodeForm.episodeNumber,
-  //     videoFile: episodeForm.videoFile,
-  //   };
-
-  //   const updatedSeasons = serie.seasons.map((season) => {
-  //     if (season.seasonNumber === selectedSeason) {
-  //       return { ...season, episodes: [...season.episodes, newEpisode] };
-  //     }
-  //     return season;
-  //   });
-
-  //   setSerie({ ...serie, seasons: updatedSeasons });
-
-  //   // Reset form and keep it open for next episode
-  //   setEpisodeForm({
-  //     title: "",
-  //     description: "",
-  //     episodeNumber: episodeForm.episodeNumber + 1,
-  //     videoFile: null,
-  //   });
-  // };
-
-  // const selectedSeasonData = serie.seasons.find(
-  //   (s) => s.seasonNumber === selectedSeason
-  // );
 
   return (
     <div className="w-full space-y-2 mx-2">
@@ -120,37 +73,17 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
       </div>
 
       {/* Season Details */}
-      {selectedSeason !== null && (
-        <div className="rounded-xl border p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold">Season {10} Episodes</h3>
-            <Button onClick={() => setShowEpisodeForm(!showEpisodeForm)}>
-              <Plus className="w-4 h-4" />
-              <span>Add Episode</span>
-            </Button>
-          </div>
-
-          {/* Episodes List */}
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center space-x-4 p-4 bg-secondary rounded-lg">
-              <div className="flex items-center justify-center w-10 h-10 bg-white rounded-full">
-                <span className="text-sm font-medium text-black">1</span>
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium">Episode number 1</h4>
-                <p className="text-sm">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Possimus, at.
-                </p>
-              </div>
-              <Play className="w-5 h-5" />
-            </div>
-          </div>
-
-          {/* Episode Form */}
-          {showEpisodeForm && <EpisodeForm setEnable={setShowEpisodeForm} />}
-        </div>
-      )}
+      {selectedSeason !== null &&
+        currentData.seasons.some((ssn) => ssn._id === selectedSeason) && (
+          <SelectedSeason
+            data={
+              currentData.seasons.find(
+                (ssn) => ssn._id === selectedSeason
+              ) as ISeason
+            }
+            filmId={data._id}
+          />
+        )}
     </div>
   );
 };

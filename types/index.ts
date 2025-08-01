@@ -37,7 +37,7 @@ export interface IFilm {
   updatedAt: Date;
 }
 
-interface ISeason {
+export interface ISeason {
   _id: string;
   seasonNumber: number;
   title: string;
@@ -46,7 +46,7 @@ interface ISeason {
   createdAt: Date;
   updatedAt: Date;
 }
-interface IEpisode {
+export interface IEpisode {
   _id: string;
   title: string;
   description: string;

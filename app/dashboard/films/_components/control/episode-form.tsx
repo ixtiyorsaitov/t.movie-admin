@@ -2,14 +2,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { episodeSchmea } from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { FileVideo, Save, Upload } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
 
 interface Props {
   setEnable: Dispatch<SetStateAction<boolean>>;
 }
 
 const EpisodeForm = ({ setEnable }: Props) => {
+  const form = useForm<z.infer<typeof episodeSchmea>>({
+    resolver: zodResolver(episodeSchmea),
+    defaultValues: {
+      title: "",
+      description: "",
+      episodeNumber: "",
+    },
+  });
   return (
     <div className="border-t pt-6">
       <h4 className="text-lg font-medium mb-4">Add New Episode</h4>

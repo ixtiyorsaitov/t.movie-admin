@@ -12,3 +12,8 @@ export const seasonSchema = z.object({
   title: z.string().min(3).max(70),
   number: z.string(),
 });
+export const episodeSchmea = z.object({
+  title: z.string().min(3).max(70),
+  description: z.string().optional(),
+  episodeNumber: z.string(),
+});
