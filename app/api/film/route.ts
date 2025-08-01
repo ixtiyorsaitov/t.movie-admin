@@ -41,18 +41,7 @@ export async function POST(req: NextRequest) {
       type: datas.type,
       published: datas.published || false,
       genres: sortedGenres,
-
-      //   images: {
-      //     image: {
-      //       url: datas.images.image.url,
-      //       fileName: datas.images.image.name,
-      //     },
-      //     backgroundImage: {
-      //       url: datas.images.backgroundImage.url,
-      //       fileName: datas.images.backgroundImage.name,
-      //     },
-      //     additionImage: [],
-      //   },
+      seasons: datas.type === "series" ? [] : undefined,
     });
 
     return NextResponse.json({ success: true, film: newFilm });

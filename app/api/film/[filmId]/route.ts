@@ -11,8 +11,8 @@ export async function GET(
 ) {
   try {
     await connectToDatabase();
-    const { filmId } = params;
-    const film = await Film.findById(filmId).populate("genres");
+    const { filmId } = await params;
+    const film = await Film.findById(filmId).populate("genres seasons");
 
     return NextResponse.json(film ? film : null);
   } catch (error) {

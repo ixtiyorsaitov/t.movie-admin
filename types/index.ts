@@ -2,7 +2,6 @@ export enum FilmType {
   SERIES = "series",
   MOVIE = "movie",
 }
-
 export interface ChildProps {
   children: React.ReactNode;
 }
@@ -33,6 +32,33 @@ export interface IFilm {
     backgroundImage: ImageType;
   };
   genres: IGenre[];
+  seasons: ISeason[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ISeason {
+  _id: string;
+  seasonNumber: number;
+  title: string;
+  description: string;
+  episodes: IEpisode[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+interface IEpisode {
+  _id: string;
+  title: string;
+  description: string;
+  video: {
+    url: string;
+    resolution: "360p" | "480p" | "720p" | "1080p" | "4k";
+    size: string;
+    duration: string;
+  };
+  episodeNumber: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 type ImageType = {
@@ -83,4 +109,5 @@ export enum BUCKETS {
   BACKGROUNDS = "backgrounds",
   IMAGES = "images",
   MOVIES = "movies",
+  SERIES = "series",
 }

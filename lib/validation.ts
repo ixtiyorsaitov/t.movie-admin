@@ -8,3 +8,7 @@ export const filmFormSchema = z.object({
   type: z.string(),
   published: z.boolean(),
 });
+export const seasonSchema = z.object({
+  title: z.string().min(3).max(70),
+  number: z.string(),
+});
