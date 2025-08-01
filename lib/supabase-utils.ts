@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import type { BUCKETS } from "@/types";
 import type { ImageUploadResult } from "@/types/film-form.types";
+import { toast } from "sonner";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,6 +38,33 @@ export const uploadImage = async (
     return { success: false };
   } catch (error) {
     console.error("Upload error:", error);
+    return { success: false };
+  }
+};
+
+export const uploadVideo = async (file: File, bucketName: BUCKETS) => {
+  try {
+    if (!file) return { success: false };
+
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      return { success: false };
+    } else {
+      const { data: publicUrlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(fileName);
+      return { success: true, videoUrl: publicUrlData, fileName };
+    }
+  } catch (error) {
     return { success: false };
   }
 };

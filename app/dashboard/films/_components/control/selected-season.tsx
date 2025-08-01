@@ -56,7 +56,15 @@ const SelectedSeason = ({
       )}
 
       {/* Episode Form */}
-      {showEpisodeForm && <EpisodeForm setEnable={setShowEpisodeForm} />}
+      {showEpisodeForm && (
+        <EpisodeForm
+          setEnable={setShowEpisodeForm}
+          filmId={filmId}
+          seasonId={data._id}
+          datas={episodes}
+          setDatas={setEpisodes}
+        />
+      )}
     </div>
   );
 };
