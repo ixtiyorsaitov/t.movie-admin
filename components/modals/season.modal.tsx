@@ -110,7 +110,7 @@ const SeasonModal = ({
               name="number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Episode number</FormLabel>
+                  <FormLabel>Season number</FormLabel>
                   <FormControl>
                     <Input disabled={loading} type="number" {...field} />
                   </FormControl>
