@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
+import "@/models/season.model";
+import "@/models/episode.model";
 import { IFilm } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
@@ -12,9 +14,13 @@ export async function GET(
   try {
     await connectToDatabase();
     const { filmId } = await params;
-    const film = await Film.findById(filmId).populate("genres seasons");
 
-    return NextResponse.json(film ? film : null);
+    const film = await Film.findById(filmId).populate("genres seasons");
+    if (!film) {
+      return NextResponse.json({ success: false, error: "Film not found" });
+    }
+    // return NextResponse.json(film ? film : null);
+    return NextResponse.json({ success: true, data: film });
   } catch (error) {
     console.log(error);
     return NextResponse.json(

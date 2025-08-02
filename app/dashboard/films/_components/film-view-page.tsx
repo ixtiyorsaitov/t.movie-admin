@@ -6,13 +6,16 @@ type TProductViewPageProps = {
 };
 
 export async function getData(filmId: string) {
-  const res = await fetch(
+  const req = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/film/${filmId}`,
     {
       cache: "no-store",
+      method: "GET",
     }
   );
-  return res.json();
+
+  const res = await req.json();
+  return res;
 }
 
 export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
@@ -22,12 +25,10 @@ export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
   if (filmId !== "new") {
     pageTitle = `Edit Product`;
     const data = await getData(filmId);
-    console.log("data", data);
-
-    if (!data) {
-      return notFound();
+    if (!data.success) {
+      notFound();
     }
-    film = data;
+    film = data.data;
   }
 
   return <FilmForm initialData={film} pageTitle={pageTitle} />;

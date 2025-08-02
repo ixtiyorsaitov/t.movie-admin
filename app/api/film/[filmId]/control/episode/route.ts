@@ -1,7 +1,6 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import Episode from "@/models/episode.model";
 import Season from "@/models/season.model";
-import { ISeason } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(

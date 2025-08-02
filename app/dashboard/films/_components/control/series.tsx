@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { IFilm, ISeason } from "@/types";
 import { Folder, Tv } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectedSeason from "./selected-season";
 
 const SeriesControl = ({ data }: { data: IFilm }) => {
@@ -15,7 +15,6 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
       ? currentData.seasons[currentData.seasons.length - 1]._id
       : null
   );
-
   return (
     <div className="w-full space-y-2 mx-2">
       {/* Seasons Overview */}
@@ -76,12 +75,8 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
       {selectedSeason !== null &&
         currentData.seasons.some((ssn) => ssn._id === selectedSeason) && (
           <SelectedSeason
-            data={
-              currentData.seasons.find(
-                (ssn) => ssn._id === selectedSeason
-              ) as ISeason
-            }
-            filmId={data._id}
+            data={currentData}
+            selectedSeasonId={selectedSeason}
           />
         )}
     </div>
