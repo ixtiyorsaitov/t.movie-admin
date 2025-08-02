@@ -29,8 +29,8 @@ const FilmsPage = () => {
     <div className="w-full flex items-center justify-center flex-col px-2">
       <div className="flex items-start justify-between w-full">
         <Heading
-          title="Products"
-          description="Manage products (Server side table functionalities.)"
+          title="Films"
+          description="Manage films (Server side table functionalities.)"
         />
         <Link
           href="/dashboard/films/new"
