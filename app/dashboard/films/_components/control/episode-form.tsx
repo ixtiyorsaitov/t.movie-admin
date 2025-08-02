@@ -63,6 +63,7 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
           url: uploadedVideo.videoUrl,
           size: videoSize,
           duration: videoDuration,
+          name: uploadedVideo.fileName,
         },
       };
       console.log(formData);
@@ -75,6 +76,7 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
         setDatas((prev) => [...prev, response.data]);
         toast.success("Episode created successfuly!");
         form.reset();
+        setVideoFile(null);
       }
       console.log(response);
     },

@@ -4,7 +4,7 @@ import React from "react";
 import Breadcrumbs from "../breadcurmbs";
 import SearchInput from "./search-input";
 import UserNav from "./user-nav";
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import ThemeToggleButton from "@/components/ui/theme-toggle-button";
 
 const Navbar = () => {
   return (
@@ -20,7 +20,10 @@ const Navbar = () => {
         <div className="hidden md:flex">
           <SearchInput />
         </div>
-        <ModeToggle />
+        <ThemeToggleButton
+          variant="gif"
+          url="https://media.giphy.com/media/ArfrRmFCzYXsC6etQX/giphy.gif?cid=ecf05e47kn81xmnuc9vd5g6p5xyjt14zzd3dzwso6iwgpvy3&ep=v1_stickers_search&rid=giphy.gif&ct=s"
+        />
         <UserNav />
         {/* <ThemeSelector /> */}
       </div>

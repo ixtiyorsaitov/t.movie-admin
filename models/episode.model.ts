@@ -11,6 +11,7 @@ const EpisodeSchema = new mongoose.Schema(
         enum: ["360p", "480p", "720p", "1080p", "4k"],
         default: "720p",
       },
+      name: { type: String, required: true },
       size: String, // masalan: "700MB"
       duration: String, // masalan: "24min"
     },
