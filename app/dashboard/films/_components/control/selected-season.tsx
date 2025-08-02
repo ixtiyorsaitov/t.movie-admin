@@ -18,6 +18,9 @@ const SelectedSeason = ({
   const [showEpisodeForm, setShowEpisodeForm] = useState(false);
   const [season, setSeason] = useState<ISeason | null>(null);
   const [episodes, setEpisodes] = useState<IEpisode[]>([]);
+  const [initialEpisodeData, setInitialEpisodeData] = useState<IEpisode | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -43,9 +46,6 @@ const SelectedSeason = ({
     };
     getDataEpisodes();
   }, [selectedSeasonId]);
-  useEffect(() => {
-    console.log("episodes", episodes);
-  }, [episodes]);
 
   if (!season) return null;
 
@@ -55,12 +55,27 @@ const SelectedSeason = ({
         <h3 className="text-xl font-semibold">
           Season {season.seasonNumber} Episodes {season.episodes.length}
         </h3>
-        <Button onClick={() => setShowEpisodeForm(!showEpisodeForm)}>
+        <Button
+          disabled={initialEpisodeData !== null && showEpisodeForm}
+          onClick={() => {
+            setInitialEpisodeData(null);
+            setShowEpisodeForm(!showEpisodeForm);
+          }}
+        >
           <Plus className="w-4 h-4" />
           <span>Add Episode</span>
         </Button>
       </div>
-
+      {showEpisodeForm && (
+        <EpisodeForm
+          initialEpisode={initialEpisodeData}
+          setEnable={setShowEpisodeForm}
+          filmId={data._id}
+          seasonId={season._id}
+          datas={episodes}
+          setDatas={setEpisodes}
+        />
+      )}
       {episodes.length > 0 ? (
         <div className="space-y-4 mb-6">
           {loading ? (
@@ -72,7 +87,13 @@ const SelectedSeason = ({
           ) : (
             <>
               {episodes.map((item) => (
-                <EpisodeCard key={item._id} data={item} />
+                <EpisodeCard
+                  disabled={showEpisodeForm && initialEpisodeData === null}
+                  setInitialEpisode={setInitialEpisodeData}
+                  setShowEpisodeForm={setShowEpisodeForm}
+                  key={item._id}
+                  data={item}
+                />
               ))}
             </>
           )}
@@ -83,16 +104,6 @@ const SelectedSeason = ({
           <h3 className="text-lg font-medium mb-2">No episodes yet</h3>
           <p>Add first episode for season {season.seasonNumber}</p>
         </div>
-      )}
-
-      {showEpisodeForm && (
-        <EpisodeForm
-          setEnable={setShowEpisodeForm}
-          filmId={data._id}
-          seasonId={season._id}
-          datas={episodes}
-          setDatas={setEpisodes}
-        />
       )}
     </div>
   );

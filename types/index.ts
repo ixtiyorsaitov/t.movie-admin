@@ -52,6 +52,7 @@ export interface IEpisode {
   description: string;
   video: {
     url: string;
+    name: string;
     resolution: "360p" | "480p" | "720p" | "1080p" | "4k";
     size: string;
     duration: string;

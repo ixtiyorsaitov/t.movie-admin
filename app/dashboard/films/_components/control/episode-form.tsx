@@ -11,14 +11,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { uploadVideo } from "@/lib/supabase-utils";
+import { removeVideo, uploadVideo } from "@/lib/supabase-utils";
 import { formatFileSize, getVideoDuration } from "@/lib/utils";
 import { episodeSchmea } from "@/lib/validation";
 import { BUCKETS, IEpisode } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import { FileVideo, Save, Upload } from "lucide-react";
+import { FileVideo, Loader2, Save, Upload } from "lucide-react";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -28,28 +28,37 @@ interface Props {
   filmId: string;
   seasonId: string;
   datas: IEpisode[];
+  initialEpisode: IEpisode | null;
   setEnable: Dispatch<SetStateAction<boolean>>;
   setDatas: Dispatch<SetStateAction<IEpisode[]>>;
 }
 
-const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
-  const [loadingStep, setLoadingStep] = useState<1 | 2 | "final" | null>(null);
+const EpisodeForm = ({
+  setEnable,
+  filmId,
+  setDatas,
+  seasonId,
+  initialEpisode,
+}: Props) => {
+  const [addLoadingStep, setAddLoadingStep] = useState<1 | 2 | "final" | null>(
+    null
+  );
+  const [updatingLoadingStep, SetUpdatingLoadingStep] = useState<
+    1 | 2 | "final" | null
+  >(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof episodeSchmea>>({
     resolver: zodResolver(episodeSchmea),
     defaultValues: {
-      title: "",
-      description: "",
-      episodeNumber: "",
+      title: initialEpisode ? initialEpisode.title : "",
+      description: initialEpisode ? initialEpisode.description : "",
+      episodeNumber: initialEpisode ? String(initialEpisode.episodeNumber) : "",
     },
   });
-  useEffect(() => {
-    console.log(loadingStep);
-  }, [loadingStep]);
   const addEpisodeMutation = useMutation({
     mutationFn: async (values: z.infer<typeof episodeSchmea>) => {
       if (!videoFile) return;
-      setLoadingStep(1);
+      setAddLoadingStep(1);
       const videoSize = formatFileSize(videoFile.size);
       const videoDuration = await getVideoDuration(videoFile);
 
@@ -57,6 +66,7 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
       if (!uploadedVideo?.success) {
         return toast.error("Error uploading video");
       }
+      setAddLoadingStep(2);
       const formData = {
         ...values,
         video: {
@@ -72,26 +82,95 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
         `/api/film/${filmId}/control/episode?season=${seasonId}`,
         formData
       );
+      setAddLoadingStep("final");
       if (response.success) {
         setDatas((prev) => [...prev, response.data]);
         toast.success("Episode created successfuly!");
         form.reset();
         setVideoFile(null);
+        setTimeout(() => {
+          setAddLoadingStep(null);
+        }, 3000);
       }
       console.log(response);
     },
   });
+  const updateEpisodeMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof episodeSchmea>) => {
+      let initialDataVideo = {
+        ...initialEpisode?.video,
+      };
+      if (videoFile !== null) {
+        const videoSize = formatFileSize(videoFile.size);
+        const videoDuration = await getVideoDuration(videoFile);
+        initialDataVideo.size = videoSize;
+        initialDataVideo.duration = videoDuration;
+
+        const removed = await removeVideo(
+          [initialDataVideo.name as string],
+          BUCKETS.SERIES
+        );
+
+        if (!removed.success) {
+          return toast.error("Error with deleting video");
+        }
+        console.log("removed video");
+        const uploaded = await uploadVideo(videoFile, BUCKETS.SERIES);
+        if (!uploaded.success) {
+          return toast.error("Error uploading video");
+        }
+        initialDataVideo.name = uploaded.fileName;
+        initialDataVideo.url = uploaded.videoUrl;
+        console.log("uploaded video", uploaded);
+      }
+      const formData = {
+        ...values,
+        video: initialDataVideo,
+      };
+      const { data: response } = await axios.put(
+        `/api/film/${filmId}/control/episode/${initialEpisode?._id}`,
+        formData
+      );
+      console.log(response);
+      if (response.success) {
+        setDatas((prev) =>
+          prev.map((d) => {
+            if (d._id === response.data._id) {
+              return response.data;
+            }
+            return d;
+          })
+        );
+        toast.success("Episode updated successfuly!");
+        form.reset();
+        setVideoFile(null);
+        setTimeout(() => {
+          setAddLoadingStep(null);
+          setEnable(false);
+        }, 3000);
+      }
+    },
+  });
 
   function onSubmit(values: z.infer<typeof episodeSchmea>) {
-    if (videoFile) {
+    if (initialEpisode === null) {
+      if (!videoFile) {
+        return toast.error("Error", {
+          description: "Pleace choose video from your device",
+        });
+      }
       addEpisodeMutation.mutate(values);
+    } else {
+      updateEpisodeMutation.mutate(values);
     }
   }
   return (
-    <div className="border-t pt-6">
+    <div className="border-t pt-6 border px-4 mb-3 pb-3 rounded-md">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <h4 className="text-lg font-medium mb-4">Add New Episode</h4>
+          <h4 className="text-lg font-medium mb-4">
+            {initialEpisode ? "Update Episode" : "Add New Episode"}
+          </h4>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -102,7 +181,11 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
                     <FormItem>
                       <FormLabel>Episode Number</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input
+                          disabled={!!addLoadingStep || !!updatingLoadingStep}
+                          type="number"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -117,7 +200,11 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
                     <FormItem>
                       <FormLabel>Episode Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter episode title" {...field} />
+                        <Input
+                          disabled={!!addLoadingStep || !!updatingLoadingStep}
+                          placeholder="Enter episode title"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -134,6 +221,7 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
+                        disabled={!!addLoadingStep || !!updatingLoadingStep}
                         placeholder="Enter episode description"
                         rows={3}
                         {...field}
@@ -160,26 +248,39 @@ const EpisodeForm = ({ setEnable, filmId, setDatas, seasonId }: Props) => {
                     </div>
                   )}
                 </div>
-                <input
-                  type="file"
-                  accept="video/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setVideoFile(file);
-                    }
-                  }}
-                />
+                {!addLoadingStep && !updatingLoadingStep && (
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setVideoFile(file);
+                      }
+                    }}
+                  />
+                )}
               </Label>
             </div>
 
             <div className="flex justify-end space-x-3">
-              <Button onClick={() => setEnable(false)} variant={"outline"}>
+              <Button
+                disabled={!!addLoadingStep || !!updatingLoadingStep}
+                onClick={() => setEnable(false)}
+                variant={"outline"}
+              >
                 Cancel
               </Button>
-              <Button type="submit">
-                <Save className="w-4 h-4" />
+              <Button
+                type="submit"
+                disabled={!!addLoadingStep || !!updatingLoadingStep}
+              >
+                {!!addLoadingStep || !!updatingLoadingStep ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <Save className="w-4 h-4" />
+                )}
                 <span>Save & Continue</span>
               </Button>
             </div>

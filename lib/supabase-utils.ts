@@ -69,6 +69,19 @@ export const uploadVideo = async (file: File, bucketName: BUCKETS) => {
   }
 };
 
+export const removeVideo = async (fileName: string[], bucketName: BUCKETS) => {
+  try {
+    const { error } = await supabase.storage.from(bucketName).remove(fileName);
+    if (error) {
+      console.error("Remove error:", error);
+      return { success: false };
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Remove error:", error);
+    return { success: false };
+  }
+};
 export const removeImage = async (
   fileName: string[],
   bucketName: BUCKETS
