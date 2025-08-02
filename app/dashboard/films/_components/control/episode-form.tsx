@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { FileVideo, Loader2, Save, Upload } from "lucide-react";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
@@ -43,9 +42,7 @@ const EpisodeForm = ({
   const [addLoadingStep, setAddLoadingStep] = useState<1 | 2 | "final" | null>(
     null
   );
-  const [updatingLoadingStep, SetUpdatingLoadingStep] = useState<
-    1 | 2 | "final" | null
-  >(null);
+  const [updatingLoadingStep] = useState<1 | 2 | "final" | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof episodeSchmea>>({
     resolver: zodResolver(episodeSchmea),
@@ -97,7 +94,7 @@ const EpisodeForm = ({
   });
   const updateEpisodeMutation = useMutation({
     mutationFn: async (values: z.infer<typeof episodeSchmea>) => {
-      let initialDataVideo = {
+      const initialDataVideo = {
         ...initialEpisode?.video,
       };
       if (videoFile !== null) {

@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { filmId: string; episodeId: string } }
+  { params }: { params: Promise<{ filmId: string; episodeId: string }> }
 ) {
   try {
     await connectToDatabase();
@@ -29,7 +29,7 @@ export async function PUT(
 }
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { filmId: string; episodeId: string } }
+  { params }: { params: Promise<{ filmId: string; episodeId: string }> }
 ) {
   try {
     await connectToDatabase();

@@ -9,7 +9,7 @@ import slugify from "slugify";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { filmId: string } }
+  { params }: { params: Promise<{ filmId: string; episodeId: string }> }
 ) {
   try {
     await connectToDatabase();
@@ -31,7 +31,7 @@ export async function GET(
 }
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { filmId: string } }
+  { params }: { params: Promise<{ filmId: string; episodeId: string }> }
 ) {
   try {
     const { filmId } = await params;

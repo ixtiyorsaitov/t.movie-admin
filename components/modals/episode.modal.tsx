@@ -54,7 +54,7 @@ export function EpisodeDeleteModal({
     }
   }, [open, setData, form]);
 
-  const onSubmit = async (values: z.infer<typeof deleteEpisodeSchema>) => {
+  const onSubmit = async () => {
     try {
       setLoading(true);
       const deletedVideo = await removeVideo(
@@ -82,6 +82,7 @@ export function EpisodeDeleteModal({
       toast.error("ERROR", {
         description: "Something went wrong with deleting episode",
       });
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -123,7 +124,9 @@ export function EpisodeDeleteModal({
                   <FormItem>
                     <FormLabel>
                       Tasdiqlash uchun, pastga{" "}
-                      <span className="font-bold text-red-500">'DELETE'</span>{" "}
+                      <span className="font-bold text-red-500">
+                        {"'DELETE'"}
+                      </span>
                       deb yozing:
                     </FormLabel>
                     <FormControl>

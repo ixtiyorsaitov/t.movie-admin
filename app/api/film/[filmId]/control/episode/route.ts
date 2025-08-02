@@ -3,10 +3,7 @@ import Episode from "@/models/episode.model";
 import Season from "@/models/season.model";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { filmId: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
     const datas = await req.json();

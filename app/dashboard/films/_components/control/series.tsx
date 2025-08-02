@@ -3,9 +3,9 @@
 import SeasonModal from "@/components/modals/season.modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { IFilm, ISeason } from "@/types";
+import { IFilm } from "@/types";
 import { Folder, Tv } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import SelectedSeason from "./selected-season";
 
 const SeriesControl = ({ data }: { data: IFilm }) => {
@@ -85,26 +85,26 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
 
 export default SeriesControl;
 
-const SeasonCardSkeleton = () => {
-  return (
-    <Skeleton
-      className={cn(
-        "p-6 rounded-lg border",
-        "animate-pulse" // Skeleton styling
-      )}
-    >
-      <div className="flex items-center space-x-3 mb-3">
-        <Skeleton
-          className={cn(
-            "p-2 rounded-lg dark:bg-white/10 bg-black/10",
-            "h-9 w-9" // Placeholder for icon background
-          )}
-        />
-        <Skeleton className="h-6 dark:bg-white/10 bg-black/10 rounded w-24" />
-        {/* Placeholder for Season title */}
-      </div>
-      <Skeleton className="h-4 dark:bg-white/10 bg-black/10 rounded w-32" />
-      {/* Placeholder for episode count */}
-    </Skeleton>
-  );
-};
+// const SeasonCardSkeleton = () => {
+//   return (
+//     <Skeleton
+//       className={cn(
+//         "p-6 rounded-lg border",
+//         "animate-pulse" // Skeleton styling
+//       )}
+//     >
+//       <div className="flex items-center space-x-3 mb-3">
+//         <Skeleton
+//           className={cn(
+//             "p-2 rounded-lg dark:bg-white/10 bg-black/10",
+//             "h-9 w-9" // Placeholder for icon background
+//           )}
+//         />
+//         <Skeleton className="h-6 dark:bg-white/10 bg-black/10 rounded w-24" />
+//         {/* Placeholder for Season title */}
+//       </div>
+//       <Skeleton className="h-4 dark:bg-white/10 bg-black/10 rounded w-32" />
+//       {/* Placeholder for episode count */}
+//     </Skeleton>
+//   );
+// };

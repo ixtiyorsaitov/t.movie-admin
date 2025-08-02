@@ -1,5 +1,5 @@
 import { IEpisode } from "@/types";
-import { FilePen, MoreVertical, Play, Settings, Trash } from "lucide-react";
+import { FilePen, MoreVertical, Play, Trash } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction } from "react";

@@ -6,7 +6,7 @@ import { IFilm } from "@/types";
 import { FileVideo, Film, Save, Upload } from "lucide-react";
 import React, { useState } from "react";
 
-const MovieControl = ({ data }: { data: IFilm }) => {
+const MovieControl = ({}: { data: IFilm }) => {
   const [dragActive, setDragActive] = useState<boolean>(false);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -102,12 +102,7 @@ const MovieControl = ({ data }: { data: IFilm }) => {
             <label className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
               <Upload className="w-4 h-4" />
               <span>Choose File</span>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={(e) => {}}
-                className="hidden"
-              />
+              <input type="file" accept="video/*" className="hidden" />
             </label>
           </div>
         )}

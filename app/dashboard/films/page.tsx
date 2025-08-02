@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Plus, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { DataTableDemo } from "./_components/films-datatable";

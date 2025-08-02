@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import EpisodeForm from "./episode-form";
 import EpisodeCard, { EpisodeCardSkeleton } from "./episode-card";
 import { IEpisode, IFilm, ISeason } from "@/types";
-import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { EpisodeDeleteModal } from "@/components/modals/episode.modal";
@@ -41,6 +40,7 @@ const SelectedSeason = ({
         setEpisodes(response);
       } catch (error) {
         toast.error("Error with getting episodes");
+        console.log(error);
       } finally {
         setLoading(false);
       }

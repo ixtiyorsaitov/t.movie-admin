@@ -1,4 +1,3 @@
-import { IFilm } from "@/types";
 import { getData } from "../film-view-page";
 import { notFound } from "next/navigation";
 import SeriesControl from "./series";
