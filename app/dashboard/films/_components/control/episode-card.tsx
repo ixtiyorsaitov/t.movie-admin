@@ -1,8 +1,16 @@
 import { IEpisode } from "@/types";
-import { Play, Settings } from "lucide-react";
+import { FilePen, MoreVertical, Play, Settings, Trash } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useDeleteEpisode } from "@/hooks/use-delete-episode-modal";
 
 interface Props {
   data: IEpisode;
@@ -17,6 +25,7 @@ export default function EpisodeCard({
   setInitialEpisode,
   setShowEpisodeForm,
 }: Props) {
+  const { setOpen, setData } = useDeleteEpisode();
   return (
     <div className="flex items-center space-x-4 p-4 bg-secondary rounded-lg">
       <div className="flex items-center justify-center w-10 h-10 bg-white rounded-full">
@@ -25,8 +34,8 @@ export default function EpisodeCard({
         </span>
       </div>
       <div className="flex-1">
-        <h4 className="font-medium">{data.title}</h4>
-        <p className="text-sm">{data.description}</p>
+        <h4 className="font-medium line-clamp-1">{data.title}</h4>
+        <p className="text-sm line-clamp-2">{data.description}</p>
       </div>
       <div className="flex items-center justify-center gap-1">
         <Button
@@ -37,18 +46,40 @@ export default function EpisodeCard({
         >
           <Play className="w-5 h-5" />
         </Button>
-        <Button
-          disabled={disabled}
-          onClick={() => {
-            setInitialEpisode(data);
-            setShowEpisodeForm(true);
-          }}
-          variant={"ghost"}
-          className="size-7 dark:hover:bg-white/10 hover:bg-black/10"
-          size={"icon"}
-        >
-          <Settings />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={"ghost"}
+              size={"icon"}
+              className="size-7 dark:hover:bg-white/10 hover:bg-black/10"
+              disabled={disabled}
+            >
+              <MoreVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onClick={() => {
+                setInitialEpisode(data);
+                setShowEpisodeForm(true);
+              }}
+            >
+              <FilePen />
+              Update
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                setData(data);
+                setOpen(true);
+              }}
+              variant="destructive"
+            >
+              <Trash />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

@@ -80,7 +80,7 @@ const SeasonModal = ({
       <DialogTrigger asChild>
         <Button disabled={loading}>
           <Plus className="w-4 h-4" />
-          <span>Add Season</span>
+          <span className="sm:flex hidden">Add Season</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

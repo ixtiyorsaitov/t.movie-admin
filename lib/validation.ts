@@ -17,3 +17,8 @@ export const episodeSchmea = z.object({
   description: z.string().optional(),
   episodeNumber: z.string(),
 });
+export const deleteEpisodeSchema = z.object({
+  confirmText: z.string().refine((val) => val === "DELETE", {
+    message: "You must type 'delete' to confirm.",
+  }),
+});

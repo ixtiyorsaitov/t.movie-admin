@@ -1,11 +1,7 @@
 import SearchCommand from "@/components/commands/search-command";
 import Navbar from "@/components/shared/navbar/navbar";
 import { AppSidebar } from "@/components/shared/sidebar/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import React from "react";
 
 const BrowseLayout = ({ children }: { children: React.ReactNode }) => {

@@ -57,6 +57,7 @@ export interface IEpisode {
     size: string;
     duration: string;
   };
+  season: string;
   episodeNumber: number;
   createdAt: Date;
   updatedAt: Date;
