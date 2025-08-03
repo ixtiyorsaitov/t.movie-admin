@@ -29,7 +29,11 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
               <p>Manage seasons and episodes</p>
             </div>
           </div>
-          <SeasonModal data={currentData} setData={setCurrentData} />
+          <SeasonModal
+            initialSeason={null}
+            data={currentData}
+            setData={setCurrentData}
+          />
         </div>
 
         {currentData?.seasons?.length <= 0 ? (
@@ -76,6 +80,7 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
         currentData.seasons.some((ssn) => ssn._id === selectedSeason) && (
           <SelectedSeason
             data={currentData}
+            setData={setCurrentData}
             selectedSeasonId={selectedSeason}
           />
         )}

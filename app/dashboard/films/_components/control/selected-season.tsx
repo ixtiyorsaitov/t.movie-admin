@@ -1,18 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Play, Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import EpisodeForm from "./episode-form";
 import EpisodeCard, { EpisodeCardSkeleton } from "./episode-card";
 import { IEpisode, IFilm, ISeason } from "@/types";
 import axios from "axios";
 import { toast } from "sonner";
 import { EpisodeDeleteModal } from "@/components/modals/episode.modal";
+import SeasonModal from "@/components/modals/season.modal";
 
 const SelectedSeason = ({
   data,
   selectedSeasonId,
+  setData,
 }: {
   data: IFilm;
+  setData: Dispatch<SetStateAction<IFilm>>;
   selectedSeasonId: string;
 }) => {
   const [showEpisodeForm, setShowEpisodeForm] = useState(false);
@@ -57,16 +60,19 @@ const SelectedSeason = ({
           <h3 className="text-xl font-semibold">
             Season {season.seasonNumber} Episodes {season.episodes.length}
           </h3>
-          <Button
-            disabled={initialEpisodeData !== null && showEpisodeForm}
-            onClick={() => {
-              setInitialEpisodeData(null);
-              setShowEpisodeForm(!showEpisodeForm);
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            <span className="sm:flex hidden">Add Episode</span>
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              disabled={initialEpisodeData !== null && showEpisodeForm}
+              onClick={() => {
+                setInitialEpisodeData(null);
+                setShowEpisodeForm(!showEpisodeForm);
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="sm:flex hidden">Add Episode</span>
+            </Button>
+            <SeasonModal data={data} setData={setData} initialSeason={season} />
+          </div>
         </div>
         {showEpisodeForm && (
           <EpisodeForm

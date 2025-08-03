@@ -51,7 +51,7 @@ export default function EpisodeCard({
             <Button
               variant={"ghost"}
               size={"icon"}
-              className="size-7 dark:hover:bg-white/10 hover:bg-black/10"
+              className="size-7 dark:hover:bg-white/10 hover:bg-black/10 rounded-full"
               disabled={disabled}
             >
               <MoreVertical />
