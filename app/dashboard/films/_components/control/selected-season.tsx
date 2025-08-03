@@ -8,6 +8,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { EpisodeDeleteModal } from "@/components/modals/episode.modal";
 import SeasonModal from "@/components/modals/season.modal";
+import DeleteSeasonModal from "@/components/modals/delete.season.modal";
 
 const SelectedSeason = ({
   data,
@@ -18,7 +19,7 @@ const SelectedSeason = ({
   setData: Dispatch<SetStateAction<IFilm>>;
   selectedSeasonId: string;
 }) => {
-  const [showEpisodeForm, setShowEpisodeForm] = useState(false);
+  const [showEpisodeForm, setShowEpisodeForm] = useState<boolean>(false);
   const [season, setSeason] = useState<ISeason | null>(null);
   const [episodes, setEpisodes] = useState<IEpisode[]>([]);
   const [initialEpisodeData, setInitialEpisodeData] = useState<IEpisode | null>(
@@ -72,6 +73,15 @@ const SelectedSeason = ({
               <span className="sm:flex hidden">Add Episode</span>
             </Button>
             <SeasonModal data={data} setData={setData} initialSeason={season} />
+            {season && (
+              <DeleteSeasonModal
+                data={data}
+                setData={setData}
+                episodes={episodes}
+                initialData={season}
+                setInitialData={setSeason}
+              />
+            )}
           </div>
         </div>
         {showEpisodeForm && (
