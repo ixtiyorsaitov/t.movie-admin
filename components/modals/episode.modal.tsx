@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Trash, Trash2 } from "lucide-react";
 
-import { useDeleteEpisode } from "@/hooks/use-delete-episode-modal";
+import { useDeleteEpisode } from "@/hooks/use-delete-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import { removeVideo } from "@/lib/supabase-utils";
 import { BUCKETS, IEpisode } from "@/types";
-import { deleteEpisodeSchema } from "@/lib/validation";
+import { deleteSchema } from "@/lib/validation";
 
 export function EpisodeDeleteModal({
   setEpisodes,
@@ -39,8 +39,8 @@ export function EpisodeDeleteModal({
   const [loading, setLoading] = useState<boolean>(false);
 
   // Initialize react-hook-form
-  const form = useForm<z.infer<typeof deleteEpisodeSchema>>({
-    resolver: zodResolver(deleteEpisodeSchema),
+  const form = useForm<z.infer<typeof deleteSchema>>({
+    resolver: zodResolver(deleteSchema),
     defaultValues: {
       confirmText: "",
     },

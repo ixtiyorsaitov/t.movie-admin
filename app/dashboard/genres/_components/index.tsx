@@ -1,4 +1,4 @@
-import GenreModal from "@/components/modals/genre.modal";
+import GenreModal, { GenreDeleteModal } from "@/components/modals/genre.modal";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,6 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { useDeleteGenre } from "@/hooks/use-delete-modal";
 import { cn } from "@/lib/utils";
 import { IGenre } from "@/types";
 import { Film, MoreVertical, Settings, Trash2 } from "lucide-react";
@@ -28,10 +29,11 @@ const GenresPageMain = ({
   setInitialGenre,
 }: Props) => {
   const [currentDatas, setCurrentDatas] = useState<IGenre[]>(datas);
+  const deleteModal = useDeleteGenre();
   return (
     <>
       <div className="flex items-center justify-center flex-col w-full space-y-1">
-        {datas.map((data, index) => (
+        {currentDatas.map((data, index) => (
           <div
             key={data._id}
             className={cn(
@@ -74,7 +76,13 @@ const GenresPageMain = ({
                   Films
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive">
+                <DropdownMenuItem
+                  onClick={() => {
+                    deleteModal.setData(data);
+                    deleteModal.setOpen(true);
+                  }}
+                  variant="destructive"
+                >
                   <Trash2 />
                   Delete
                 </DropdownMenuItem>
@@ -90,6 +98,7 @@ const GenresPageMain = ({
         setOpen={setModalOpen}
         initialData={initialGenre}
       />
+      <GenreDeleteModal setList={setCurrentDatas} />
     </>
   );
 };

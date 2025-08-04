@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteEpisode } from "@/hooks/use-delete-episode-modal";
+import { useDeleteEpisode } from "@/hooks/use-delete-modal";
 
 interface Props {
   data: IEpisode;
