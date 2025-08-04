@@ -6,9 +6,7 @@ import axios from "axios";
 import React from "react";
 import GenresPageMain, { GenresPageMainLoading } from "./_components";
 import { Heading } from "@/components/ui/heading";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -31,12 +29,9 @@ const GenresPage = () => {
           title="Genres"
           description="Manage genres (Server side table functionalities.)"
         />
-        <Link
-          href="/dashboard/genres/new"
-          className={cn(buttonVariants(), "text-xs md:text-sm")}
-        >
+        <Button>
           <PlusIcon className="mr-2 h-4 w-4" /> Add New
-        </Link>
+        </Button>
       </div>
       <Separator className="my-3" />
       {isLoading ? (
