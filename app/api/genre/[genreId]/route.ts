@@ -4,9 +4,13 @@ import { IGenre } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 
-export async function POST(req: NextRequest) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ genreId: string }> }
+) {
   try {
     await connectToDatabase();
+    const { genreId } = await params;
     const body = await req.json();
     const data = body as IGenre;
     if (!data.name) {
@@ -17,30 +21,16 @@ export async function POST(req: NextRequest) {
     }
     const slug = slugify(data.name, {
       lower: true,
-      strict: true, // faqat a-z va 0-9 qoldiradi
-      remove: /['".,!?]/g, // qo‘shimcha belgilarni olib tashlaydi
+      strict: true,
+      remove: /['".,!?]/g,
     });
-    const newGenre = await Genre.create({
+    const updatedGenre = await Genre.findByIdAndUpdate(genreId, {
       name: data.name,
       slug,
     });
-    return NextResponse.json({ success: true, data: newGenre });
+    return NextResponse.json({ success: true, data: updatedGenre });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    await connectToDatabase();
-    const genres = await Genre.find();
-    return NextResponse.json(genres);
-  } catch (error) {
-    console.error(error);
+    console.log(error);
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }

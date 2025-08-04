@@ -22,3 +22,8 @@ export const deleteEpisodeSchema = z.object({
     message: "You must type 'delete' to confirm.",
   }),
 });
+export const genreSchema = z.object({
+  name: z.string().min(2, {
+    message: "Genre name must be at least 2 characters.",
+  }),
+});

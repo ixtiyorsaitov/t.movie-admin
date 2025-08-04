@@ -17,11 +17,9 @@ const FilmsPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["films"],
     queryFn: async () => {
-      const { data } = await axios.get<IFilm[]>("/api/film");
+      const { data: response } = await axios.get<IFilm[]>("/api/film");
 
-      console.log(data);
-
-      return data;
+      return response;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
