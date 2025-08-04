@@ -54,8 +54,8 @@ const items = [
     icon: FilmIcon,
   },
   {
-    title: "Categories",
-    url: "/dashboard/categories",
+    title: "Genres",
+    url: "/dashboard/genres",
     icon: Layers,
   },
   {
