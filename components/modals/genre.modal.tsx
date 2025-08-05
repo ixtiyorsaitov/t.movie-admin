@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { IGenre } from "@/types";
+import { IFilm, IGenre } from "@/types";
 import {
   Form,
   FormControl,
@@ -30,8 +30,25 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Loader2, Trash2 } from "lucide-react";
+import { Loader2, MoreVertical, Trash2 } from "lucide-react";
 import { useDeleteGenre } from "@/hooks/use-delete-modal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { badgeVariants } from "../ui/badge";
+import { Skeleton } from "../ui/skeleton";
 
 interface Props {
   datas: IGenre[];
@@ -260,4 +277,79 @@ export function GenreDeleteModal({
       </AlertDialogContent>
     </AlertDialog>
   ) : null;
+}
+
+export function GenreFilmsModal({
+  genreId,
+  open,
+  setOpen,
+}: {
+  genreId: string;
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}) {
+  // const [datas, setDatas] = useState<IFilm[]>([]);
+  const getDataQuery = useQuery({
+    queryKey: ["genre-films", genreId],
+    queryFn: async () => {
+      const { data: response } = await axios.get(`/api/genre/${genreId}/films`);
+
+      // setDatas(response.datas);
+      return response;
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Films about genre Action</DialogTitle>
+          <div>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="item-1">
+                <AccordionTrigger className="hover:no-underline bg-secondary px-2">
+                  {getDataQuery.isPending ? (
+                    <Skeleton className="w-1/3 h-3 dark:bg-white bg-black" />
+                  ) : (
+                    <>
+                      {getDataQuery.data.datas.length}{" "}
+                      {getDataQuery.data.datas.length > 1 ? "films" : "film"}
+                    </>
+                  )}
+                </AccordionTrigger>
+                <AccordionContent className="dark:text-white text-black h-full max-h-[500px] overflow-auto mt-2">
+                  {getDataQuery.isPending
+                    ? Array.from({ length: 4 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="w-full flex items-center justify-between bg-secondary mt-2 p-2 rounded-md"
+                        >
+                          <Skeleton className="h-4 w-1/2 dark:bg-white bg-black" />
+                          <Skeleton className="h-6 w-12 rounded-full" />
+                        </div>
+                      ))
+                    : getDataQuery.data.datas.map((item: IFilm) => (
+                        <div
+                          key={item._id}
+                          className="w-full flex items-center justify-between bg-secondary mt-2 p-2 rounded-md"
+                        >
+                          <p className="max-w-[300px] line-clamp-1">
+                            {item.title}
+                          </p>
+                          <Link
+                            className={cn(badgeVariants())}
+                            href={`/dashboard/films/${item._id}`}
+                          >
+                            Get
+                          </Link>
+                        </div>
+                      ))}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
 }

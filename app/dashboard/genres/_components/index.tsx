@@ -1,4 +1,7 @@
-import GenreModal, { GenreDeleteModal } from "@/components/modals/genre.modal";
+import GenreModal, {
+  GenreDeleteModal,
+  GenreFilmsModal,
+} from "@/components/modals/genre.modal";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,6 +32,10 @@ const GenresPageMain = ({
   setInitialGenre,
 }: Props) => {
   const [currentDatas, setCurrentDatas] = useState<IGenre[]>(datas);
+  const [genreFilmOpen, setGenreFilmsOpen] = useState<boolean>(false);
+  const [initialFilmGenreId, setinitialFilmGenreId] = useState<null | string>(
+    null
+  );
   const deleteModal = useDeleteGenre();
   return (
     <>
@@ -71,7 +78,12 @@ const GenresPageMain = ({
                   <Settings />
                   Update
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setinitialFilmGenreId(data._id);
+                    setGenreFilmsOpen(true);
+                  }}
+                >
                   <Film />
                   Films
                 </DropdownMenuItem>
@@ -99,6 +111,13 @@ const GenresPageMain = ({
         initialData={initialGenre}
       />
       <GenreDeleteModal setList={setCurrentDatas} />
+      {initialFilmGenreId && (
+        <GenreFilmsModal
+          open={genreFilmOpen}
+          setOpen={setGenreFilmsOpen}
+          genreId={initialFilmGenreId}
+        />
+      )}
     </>
   );
 };
