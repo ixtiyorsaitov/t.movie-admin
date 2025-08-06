@@ -18,6 +18,7 @@ const FilmsPage = () => {
     queryKey: ["films"],
     queryFn: async () => {
       const { data: response } = await axios.get<IFilm[]>("/api/film");
+      console.log(response);
 
       return response;
     },

@@ -36,9 +36,11 @@ const FilmSchema = new mongoose.Schema(
     video: {
       type: {
         url: { type: String },
+        name: { type: String },
         resolution: {
           type: String,
           enum: ["360p", "480p", "720p", "1080p", "4k"],
+          default: "720p",
         },
         size: String,
         duration: String,

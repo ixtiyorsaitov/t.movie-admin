@@ -35,7 +35,6 @@ export async function PUT(
 ) {
   try {
     const { filmId } = await params;
-    console.log(filmId);
 
     await connectToDatabase();
 

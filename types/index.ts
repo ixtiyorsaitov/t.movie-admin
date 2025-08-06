@@ -31,6 +31,7 @@ export interface IFilm {
     additionImages?: ImageType[];
     backgroundImage: ImageType;
   };
+  video: IVideo;
   genres: IGenre[];
   seasons: ISeason[];
   createdAt: Date;
@@ -50,17 +51,20 @@ export interface IEpisode {
   _id: string;
   title: string;
   description: string;
-  video: {
-    url: string;
-    name: string;
-    resolution: "360p" | "480p" | "720p" | "1080p" | "4k";
-    size: string;
-    duration: string;
-  };
+  video: IVideo;
   season: string;
   episodeNumber: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IVideo {
+  _id: string;
+  url: string;
+  name: string;
+  resolution: "360p" | "480p" | "720p" | "1080p" | "4k";
+  size: string;
+  duration: string;
 }
 
 type ImageType = {

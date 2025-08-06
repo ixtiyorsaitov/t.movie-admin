@@ -42,30 +42,58 @@ export const uploadImage = async (
   }
 };
 
-export const uploadVideo = async (file: File, bucketName: BUCKETS) => {
+export const uploadVideo = async (
+  file: File,
+  bucket: BUCKETS,
+  onProgress?: (progress: number) => void // Added onProgress callback
+) => {
+  const fileName = `${Date.now()}-${file.name}`;
+
+  // Simulate upload progress for demonstration
+  let currentProgress = 0;
+  const interval = setInterval(() => {
+    currentProgress += 10;
+    if (currentProgress <= 90) {
+      // Stop before 100 to simulate actual upload finishing
+      onProgress?.(currentProgress);
+    } else {
+      clearInterval(interval);
+    }
+  }, 100); // Update progress every 100ms
+
   try {
-    if (!file) return { success: false };
-
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-
     const { data, error } = await supabase.storage
-      .from(bucketName)
+      .from(bucket)
       .upload(fileName, file, {
         cacheControl: "3600",
         upsert: false,
       });
 
+    clearInterval(interval); // Clear interval on completion
+    onProgress?.(100); // Ensure 100% on success
+
     if (error) {
-      return { success: false };
-    } else {
-      const { data: publicUrlData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(fileName);
-      return { success: true, videoUrl: publicUrlData.publicUrl, fileName };
+      console.error("Upload error:", error);
+      return { success: false, error: error.message };
     }
-  } catch (error) {
-    return { success: false };
+
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+
+    if (!publicUrlData?.publicUrl) {
+      return { success: false, error: "Could not get public URL" };
+    }
+
+    return { success: true, videoUrl: publicUrlData.publicUrl, fileName };
+  } catch (e: any) {
+    clearInterval(interval); // Clear interval on error
+    onProgress?.(0); // Reset progress on error
+    console.error("Upload exception:", e);
+    return {
+      success: false,
+      error: e.message || "An unknown error occurred during upload.",
+    };
   }
 };
 

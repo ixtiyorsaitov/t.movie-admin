@@ -14,6 +14,7 @@ const ControlFilms = async ({ filmId }: { filmId: string }) => {
       ) : (
         <MovieControl data={data.data} />
       )}
+      
     </div>
   );
 };

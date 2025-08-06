@@ -129,7 +129,19 @@ export async function GET() {
   try {
     await connectToDatabase();
     const datas = await Film.find().populate("genres");
-    return NextResponse.json(datas);
+
+    const filtered = datas.map((data) => {
+      const obj = data.toObject(); // <-- fix
+      return {
+        ...obj,
+        meta: {
+          likes: obj.meta.likes.length,
+          watchList: obj.meta.watchList.length,
+        },
+      };
+    });
+
+    return NextResponse.json(filtered);
   } catch (error) {
     console.log(error);
     return NextResponse.json(
