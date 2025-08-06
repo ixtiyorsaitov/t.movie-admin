@@ -7,6 +7,7 @@ import { IFilm } from "@/types";
 import { Folder, Tv } from "lucide-react";
 import { useState } from "react";
 import SelectedSeason from "./selected-season";
+import VideoPlayModal from "@/components/modals/video-play.modal";
 
 const SeriesControl = ({ data }: { data: IFilm }) => {
   const [currentData, setCurrentData] = useState<IFilm>(data);
@@ -84,6 +85,7 @@ const SeriesControl = ({ data }: { data: IFilm }) => {
             selectedSeasonId={selectedSeason}
           />
         )}
+      <VideoPlayModal />
     </div>
   );
 };
