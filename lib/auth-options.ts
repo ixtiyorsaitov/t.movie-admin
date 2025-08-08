@@ -11,6 +11,11 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
+  pages: {
+    signIn: "/auth",
+    error: "/access-denied",
+  },
+
   callbacks: {
     async signIn({ user }) {
       await connectToDatabase();
@@ -21,7 +26,8 @@ export const authOptions: AuthOptions = {
         );
 
       if (!allowedAdminEmails?.includes(user.email!)) {
-        throw new Error("AccessDenied");
+        // false qaytarsa -> pages.error ga yo‘naltiriladi
+        return "/access-denied";
       }
 
       const existingUser = await Admin.findOne({ email: user.email });
