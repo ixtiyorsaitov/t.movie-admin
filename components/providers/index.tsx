@@ -6,6 +6,17 @@ import QueryProvider from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "../ui/sonner";
 import NextTopLoader from "nextjs-toploader";
+import { useTheme } from "next-themes";
+
+const TopLoader = () => {
+  const { resolvedTheme } = useTheme();
+  return (
+    <NextTopLoader
+      showSpinner={false}
+      color={resolvedTheme === "dark" ? "white" : "black"}
+    />
+  );
+};
 
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -19,7 +30,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
         storageKey="admin-theme"
       >
         <QueryProvider>
-          <NextTopLoader />
+          <TopLoader />
           <Toaster />
           {children}
         </QueryProvider>

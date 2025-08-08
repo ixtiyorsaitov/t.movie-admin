@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import NextTopLoader from "nextjs-toploader";
-import { Toaster } from "@/components/ui/sonner";
-import Providers from "@/components/providers/providers";
+import Providers from "@/components/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -23,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${inter.className} antialiased overflow-hidden`}
+        className={`${inter.variable} ${inter.className} antialiased overflow-hidden selection:bg-primary dark:selection:text-black selection:text-white`}
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
