@@ -12,6 +12,8 @@ import {
 import { useRouter } from "next/navigation";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
 import { user } from "@/lib/constants";
+import { signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";
 const UserNav = () => {
   const router = useRouter();
   if (user) {
@@ -48,7 +50,15 @@ const UserNav = () => {
             <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Sign out</DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => {
+              signOut();
+            }}
+          >
+            <LogOut />
+            Sign out
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );

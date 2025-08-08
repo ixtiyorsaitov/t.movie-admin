@@ -3,8 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "@/components/ui/sonner";
-import QueryProvider from "@/components/providers/query-provider";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+import Providers from "@/components/providers/providers";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,26 +21,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <QueryProvider>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${inter.variable} ${inter.className} antialiased overflow-hidden`}
-          suppressHydrationWarning
-        >
-          <NextTopLoader />
-          <Toaster />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-            enableColorScheme
-            storageKey="admin-theme"
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </QueryProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.variable} ${inter.className} antialiased overflow-hidden`}
+        suppressHydrationWarning
+      >
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
