@@ -6,6 +6,12 @@ async function getSliderData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/slider`, {
     next: { tags: [CacheTags.SLIDER] },
   });
+
+  if (!res.ok) {
+    const errorText = await res.text(); // JSON emas, text bo‘lishi mumkin
+    console.error("Slider API error:", errorText);
+    return { error: "Failed to fetch slider data" };
+  }
   const data = await res.json();
   console.log(data);
 
