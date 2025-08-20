@@ -1,7 +1,8 @@
-import { IUser } from "@/interfaces/user.interface";
+import { IUser } from ".";
 
 declare module "next-auth" {
   interface Session {
-    currentAdmin: IUser;
+    currentUser: IUser;
+    isDeleted: boolean;
   }
 }

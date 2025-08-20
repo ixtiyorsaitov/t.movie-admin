@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 const handleQueryError = (error: Error) => {
   if ((error as IError).response?.data?.message) {
-    return toast.error('ERROR');
+    return toast.error("ERROR");
   }
   return toast.error("Something went wrong");
 };

@@ -22,6 +22,9 @@ export const deleteSchema = z.object({
     message: "You must type 'delete' to confirm.",
   }),
 });
+export const sliderSchema = z.object({
+  id: z.string().min(1, "ID ni kiritng"),
+});
 export const genreSchema = z.object({
   name: z.string().min(2, {
     message: "Genre name must be at least 2 characters.",

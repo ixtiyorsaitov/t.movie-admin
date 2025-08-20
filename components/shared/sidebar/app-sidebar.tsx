@@ -21,25 +21,22 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Bell,
-  Calendar,
   ChevronDown,
   ChevronsDown,
-  ChevronUp,
   CreditCard,
   FilmIcon,
+  GalleryHorizontal,
   Home,
-  Inbox,
   Layers,
   LogOut,
   Search,
   Settings,
-  User2,
   UserCircle,
-  UserCircleIcon,
 } from "lucide-react";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
-import { user } from "@/lib/constants";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import { IUser } from "@/types";
 
 // Menu items.
 const items = [
@@ -59,6 +56,11 @@ const items = [
     icon: Layers,
   },
   {
+    title: "Sliders",
+    url: "/dashboard/sliders",
+    icon: GalleryHorizontal,
+  },
+  {
     title: "Search",
     url: "#",
     icon: Search,
@@ -71,6 +73,7 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const { data: session } = useSession();
   return (
     <Sidebar variant={"floating"} collapsible="icon">
       <SidebarHeader>
@@ -126,7 +129,7 @@ export function AppSidebar() {
                   <UserAvatarProfile
                     className="h-8 w-8 rounded-lg"
                     showInfo
-                    user={user}
+                    user={session?.currentUser as IUser}
                   />
                   <ChevronsDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -142,7 +145,7 @@ export function AppSidebar() {
                     <UserAvatarProfile
                       className="h-8 w-8 rounded-lg"
                       showInfo
-                      user={user}
+                      user={session?.currentUser as IUser}
                     />
                   </div>
                 </DropdownMenuLabel>
@@ -163,7 +166,10 @@ export function AppSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  variant="destructive"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
                 </DropdownMenuItem>

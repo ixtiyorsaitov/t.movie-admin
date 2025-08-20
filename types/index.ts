@@ -2,6 +2,16 @@ export enum FilmType {
   SERIES = "series",
   MOVIE = "movie",
 }
+export enum ROLE {
+  SUPERADMIN = "superAdmin",
+  ADMIN = "admin",
+  MEMBER = "member",
+  USER = "user",
+}
+export enum MemberType {
+  ACTOR = "actor",
+  TRANSLATOR = "translator",
+}
 export interface ChildProps {
   children: React.ReactNode;
 }
@@ -36,6 +46,11 @@ export interface IFilm {
   seasons: ISeason[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ISlider {
+  film: IFilm;
+  _id: string;
 }
 
 export interface ISeason {
@@ -80,8 +95,11 @@ export interface IUser {
     watchedList: string[];
     submitList: string[];
   };
-  createdAt?: Date;
-  updatedAt?: Date;
+  role: ROLE;
+  email: string;
+  avatar: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface IComment {

@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const CacheTags = {
+  SLIDER: "slider",
+  ANIME: "anime",
+};
+
 export function formatFileSize(bytes: number): string {
   const kb = 1024;
   const mb = kb * 1024;

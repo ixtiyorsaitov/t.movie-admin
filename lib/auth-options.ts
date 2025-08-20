@@ -1,7 +1,8 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDatabase } from "./mongoose";
-import Admin from "@/models/admin.model";
+import User from "@/models/user.model";
+import { ROLE } from "@/types";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -20,34 +21,44 @@ export const authOptions: AuthOptions = {
     async signIn({ user }) {
       await connectToDatabase();
 
-      const allowedAdminEmails =
-        process.env.NEXT_PUBLIC_ALLOWED_ADMIN_EMAILS?.split(",").map((email) =>
-          email.trim()
-        );
+      const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL!;
 
-      if (!allowedAdminEmails?.includes(user.email!)) {
-        // false qaytarsa -> pages.error ga yo‘naltiriladi
-        return "/access-denied";
+      const existingUser = await User.findOne({ email: user.email });
+
+      // Agar user mavjud bo‘lsa va roli ADMIN yoki SUPER_ADMIN bo‘lsa
+      if (
+        existingUser &&
+        (existingUser.role === ROLE.ADMIN ||
+          existingUser.role === ROLE.SUPERADMIN)
+      ) {
+        return true;
       }
 
-      const existingUser = await Admin.findOne({ email: user.email });
-
+      // Agar user mavjud bo'lmasa → ro‘yxatdan o‘tayapti
       if (!existingUser) {
-        await Admin.create({
-          email: user.email,
-          fullName: user.name || "",
-          profileImage: user.image,
-        });
+        if (user.email === SUPER_ADMIN_EMAIL) {
+          // SuperAdmin sifatida yaratish
+          await User.create({
+            email: user.email,
+            name: user.name,
+            avatar: user.image,
+            role: ROLE.SUPERADMIN,
+          });
+          return true;
+        } else {
+          // Email mos kelmasa
+          return "/access-denied";
+        }
       }
 
-      return true;
+      // Qolganlar uchun ruxsat yo'q
+      return "/access-denied";
     },
+
     async session({ session }) {
       await connectToDatabase();
-      const admin = await Admin.findOne({ email: session.user?.email });
-
-      session.currentAdmin = admin;
-
+      const user = await User.findOne({ email: session.user?.email });
+      session.currentUser = user;
       return session;
     },
   },

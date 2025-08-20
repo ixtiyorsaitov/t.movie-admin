@@ -16,6 +16,7 @@ import {
 import {
   ArrowUpDown,
   ChevronDown,
+  Copy,
   Edit,
   FilmIcon,
   MoreHorizontal,
@@ -44,6 +45,7 @@ import {
 } from "@/components/ui/table";
 import { IFilm } from "@/types";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export const columns: ColumnDef<IFilm>[] = [
   {
@@ -122,6 +124,15 @@ export const columns: ColumnDef<IFilm>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => {
+                navigator.clipboard.writeText(film._id);
+                toast.success("Anime ID copied to clipboard");
+              }}
+            >
+              <Copy />
+              Copy ID
+            </DropdownMenuItem>
             <Link href={`/dashboard/films/${film._id}`}>
               <DropdownMenuItem>
                 <Edit />
@@ -144,7 +155,7 @@ export const columns: ColumnDef<IFilm>[] = [
               </Link>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem variant={"destructive"}>
               <Trash2 />
               Delete
             </DropdownMenuItem>

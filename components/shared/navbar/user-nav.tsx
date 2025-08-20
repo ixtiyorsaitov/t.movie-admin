@@ -12,57 +12,57 @@ import {
 import { useRouter } from "next/navigation";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
 import { user } from "@/lib/constants";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { LogOut } from "lucide-react";
+import { IUser } from "@/types";
 const UserNav = () => {
   const router = useRouter();
-  if (user) {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <UserAvatarProfile user={user} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          className="w-56"
-          align="end"
-          sideOffset={10}
-          forceMount
-        >
-          <DropdownMenuLabel className="font-normal">
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm leading-none font-medium">
-                {user.fullName}
-              </p>
-              <p className="text-muted-foreground text-xs leading-none">
-                {user.email}
-              </p>
-            </div>
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>New Team</DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => {
-              signOut();
-            }}
-          >
-            <LogOut />
-            Sign out
+  const { data: session } = useSession();
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <UserAvatarProfile user={session?.currentUser as IUser} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-56"
+        align="end"
+        sideOffset={10}
+        forceMount
+      >
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm leading-none font-medium">
+              {session?.currentUser.name}
+            </p>
+            <p className="text-muted-foreground text-xs leading-none">
+              {session?.currentUser.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => router.push("/dashboard/profile")}>
+            Profile
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }
+          <DropdownMenuItem>Billing</DropdownMenuItem>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+          <DropdownMenuItem>New Team</DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={() => {
+            signOut();
+          }}
+        >
+          <LogOut />
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
 
 export default UserNav;

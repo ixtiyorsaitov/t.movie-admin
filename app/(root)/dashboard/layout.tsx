@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 const BrowseLayout = ({ children }: { children: React.ReactNode }) => {
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
