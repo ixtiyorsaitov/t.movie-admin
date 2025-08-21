@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useDeleteEpisode } from "@/hooks/use-delete-modal";
+import { useDeleteEpisode } from "@/hooks/use-modals";
 import { usePlayModal } from "@/hooks/use-play-modal";
 
 interface Props {

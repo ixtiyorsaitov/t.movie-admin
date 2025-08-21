@@ -23,15 +23,22 @@ import {
   Bell,
   ChevronDown,
   ChevronsDown,
+  ClipboardList,
   CreditCard,
   FilmIcon,
   GalleryHorizontal,
   Home,
   Layers,
+  LayoutGrid,
   LogOut,
+  MessageSquare,
+  Newspaper,
   Search,
   Settings,
+  Star,
+  Tag,
   UserCircle,
+  Users,
 } from "lucide-react";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
 import Link from "next/link";
@@ -41,34 +48,64 @@ import { IUser } from "@/types";
 // Menu items.
 const items = [
   {
-    title: "Home",
+    title: "Dashboard",
     url: "/dashboard/overview",
     icon: Home,
   },
   {
-    title: "Films",
+    title: "Barcha filmlar",
     url: "/dashboard/films",
     icon: FilmIcon,
   },
   {
-    title: "Genres",
+    title: "Janrlar",
     url: "/dashboard/genres",
     icon: Layers,
   },
   {
-    title: "Sliders",
+    title: "Kategoriyalar",
+    url: "/dashboard/categories",
+    icon: LayoutGrid,
+  },
+  {
+    title: "Sliderlar",
     url: "/dashboard/sliders",
     icon: GalleryHorizontal,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Yangiliklar",
+    url: "/dashboard/news",
+    icon: Newspaper,
   },
   {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "Yo'riqnomalar",
+    icon: ClipboardList,
+    url: "/admin/annotations",
+  },
+  {
+    title: "Izohlar",
+    icon: MessageSquare,
+    url: "/admin/comments",
+  },
+  {
+    title: "Sharhlar",
+    icon: Star,
+    url: "/admin/reviews",
+  },
+  {
+    title: "Foydalanuvchilar",
+    icon: Users,
+    url: "/admin/users",
+  },
+  {
+    title: "Narxlar",
+    icon: Tag,
+    url: "/admin/prices",
+  },
+  {
+    title: "To'lovlar",
+    icon: CreditCard,
+    url: "/admin/payments",
   },
 ];
 

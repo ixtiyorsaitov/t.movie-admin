@@ -27,6 +27,6 @@ export const sliderSchema = z.object({
 });
 export const genreSchema = z.object({
   name: z.string().min(2, {
-    message: "Genre name must be at least 2 characters.",
+    message: "Janr kamida 2 ta harfdan iborat bo'lishi kerak",
   }),
 });

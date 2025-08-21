@@ -1,7 +1,6 @@
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -13,7 +12,6 @@ import { IFilm, IGenre } from "@/types";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -29,16 +27,13 @@ import { Label } from "../ui/label";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Loader2, MoreVertical, Trash2 } from "lucide-react";
-import { useDeleteGenre } from "@/hooks/use-delete-modal";
+import { Eye, Film, Loader2, Trash2 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
+  useDeleteGenre,
+  useGenreFilmsModal,
+  useGenreModal,
+} from "@/hooks/use-modals";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
   Accordion,
   AccordionContent,
@@ -47,31 +42,28 @@ import {
 } from "../ui/accordion";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { badgeVariants } from "../ui/badge";
+import { Badge, badgeVariants } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 
 interface Props {
-  datas: IGenre[];
-  open: boolean;
-  initialData: IGenre | null;
-  setOpen: Dispatch<SetStateAction<boolean>>;
   setDatas: Dispatch<SetStateAction<IGenre[]>>;
 }
 
-const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
+const GenreModal = ({ setDatas }: Props) => {
+  const genreModal = useGenreModal();
   const form = useForm<z.infer<typeof genreSchema>>({
     resolver: zodResolver(genreSchema),
     defaultValues: {
-      name: initialData ? initialData.name : "",
+      name: genreModal.data ? genreModal.data.name : "",
     },
   });
   useEffect(() => {
-    if (initialData) {
-      form.reset({ name: initialData.name });
+    if (genreModal.data) {
+      form.reset({ name: genreModal.data.name });
     } else {
       form.reset({ name: "" });
     }
-  }, [initialData]);
+  }, [genreModal.data]);
 
   const addMutation = useMutation({
     mutationFn: async (values: z.infer<typeof genreSchema>) => {
@@ -92,7 +84,7 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
   const updateMutation = useMutation({
     mutationFn: async (values: z.infer<typeof genreSchema>) => {
       const { data: response } = await axios.put(
-        `/api/genre/${initialData?._id}`,
+        `/api/genre/${genreModal.data?._id}`,
         values
       );
       return response;
@@ -103,6 +95,8 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
           prev.map((c) => (c._id === response.data._id ? response.data : c))
         );
         toast.success("Genre updated successfully!");
+        genreModal.setOpen(false);
+
         form.reset();
       } else {
         toast.error(response.error || "Error updating genre");
@@ -111,7 +105,7 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
   });
 
   function onSubmit(values: z.infer<typeof genreSchema>) {
-    if (initialData) {
+    if (genreModal.data) {
       updateMutation.mutate(values);
     } else {
       addMutation.mutate(values);
@@ -119,15 +113,15 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog open={genreModal.open} onOpenChange={genreModal.setOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {initialData === null ? "Add new" : "Update"} genre
+            {genreModal.data === null ? "Janr qo'shish" : "Janrni yangilash"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Pleace enter the fields to{" "}
-            {initialData === null ? "add new" : "update"} genre
+            Iltimos, {genreModal.data ? "janrni yangilash" : "janr qo'shish"}{" "}
+            uchun kerakli maydonlarni {"to'ldiring"}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Form {...form}>
@@ -137,11 +131,11 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <Label>Name</Label>
+                  <Label>Nomi</Label>
                   <FormControl>
                     <Input
                       autoComplete="off"
-                      placeholder="Genre name..."
+                      placeholder="Janr nomi..."
                       {...field}
                     />
                   </FormControl>
@@ -150,8 +144,8 @@ const GenreModal = ({ open, initialData, setDatas, setOpen }: Props) => {
               )}
             />
             <AlertDialogFooter>
-              <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
-              <AlertDialogAction type="submit">Continue</AlertDialogAction>
+              <AlertDialogCancel type="button">Bekor qilish</AlertDialogCancel>
+              <Button type="submit">Davom etish</Button>
             </AlertDialogFooter>
           </form>
         </Form>
@@ -190,10 +184,11 @@ export function GenreDeleteModal({
       if (response.success) {
         setList((prev) => prev.filter((c) => c._id !== data?._id));
         setData(null);
-        toast.success("Genre deleted successfully!");
+        toast.success("Janr o'chirildi");
+        setOpen(false);
         form.reset();
       } else {
-        toast.error(response.error || "Error deleting genre");
+        toast.error(response.error || "Janrni o'chirishda xatolik yuz berdi");
       }
     },
   });
@@ -207,22 +202,16 @@ export function GenreDeleteModal({
       <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Are you absolutely sure you want to delete "{data.name}"?
+            {`Siz "${data.name}" janrini o'chirmoqchiligingizga aminmisiz?`}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the genre
-            <span className="font-medium text-foreground">"{data.name}"</span>
-            and disconnect it from its associated movies.
+            Bu buyruqni orqaga qaytarib {"bo'lmaydi"}. Janr {"o'chgandan"} keyin
+            shu janrga aloqador barcha filmlardan
+            <span className="font-medium text-foreground">{` "${data.name}" `}</span>
+            janri olib tashlanadi
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <Alert variant="destructive" className="mb-4">
-          <Trash2 className="h-4 w-4" />
-          <AlertTitle>Permanent Deletion Warning</AlertTitle>
-          <AlertDescription>
-            Deleting this genre is irreversible. All related content, comments,
-            and analytics will be lost forever. Please proceed with caution.
-          </AlertDescription>
-        </Alert>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -279,76 +268,132 @@ export function GenreDeleteModal({
   ) : null;
 }
 
-export function GenreFilmsModal({
-  genreId,
-  open,
-  setOpen,
-}: {
-  genreId: string;
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-}) {
-  // const [datas, setDatas] = useState<IFilm[]>([]);
+export function GenreFilmsModal() {
+  const modal = useGenreFilmsModal();
   const getDataQuery = useQuery({
-    queryKey: ["genre-films", genreId],
+    queryKey: ["genre-films", modal.data?._id],
     queryFn: async () => {
-      const { data: response } = await axios.get(`/api/genre/${genreId}/films`);
-
-      // setDatas(response.datas);
+      const { data: response } = await axios.get(
+        `/api/genre/${modal.data?._id}/films`
+      );
       return response;
     },
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Films about genre Action</DialogTitle>
-          <div>
-            <Accordion type="single" collapsible>
-              <AccordionItem value="item-1">
-                <AccordionTrigger className="hover:no-underline bg-secondary px-2">
-                  {getDataQuery.isPending ? (
-                    <Skeleton className="w-1/3 h-3 dark:bg-white bg-black" />
-                  ) : (
-                    <>
-                      {getDataQuery.data.datas.length}{" "}
-                      {getDataQuery.data.datas.length > 1 ? "films" : "film"}
-                    </>
-                  )}
-                </AccordionTrigger>
-                <AccordionContent className="dark:text-white text-black h-full max-h-[500px] overflow-auto mt-2">
-                  {getDataQuery.isPending
-                    ? Array.from({ length: 4 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="w-full flex items-center justify-between bg-secondary mt-2 p-2 rounded-md"
-                        >
-                          <Skeleton className="h-4 w-1/2 dark:bg-white bg-black" />
-                          <Skeleton className="h-6 w-12 rounded-full" />
-                        </div>
-                      ))
-                    : getDataQuery.data.datas.map((item: IFilm) => (
-                        <div
-                          key={item._id}
-                          className="w-full flex items-center justify-between bg-secondary mt-2 p-2 rounded-md"
-                        >
-                          <p className="max-w-[300px] line-clamp-1">
-                            {item.title}
-                          </p>
-                          <Link
-                            className={cn(badgeVariants())}
-                            href={`/dashboard/films/${item._id}`}
-                          >
-                            Get
-                          </Link>
-                        </div>
-                      ))}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+    <Dialog open={modal.open} onOpenChange={modal.setOpen}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+        <DialogHeader className="space-y-4 pb-4 border-b">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Film className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-semibold">
+                {modal.data?.name || "Janr"} {"bo'yicha filmlar"}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Ushbu janrga tegishli barcha filmlar {"ro'yxati"}
+              </p>
+            </div>
           </div>
         </DialogHeader>
+
+        <div className="space-y-4">
+          <Accordion type="single" collapsible defaultValue="item-1">
+            <AccordionItem value="item-1" className="border-none">
+              <AccordionTrigger className="hover:no-underline bg-muted/50 hover:bg-muted px-4 py-3 rounded-lg transition-colors">
+                <div className="flex items-center gap-2">
+                  {getDataQuery.isPending ? (
+                    <Skeleton className="h-4 w-20" />
+                  ) : (
+                    <>
+                      <Badge variant="secondary" className="font-medium">
+                        {getDataQuery.data?.datas?.length || 0}
+                      </Badge>
+                      <span className="text-sm font-medium">
+                        {(getDataQuery.data?.datas?.length || 0) === 1
+                          ? "film"
+                          : "filmlar"}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </AccordionTrigger>
+
+              <AccordionContent className="pt-4">
+                <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
+                  {getDataQuery.isPending ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          <Skeleton className="h-10 w-10 rounded-md" />
+                          <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-3 w-1/2" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-8 w-16 rounded-md" />
+                      </div>
+                    ))
+                  ) : getDataQuery.data?.datas?.length > 0 ? (
+                    getDataQuery.data.datas.map(
+                      (item: IFilm, index: number) => (
+                        <div
+                          key={item._id}
+                          className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-all duration-200 group"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="p-2 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                              <Film className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+                                {item.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Film #{index + 1}
+                              </p>
+                            </div>
+                          </div>
+                          <Link
+                            href={`/dashboard/films/${item._id}`}
+                            className="ml-3"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer gap-1"
+                            >
+                              <Eye className="h-3 w-3" />
+                              {"Ko'rish"}
+                            </Badge>
+                          </Link>
+                        </div>
+                      )
+                    )
+                  ) : (
+                    <div className="text-center py-8 space-y-3">
+                      <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto">
+                        <Film className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-muted-foreground">
+                          Filmlar topilmadi
+                        </p>
+                        <p className="text-sm text-muted-foreground/80">
+                          Ushbu janrga tegishli filmlar hali {"qo'shilmagan"}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
       </DialogContent>
     </Dialog>
   );

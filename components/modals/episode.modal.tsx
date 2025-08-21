@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Trash, Trash2 } from "lucide-react";
 
-import { useDeleteEpisode } from "@/hooks/use-delete-modal";
+import { useDeleteEpisode } from "@/hooks/use-modals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
