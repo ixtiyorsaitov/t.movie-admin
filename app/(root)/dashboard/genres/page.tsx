@@ -3,15 +3,15 @@
 import { IGenre } from "@/types";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import React, { useState } from "react";
+import React from "react";
 import GenresPageMain, { GenresPageMainLoading } from "./_components";
 import HeadingSkeleton, { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { useGenreModal } from "@/hooks/use-modals";
 
 const GenresPage = () => {
-  const [genreModalOpen, setGenreModalOpen] = useState<boolean>(false);
-  const [initialGenre, setInitialGenre] = useState<IGenre | null>(null);
+  const genreModal = useGenreModal();
   const { data, isLoading } = useQuery({
     queryKey: ["genres"],
     queryFn: async () => {
@@ -19,7 +19,7 @@ const GenresPage = () => {
 
       return response;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
   return (
     <>
@@ -34,8 +34,8 @@ const GenresPage = () => {
             />
             <Button
               onClick={() => {
-                setInitialGenre(null);
-                setGenreModalOpen(true);
+                genreModal.setData(null);
+                genreModal.setOpen(true);
               }}
             >
               <PlusIcon className="mr-2 h-4 w-4" /> {"Qo'shish"}
@@ -46,13 +46,7 @@ const GenresPage = () => {
         {isLoading ? (
           <GenresPageMainLoading />
         ) : data ? (
-          <GenresPageMain
-            datas={data}
-            modalOpen={genreModalOpen}
-            setModalOpen={setGenreModalOpen}
-            initialGenre={initialGenre}
-            setInitialGenre={setInitialGenre}
-          />
+          <GenresPageMain datas={data} />
         ) : null}
       </div>
     </>

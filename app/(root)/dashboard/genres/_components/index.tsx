@@ -27,25 +27,14 @@ import {
 } from "@/hooks/use-modals";
 import type { IGenre } from "@/types";
 import { Edit, Film, MoreVertical, Settings, Trash2 } from "lucide-react";
-import { type Dispatch, type SetStateAction, useState } from "react";
+import { useState } from "react";
 
 interface Props {
   datas: IGenre[];
-  modalOpen: boolean;
-  initialGenre: IGenre | null;
-  setModalOpen: Dispatch<SetStateAction<boolean>>;
-  setInitialGenre: Dispatch<SetStateAction<IGenre | null>>;
 }
 
-const GenresPageMain = ({
-  datas,
-  modalOpen,
-  initialGenre,
-  setModalOpen,
-  setInitialGenre,
-}: Props) => {
+const GenresPageMain = ({ datas }: Props) => {
   const [currentDatas, setCurrentDatas] = useState<IGenre[]>(datas);
-  const [genreFilmOpen, setGenreFilmsOpen] = useState<boolean>(false);
   const genreModal = useGenreModal();
   const deleteModal = useDeleteGenre();
   const genreFilmModal = useGenreFilmsModal();

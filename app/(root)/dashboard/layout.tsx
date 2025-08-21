@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
 const BrowseLayout = ({ children }: { children: React.ReactNode }) => {
-  const { status, data: session } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -25,15 +25,11 @@ const BrowseLayout = ({ children }: { children: React.ReactNode }) => {
     <div>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset
-          className="md:ml-0 m-2 md:rounded-md overflow-auto bg-sidebar shadow border w-full flex items-center"
-          style={{ maxHeight: "calc(100vh - 1rem)" }} // 1rem = m-2 (2*0.5rem)
-        >
+        <SidebarInset className="md:ml-0 md:m-2 md:rounded-md overflow-auto scrollbar-thin bg-sidebar shadow md:border w-full flex items-center md:max-h-[calc(100vh-1rem)] max-h-[100vh]">
           <div className="max-w-[1600px] w-full">
             <Navbar />
             {children}
           </div>
-
           <SearchCommand />
         </SidebarInset>
       </SidebarProvider>
