@@ -25,6 +25,7 @@ export interface IFilm {
   title: string;
   description: string;
   type: FilmType;
+  category: ICategory;
   rating: {
     avarage: number;
     total: number;
@@ -123,6 +124,11 @@ export interface INotification {
   read: boolean;
 }
 
+export interface ICategory {
+  _id: string;
+  name: string;
+  slug: string;
+}
 export interface IGenre {
   _id: string;
   name: string;

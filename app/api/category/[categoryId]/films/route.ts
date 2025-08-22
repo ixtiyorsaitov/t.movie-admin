@@ -4,13 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ genreId: string }> }
+  { params }: { params: Promise<{ categoryId: string }> }
 ) {
   try {
     await connectToDatabase();
-    const { genreId } = await params;
+    const { categoryId } = await params;
 
-    const films = await Film.find({ genres: genreId }).select("title").lean();
+    const films = await Film.find({ categories: categoryId })
+      .select("title")
+      .lean();
 
     return NextResponse.json({ success: true, datas: films });
   } catch (error) {

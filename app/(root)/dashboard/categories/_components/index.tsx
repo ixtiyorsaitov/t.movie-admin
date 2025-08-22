@@ -1,5 +1,9 @@
 "use client";
 
+import CategoryModal, {
+  CategoryDeleteModal,
+  CategoryFilmsModal,
+} from "@/components/modals/category.modal";
 import GenreModal, {
   GenreDeleteModal,
   GenreFilmsModal,
@@ -21,11 +25,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  useCategoryFilmsModal,
+  useCategoryModal,
+  useDeleteCategory,
   useDeleteGenre,
   useGenreFilmsModal,
   useGenreModal,
 } from "@/hooks/use-modals";
-import type { IGenre } from "@/types";
+import type { ICategory, IGenre } from "@/types";
 import { Edit, Film, MoreVertical, Settings, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -33,11 +40,11 @@ interface Props {
   datas: IGenre[];
 }
 
-const GenresPageMain = ({ datas }: Props) => {
-  const [currentDatas, setCurrentDatas] = useState<IGenre[]>(datas);
-  const genreModal = useGenreModal();
-  const deleteModal = useDeleteGenre();
-  const genreFilmModal = useGenreFilmsModal();
+const CategoriesPageMain = ({ datas }: Props) => {
+  const [currentDatas, setCurrentDatas] = useState<ICategory[]>(datas);
+  const categoryModal = useCategoryModal();
+  const deleteModal = useDeleteCategory();
+  const categoryFilmModal = useCategoryFilmsModal();
 
   return (
     <>
@@ -48,7 +55,7 @@ const GenresPageMain = ({ datas }: Props) => {
               <TableHead className="w-16 text-center font-semibold">
                 №
               </TableHead>
-              <TableHead className="font-semibold">Janr nomi</TableHead>
+              <TableHead className="font-semibold">Kategoriya nomi</TableHead>
               <TableHead className="w-24 text-center font-semibold">
                 Amallar
               </TableHead>
@@ -61,7 +68,7 @@ const GenresPageMain = ({ datas }: Props) => {
                   colSpan={3}
                   className="text-center py-8 text-muted-foreground"
                 >
-                  Hech qanday janr topilmadi
+                  Hech qanday kategoriya topilmadi
                 </TableCell>
               </TableRow>
             ) : (
@@ -70,13 +77,7 @@ const GenresPageMain = ({ datas }: Props) => {
                   key={data._id}
                   className="hover:bg-muted/30 transition-colors"
                 >
-                  <TableCell className="text-center">
-                    {index + 1}.
-                    {/* <div className="flex items-center justify-center">
-                      <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
-                      </div>
-                    </div> */}
-                  </TableCell>
+                  <TableCell className="text-center">{index + 1}.</TableCell>
                   <TableCell className="font-medium">{data.name}</TableCell>
                   <TableCell className="text-center">
                     <DropdownMenu>
@@ -93,8 +94,8 @@ const GenresPageMain = ({ datas }: Props) => {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() => {
-                            genreModal.setData(data);
-                            genreModal.setOpen(true);
+                            categoryModal.setData(data);
+                            categoryModal.setOpen(true);
                           }}
                           className="cursor-pointer"
                         >
@@ -103,8 +104,8 @@ const GenresPageMain = ({ datas }: Props) => {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => {
-                            genreFilmModal.setData(data);
-                            genreFilmModal.setOpen(true);
+                            categoryFilmModal.setData(data);
+                            categoryFilmModal.setOpen(true);
                           }}
                           className="cursor-pointer"
                         >
@@ -133,23 +134,23 @@ const GenresPageMain = ({ datas }: Props) => {
         </Table>
       </div>
 
-      <GenreModal setDatas={setCurrentDatas} />
-      <GenreDeleteModal setList={setCurrentDatas} />
-      {genreFilmModal.data && <GenreFilmsModal />}
+      <CategoryModal setDatas={setCurrentDatas} />
+      <CategoryDeleteModal setList={setCurrentDatas} />
+      {categoryFilmModal.data && <CategoryFilmsModal />}
     </>
   );
 };
 
-export default GenresPageMain;
+export default CategoriesPageMain;
 
-export const GenresPageMainLoading = () => {
+export const CategoriesPageMainLoading = () => {
   return (
     <div className="w-full rounded-lg border bg-card">
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
             <TableHead className="w-16 text-center font-semibold">№</TableHead>
-            <TableHead className="font-semibold">Janr nomi</TableHead>
+            <TableHead className="font-semibold">Kategoriya nomi</TableHead>
             <TableHead className="w-24 text-center font-semibold">
               Amallar
             </TableHead>

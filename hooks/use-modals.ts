@@ -40,3 +40,23 @@ export const useDeleteGenre = create<ModalStore<IGenre>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+
+export const useCategoryModal = create<ModalStore<IGenre>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useCategoryFilmsModal = create<ModalStore<IGenre>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+
+export const useDeleteCategory = create<ModalStore<IGenre>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));

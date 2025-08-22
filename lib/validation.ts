@@ -30,3 +30,8 @@ export const genreSchema = z.object({
     message: "Janr kamida 2 ta harfdan iborat bo'lishi kerak",
   }),
 });
+export const categorySchema = z.object({
+  name: z.string().min(2, {
+    message: "Janr kamida 2 ta harfdan iborat bo'lishi kerak",
+  }),
+});

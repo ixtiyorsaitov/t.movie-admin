@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
 import { IFilm } from "@/types";
@@ -9,6 +10,8 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
     const body = await req.json();
     const datas = body as IFilm;
+
+    const ctg = await Category.findById(datas.category);
 
     // Genrelarni to'g'ri yig'ish
     const genreDocs = await Promise.all(
@@ -41,6 +44,7 @@ export async function POST(req: NextRequest) {
       type: datas.type,
       published: datas.published || false,
       genres: sortedGenres,
+      catergory: ctg,
       seasons: datas.type === "series" ? [] : undefined,
     });
 
@@ -63,6 +67,7 @@ export async function PUT(req: NextRequest) {
     const genreDocs = await Promise.all(
       body.genres.map((g: string) => Genre.findById(g))
     );
+    const ctg = await Category.findById(datas.category);
 
     const sortedGenres = genreDocs
       .filter((genre) => genre !== null)
@@ -84,6 +89,7 @@ export async function PUT(req: NextRequest) {
         type: datas.type,
         published: datas.published || false,
         genres: sortedGenres,
+        catergory: ctg,
         rating: {
           avarage: datas.rating?.avarage || 0,
           total: datas.rating?.total || 0,
