@@ -2,7 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import type { BUCKETS } from "@/types";
 import type { ImageUploadResult } from "@/types/film-form.types";
-import { toast } from "sonner";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

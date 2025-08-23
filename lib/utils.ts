@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const CacheTags = {
   SLIDER: "slider",
+  NEWS: "news",
   ANIME: "anime",
 };
 

@@ -25,7 +25,7 @@ const BrowseLayout = ({ children }: { children: React.ReactNode }) => {
     <div>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset className="md:ml-0 md:m-2 md:rounded-md overflow-auto scrollbar-thin bg-sidebar shadow md:border w-full flex items-center md:max-h-[calc(100vh-1rem)] max-h-[100vh]">
+        <SidebarInset className="md:m-2 !ml-0 md:rounded-md overflow-auto scrollbar-thin bg-sidebar shadow md:border w-full flex items-center md:max-h-[calc(100vh-1rem)] max-h-[100vh]">
           <div className="max-w-[1600px] w-full">
             <Navbar />
             {children}

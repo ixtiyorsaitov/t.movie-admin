@@ -49,6 +49,20 @@ export interface IFilm {
   updatedAt: Date;
 }
 
+export interface INews {
+  _id: string;
+  title: string;
+  slug: string;
+  content: string;
+  description: string;
+  image?: ImageType;
+  tags?: string[];
+  published: boolean;
+  expireAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ISlider {
   film: IFilm;
   _id: string;
@@ -140,4 +154,5 @@ export enum BUCKETS {
   IMAGES = "images",
   MOVIES = "movies",
   SERIES = "series",
+  NEWS = "news",
 }

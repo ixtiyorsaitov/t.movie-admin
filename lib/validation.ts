@@ -35,3 +35,17 @@ export const categorySchema = z.object({
     message: "Janr kamida 2 ta harfdan iborat bo'lishi kerak",
   }),
 });
+export const newsSchema = z.object({
+  title: z.string().min(2, {
+    message: "Sarlavha kamida 2 ta belgidan iborat bo'lishi kerak`",
+  }),
+  description: z
+    .string()
+    .min(20, { message: "Tavsif kamida 20 ta belgidan iborat bo'lishi kerak" }),
+  content: z.string().optional(),
+  tags: z.array(z.string()).min(1, {
+    error: "Iltimos kamida 1 ta teg qo'shing",
+  }),
+  published: z.boolean(),
+  expireAt: z.string(),
+});
