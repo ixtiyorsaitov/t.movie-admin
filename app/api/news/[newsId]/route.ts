@@ -13,8 +13,8 @@ export async function GET(
   try {
     await connectToDatabase();
     const { newsId } = await params;
-    console.log('api called');
-    
+    console.log("api called");
+
     const news = await News.findById(newsId);
     if (!news) {
       return NextResponse.json(
@@ -22,7 +22,10 @@ export async function GET(
         { status: 404 }
       );
     }
-    return NextResponse.json({ success: true, data: news });
+    return NextResponse.json(
+      { success: true, data: news },
+      { headers: { "Cache-Tag": `${CacheTags.NEWS}-${newsId}` } }
+    ); // 1 hafta
   } catch (error) {
     console.error("GET /news error:", error);
     return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
@@ -31,11 +34,11 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { newsId: string } }
+  { params }: { params: Promise<{ newsId: string }> }
 ) {
   try {
     await connectToDatabase();
-    const { newsId } = params;
+    const { newsId } = await params;
     const body = await req.json();
     const { title, content, description, image, tags, published } = body;
 
@@ -82,8 +85,7 @@ export async function PUT(
       return NextResponse.json({ error: "Maqola topilmadi" }, { status: 404 });
     }
 
-    revalidateTag(CacheTags.NEWS);
-    revalidateTag(news._id);
+    revalidateTag(`${CacheTags.NEWS}-${newsId}`);
 
     return NextResponse.json(
       {

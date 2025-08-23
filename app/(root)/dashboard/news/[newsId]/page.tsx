@@ -1,9 +1,9 @@
 import React from "react";
 import NewsForm from "./_components/news-form";
-import { INews } from "@/types";
 import { Heading } from "@/components/ui/heading";
-import { CacheTags } from "@/lib/utils";
+import { INews } from "@/types";
 import { notFound } from "next/navigation";
+import { CacheTags } from "@/lib/utils";
 
 type PageProps = { params: Promise<{ newsId: string }> };
 
@@ -11,22 +11,24 @@ async function getNewsById(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news/${id}`,
     {
-      next: { tags: [CacheTags.NEWS, id] },
+      next: { tags: [`${CacheTags.NEWS}-${id}`] }, // ISR cache bilan
     }
   );
-  const data = await res.json();
-  return data;
-}
 
+  if (!res.ok) return null;
+
+  return res.json();
+}
 
 const NewsIdPageServer = async (props: PageProps) => {
   const { newsId } = await props.params;
-  let initialData: null | INews = null;
+
+  let initialData: INews | null = null;
+
   if (newsId !== "create") {
     const data = await getNewsById(newsId);
-    if (data.error) {
-      notFound();
-    }
+
+    if (!data.success) notFound();
     initialData = data.data;
   }
 
