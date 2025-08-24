@@ -11,12 +11,12 @@ async function getNewsById(id: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news/${id}`,
     {
-      next: { tags: [`${CacheTags.NEWS}-${id}`] }, // ISR cache bilan
+      cache: "force-cache",
+      next: { tags: [CacheTags.NEWS, `${CacheTags.NEWS}-${id}`] },
     }
   );
 
   if (!res.ok) return null;
-
   return res.json();
 }
 
@@ -33,7 +33,7 @@ const NewsIdPageServer = async (props: PageProps) => {
   }
 
   return (
-    <div className="w-full px-2">
+    <div className="w-full px-2 space-y-3">
       <Heading
         title={initialData ? "Yangilikni o'zgartirish" : "Yangilik qo'shish"}
         description={

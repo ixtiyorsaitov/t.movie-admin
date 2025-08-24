@@ -47,5 +47,5 @@ export const newsSchema = z.object({
     error: "Iltimos kamida 1 ta teg qo'shing",
   }),
   published: z.boolean(),
-  expireAt: z.string(),
+  // expireAt: z.date().optional().nullable(), // 👈 Date bo‘ladi
 });

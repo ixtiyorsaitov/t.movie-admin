@@ -6,6 +6,11 @@ import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 
+type UpdateNews = Partial<INews> & {
+  $unset?: {
+    [K in keyof INews]?: 1; // yoki "" ham ishlaydi, MongoDB uchun
+  };
+};
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ newsId: string }> }
@@ -25,7 +30,7 @@ export async function GET(
     return NextResponse.json(
       { success: true, data: news },
       { headers: { "Cache-Tag": `${CacheTags.NEWS}-${newsId}` } }
-    ); // 1 hafta
+    );
   } catch (error) {
     console.error("GET /news error:", error);
     return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
@@ -40,7 +45,8 @@ export async function PUT(
     await connectToDatabase();
     const { newsId } = await params;
     const body = await req.json();
-    const { title, content, description, image, tags, published } = body;
+    const { title, content, description, image, tags, published, expireAt } =
+      body;
 
     if (!title || !content || !description) {
       return NextResponse.json(
@@ -61,7 +67,7 @@ export async function PUT(
     }
 
     // update object
-    const updateData: any = {
+    const updateData: UpdateNews = {
       title,
       slug,
       content,
@@ -69,10 +75,14 @@ export async function PUT(
       tags,
       published,
     };
+    if (expireAt) {
+      updateData.expireAt = new Date(expireAt);
+    } else {
+      updateData.expireAt = null;
+    }
 
-    // image ni boshqarish
     if (image === null) {
-      updateData.$unset = { image: "" }; // DB dan fieldni o‘chiradi
+      updateData.image = null;
     } else if (typeof image !== "undefined") {
       updateData.image = image;
     }
@@ -85,6 +95,7 @@ export async function PUT(
       return NextResponse.json({ error: "Maqola topilmadi" }, { status: 404 });
     }
 
+    revalidateTag(CacheTags.NEWS);
     revalidateTag(`${CacheTags.NEWS}-${newsId}`);
 
     return NextResponse.json(
@@ -116,7 +127,7 @@ export async function DELETE(
       );
     }
     revalidateTag(CacheTags.NEWS);
-    revalidateTag(newsId);
+    revalidateTag(`${CacheTags.NEWS}-${newsId}`);
     return NextResponse.json({ success: true, data: news });
   } catch (error) {
     console.error("DELETE /news error:", error);

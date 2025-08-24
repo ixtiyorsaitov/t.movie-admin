@@ -2,34 +2,48 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
 import News from "@/models/news.model";
 import slugify from "slugify";
+import { revalidateTag } from "next/cache";
+import { CacheTags } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
-
     const { searchParams } = new URL(req.url);
+
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const search = searchParams.get("search") || "";
 
     const skip = (page - 1) * limit;
 
-    // Umumiy hujjatlar soni
-    const total = await News.countDocuments();
+    // Agar search mavjud bo'lsa, regex bilan filter
+    const query = search
+      ? {
+          $or: [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Umumiy hujjatlar soni (search bo'yicha)
+    const total = await News.countDocuments(query);
 
     // Pagination bilan hujjatlar
-    const news = await News.find()
-      .sort({ createdAt: -1 }) // eng oxirgi yangiliklar birinchi chiqadi
+    const news = await News.find(query)
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
     return NextResponse.json({
       datas: news,
       pagination: {
-        total, // jami hujjatlar soni
-        page, // hozirgi sahifa
-        limit, // har bir sahifadagi soni
-        totalPages: Math.ceil(total / limit), // umumiy sahifalar
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
+      success: true,
     });
   } catch (error) {
     console.error("GET /news error:", error);
@@ -72,6 +86,7 @@ export async function POST(req: NextRequest) {
       tags,
       published,
     });
+    revalidateTag(CacheTags.NEWS);
 
     return NextResponse.json(
       {

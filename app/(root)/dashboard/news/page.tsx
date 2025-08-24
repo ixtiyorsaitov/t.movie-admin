@@ -1,20 +1,52 @@
-import { CacheTags } from "@/lib/utils";
+import { CacheTags, cn } from "@/lib/utils";
 import React from "react";
 import NewsPage from "./_components";
+import { Heading } from "@/components/ui/heading";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+const limit = 1;
 
 async function getSliderData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news`, {
-    next: { tags: [CacheTags.NEWS] },
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news?limit=${limit}`,
+    {
+      cache: "force-cache",
+      next: { tags: [CacheTags.NEWS] },
+    }
+  );
+
+  if (!res.ok) return null;
   const data = await res.json();
+  console.log(data);
+
   return data;
 }
 
 const NewsServerPage = async () => {
   const datas = await getSliderData();
-  console.log(datas);
 
-  return <NewsPage datas={datas.datas} />;
+  if (!datas?.success) return null;
+
+  return (
+    <div className="w-full px-2 space-y-3">
+      <div className="w-full flex items-center justify-between">
+        <Heading
+          title="Yangiliklar"
+          description="Yangiliklarni boshqarish (Server jadval funksiyalari orqali)"
+        ></Heading>
+        <Link href={"/dashboard/news/create"} className={cn(buttonVariants())}>
+          <Plus />
+          {"Qo'shish"}
+        </Link>
+      </div>
+      <NewsPage
+        limit={limit}
+        pagination={datas.pagination}
+        datas={datas.datas}
+      />
+    </div>
+  );
 };
 
 export default NewsServerPage;

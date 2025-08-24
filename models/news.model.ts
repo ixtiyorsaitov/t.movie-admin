@@ -12,8 +12,7 @@ const NewsSchema = new mongoose.Schema(
     },
     tags: [{ type: String }],
     published: { type: Boolean, default: false },
-
-    expireAt: { type: Date, expires: 0 },
+    // expireAt: { type: Date, default: null, expires: 0 },
   },
   { timestamps: true }
 );

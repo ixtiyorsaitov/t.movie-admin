@@ -1,4 +1,4 @@
-import { IEpisode, IGenre } from "@/types";
+import { IEpisode, IGenre, INews } from "@/types";
 import { create } from "zustand";
 
 type ModalStore<T> = {
@@ -55,6 +55,13 @@ export const useCategoryFilmsModal = create<ModalStore<IGenre>>()((set) => ({
 }));
 
 export const useDeleteCategory = create<ModalStore<IGenre>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+
+export const useDeleteNews = create<ModalStore<INews>>()((set) => ({
   open: false,
   setOpen: (open) => set({ open }),
   data: null,

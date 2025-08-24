@@ -28,12 +28,9 @@ import {
   useCategoryFilmsModal,
   useCategoryModal,
   useDeleteCategory,
-  useDeleteGenre,
-  useGenreFilmsModal,
-  useGenreModal,
 } from "@/hooks/use-modals";
 import type { ICategory, IGenre } from "@/types";
-import { Edit, Film, MoreVertical, Settings, Trash2 } from "lucide-react";
+import { Edit, Film, MoreVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface Props {

@@ -20,14 +20,16 @@ import z from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Save, Upload, X } from "lucide-react";
+import { Loader2, Save, Trash2, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { TagsInput } from "@/components/ui/tags-input";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface NewsFormProps {
   initialData?: INews | null;
@@ -35,9 +37,12 @@ interface NewsFormProps {
 
 export default function NewsForm({ initialData }: NewsFormProps) {
   const [isImageRemoved, setIsImageRemoved] = useState(false);
+  const [hasExpireAt, setHasExpireAt] = useState(
+    initialData?.expireAt ? true : false
+  );
+  const router = useRouter();
   const [imagePreview, setImagePreview] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
-  console.log(initialData);
 
   const form = useForm<z.infer<typeof newsSchema>>({
     resolver: zodResolver(newsSchema),
@@ -46,7 +51,7 @@ export default function NewsForm({ initialData }: NewsFormProps) {
       description: initialData ? initialData.description : "",
       content: initialData ? initialData.content : "",
       published: initialData ? initialData.published : false,
-      expireAt: "",
+      // expireAt: initialData?.expireAt ? new Date(initialData.expireAt) : null,
       tags: initialData ? initialData.tags : [],
     },
     mode: "onSubmit",
@@ -77,7 +82,10 @@ export default function NewsForm({ initialData }: NewsFormProps) {
       }
     },
     onSuccess: (res) => {
-      console.log(res);
+      if (res.success) {
+        toast.success("Maqola muvaffaqiyatli yaratildi");
+        router.push("/dashboard/news");
+      }
     },
   });
 
@@ -93,6 +101,7 @@ export default function NewsForm({ initialData }: NewsFormProps) {
 
         const { data: res } = await api.put(`/news/${initialData?._id}`, {
           ...values,
+          expireAt: hasExpireAt ? values.expireAt : null,
           image: { url: uploadedImage.url, name: uploadedImage.fileName },
         });
         return res;
@@ -105,22 +114,30 @@ export default function NewsForm({ initialData }: NewsFormProps) {
 
         const { data: res } = await api.put(`/news/${initialData?._id}`, {
           ...values,
+          expireAt: hasExpireAt ? values.expireAt : null,
           image: null,
         });
         return res;
       }
 
-      const { data: res } = await api.put(`/news/${initialData?._id}`, values);
+      const { data: res } = await api.put(`/news/${initialData?._id}`, {
+        ...values,
+        expireAt: hasExpireAt ? values.expireAt : null,
+      });
       return res;
     },
     onSuccess: (res) => {
-      console.log(res);
+      if (res.success) {
+        toast.success("Maqola muvaffaqiyatli yangilandi");
+        router.push("/dashboard/news");
+      }
     },
   });
 
   function handleSubmit(values: z.infer<typeof newsSchema>) {
     if (initialData) {
       updateMutation.mutate(values as INews);
+      console.log(values);
     } else {
       createMutation.mutate(values as INews);
     }
@@ -133,9 +150,6 @@ export default function NewsForm({ initialData }: NewsFormProps) {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Article Content</CardTitle>
-              </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
@@ -145,6 +159,9 @@ export default function NewsForm({ initialData }: NewsFormProps) {
                       <FormLabel>Sarvlaha *</FormLabel>
                       <FormControl>
                         <Input
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
                           placeholder="Maqola sarvlahasini kiritng"
                           {...field}
                         />
@@ -161,6 +178,9 @@ export default function NewsForm({ initialData }: NewsFormProps) {
                       <FormLabel>Tavsif *</FormLabel>
                       <FormControl>
                         <Textarea
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
                           placeholder="Maqola tavsifini kiriting"
                           rows={3}
                           {...field}
@@ -178,6 +198,9 @@ export default function NewsForm({ initialData }: NewsFormProps) {
                       <FormLabel>Mazmuni *</FormLabel>
                       <FormControl>
                         <Textarea
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
                           placeholder="Maqola mazmunini kiriting"
                           rows={10}
                           {...field}
@@ -194,11 +217,14 @@ export default function NewsForm({ initialData }: NewsFormProps) {
                     <FormItem>
                       <FormLabel>Teglar *</FormLabel>
                       <FormControl>
-                        <TagsInput
-                          value={field.value}
-                          onValueChange={field.onChange}
-                          placeholder="Enter your tags"
-                        />
+                        {!updateMutation.isPending &&
+                          !createMutation.isPending && (
+                            <TagsInput
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              placeholder="Enter your tags"
+                            />
+                          )}
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -268,6 +294,9 @@ export default function NewsForm({ initialData }: NewsFormProps) {
                         type="file"
                         className="hidden"
                         accept="image/*"
+                        disabled={
+                          updateMutation.isPending || createMutation.isPending
+                        }
                         onChange={handleImageChange}
                       />
                     </label>
@@ -282,27 +311,64 @@ export default function NewsForm({ initialData }: NewsFormProps) {
             {/* Publish Settings */}
             <Card>
               <CardHeader>
-                <CardTitle>Publish Settings</CardTitle>
+                <CardTitle>{"Qo'chimcha"} sozlamalar</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <FormField
-                    control={form.control}
-                    name="published"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nashr etish</FormLabel>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="published"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center justify-between">
+                      <FormLabel>Nashr etish</FormLabel>
+                      <FormControl>
+                        <Switch
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* <FormField
+                  control={form.control}
+                  name="expireAt"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col w-full gap-2">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>{"O'chib"} ketish vaqti</FormLabel>
+                        <Switch
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
+                          checked={hasExpireAt}
+                          onCheckedChange={setHasExpireAt}
+                        />
+                      </div>
+
+                      {hasExpireAt && (
+                        <SmartDatetimeInput
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          placeholder="e.g. Tomorrow morning 9am"
+                          disabled={
+                            updateMutation.isPending || createMutation.isPending
+                          }
+                          futureOnly
+                        />
+                      )}
+
+                      <FormDescription>
+                        Agar qanchadir vaqtdan keyin avtomatik {"o'chib"}{" "}
+                        ketishini xoxlasangiz, bu maydonga vaqt kiriting.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
               </CardContent>
             </Card>
 
@@ -310,19 +376,52 @@ export default function NewsForm({ initialData }: NewsFormProps) {
             <Card>
               <CardContent className="pt-6">
                 <div className="space-y-2">
-                  <Button type="submit" className="w-full">
+                  <Button
+                    disabled={
+                      updateMutation.isPending || createMutation.isPending
+                    }
+                    type="submit"
+                    className="w-full"
+                  >
                     <Save className="mr-2 h-4 w-4" />
                     {initialData ? "Maqolani yangilash" : "Maqola yaratish"}
+                    {(updateMutation.isPending || createMutation.isPending) && (
+                      <Loader2 className="animate-spin" />
+                    )}
                   </Button>
-                  <Link href="/news" className="block">
+                  {initialData && (
                     <Button
+                      type="button"
+                      variant="destructive"
+                      className="w-full"
+                      disabled={
+                        updateMutation.isPending || createMutation.isPending
+                      }
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Maqolani {"o'chirish"}
+                    </Button>
+                  )}
+                  {updateMutation.isPending || createMutation.isPending ? (
+                    <Button
+                      disabled
                       type="button"
                       variant="outline"
                       className="w-full bg-transparent"
                     >
                       Cancel
                     </Button>
-                  </Link>
+                  ) : (
+                    <Link href="/dashboard/news" className="block">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full bg-transparent"
+                      >
+                        Cancel
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -49,16 +49,23 @@ export interface IFilm {
   updatedAt: Date;
 }
 
+export interface PaginationType {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface INews {
   _id: string;
   title: string;
   slug: string;
   content: string;
   description: string;
-  image?: ImageType;
+  image: ImageType | null;
   tags?: string[];
   published: boolean;
-  expireAt?: string;
+  expireAt?: Date | null;
   createdAt: string;
   updatedAt: string;
 }
