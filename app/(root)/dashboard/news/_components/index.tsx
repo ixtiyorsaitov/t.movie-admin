@@ -39,6 +39,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { getPageNumbers } from "@/lib/utils";
+import { format } from "date-fns";
 
 const getSearchedData = async (
   searchTerm: string,
@@ -129,7 +130,7 @@ const NewsPage = ({
           />
         </div>
         <Button variant="outline" className="">
-          Jami: {currentDatas.length}
+          Jami: {defaultPagination.total}
         </Button>
       </div>
       <div className="w-full rounded-lg border bg-card min-h-[200px]">
@@ -139,6 +140,7 @@ const NewsPage = ({
               <TableHead className="font-semibold w-[50px]">Rasm</TableHead>
               <TableHead className="font-semibold">Sarvlaha</TableHead>
               <TableHead className="font-semibold">Tavsif</TableHead>
+              <TableHead className="font-semibold">Yaratilgan sana</TableHead>
               <TableHead className="font-semibold">Nashr</TableHead>
               <TableHead className="w-24 text-center font-semibold" />
             </TableRow>
@@ -184,6 +186,9 @@ const NewsPage = ({
                     <p className="max-w-[300px] overflow-hidden text-ellipsis whitespace-nowrap">
                       {data.description}
                     </p>
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(data.createdAt), "dd.MM.yyyy")}
                   </TableCell>
                   <TableCell className="font-medium ">
                     {data.published ? (

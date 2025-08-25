@@ -22,8 +22,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { deleteSchema, categorySchema } from "@/lib/validation";
 import { Label } from "../ui/label";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "sonner";
 import { Eye, Film, Loader2, Trash2 } from "lucide-react";
 import {
@@ -41,6 +39,12 @@ import {
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
+import {
+  useCreateCategory,
+  useDeleteCategoryMutation,
+  useGetCategoryFilms,
+  useUpdateCategory,
+} from "@/hooks/useCategory";
 
 interface Props {
   setDatas: Dispatch<SetStateAction<ICategory[]>>;
@@ -62,52 +66,45 @@ const CategoryModal = ({ setDatas }: Props) => {
     }
   }, [categoryModal.data]);
 
-  const addMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof categorySchema>) => {
-      const { data: response } = await axios.post("/api/category", values);
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setDatas((prev) => [...prev, response.data]);
-        toast.success("Kategoriya muvaffaqiyatli qo'shildi!");
-        form.reset();
-        categoryModal.setData(null);
-        categoryModal.setOpen(false);
-      } else {
-        toast.error(response.error || "Kategoriya qo'shishda xatolik");
-      }
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof categorySchema>) => {
-      const { data: response } = await axios.put(
-        `/api/category/${categoryModal.data?._id}`,
-        values
-      );
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setDatas((prev) =>
-          prev.map((c) => (c._id === response.data._id ? response.data : c))
-        );
-        toast.success("Kategoriya muvaffaqiyatli yangilandi!");
-        categoryModal.setData(null);
-        categoryModal.setOpen(false);
-        form.reset();
-      } else {
-        toast.error(response.error || "Kategoriya yangilashda xatolik");
-      }
-    },
-  });
+  const createMutation = useCreateCategory();
+  const updateMutation = useUpdateCategory();
 
   function onSubmit(values: z.infer<typeof categorySchema>) {
     if (categoryModal.data) {
-      updateMutation.mutate(values);
+      updateMutation.mutate(
+        { values, categoryId: categoryModal.data._id },
+        {
+          onSuccess: (response) => {
+            if (response.success) {
+              setDatas((prev) =>
+                prev.map((c) =>
+                  c._id === response.data._id ? response.data : c
+                )
+              );
+              toast.success("Kategoriya muvaffaqiyatli yangilandi!");
+              categoryModal.setData(null);
+              categoryModal.setOpen(false);
+              form.reset();
+            } else {
+              toast.error(response.error || "Kategoriya yangilashda xatolik");
+            }
+          },
+        }
+      );
     } else {
-      addMutation.mutate(values);
+      createMutation.mutate(values, {
+        onSuccess: (response) => {
+          if (response.success) {
+            setDatas((prev) => [...prev, response.data]);
+            toast.success("Kategoriya muvaffaqiyatli qo'shildi!");
+            form.reset();
+            categoryModal.setData(null);
+            categoryModal.setOpen(false);
+          } else {
+            toast.error(response.error || "Kategoriya qo'shishda xatolik");
+          }
+        },
+      });
     }
   }
 
@@ -139,7 +136,7 @@ const CategoryModal = ({ setDatas }: Props) => {
                   <FormControl>
                     <Input
                       disabled={
-                        addMutation.isPending || updateMutation.isPending
+                        createMutation.isPending || updateMutation.isPending
                       }
                       autoComplete="off"
                       placeholder="Kategoriya nomi..."
@@ -157,7 +154,7 @@ const CategoryModal = ({ setDatas }: Props) => {
                   categoryModal.setData(null);
                   categoryModal.setOpen(false);
                 }}
-                disabled={addMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending}
                 type="button"
               >
                 Bekor qilish
@@ -192,30 +189,26 @@ export function CategoryDeleteModal({
     }
   }, [open]);
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const { data: response } = await axios.delete(
-        `/api/category/${data?._id}`
-      );
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setList((prev) => prev.filter((c) => c._id !== data?._id));
-        setData(null);
-        toast.success("Kategoriya o'chirildi");
-        setOpen(false);
-        form.reset();
-      } else {
-        toast.error(
-          response.error || "Kategoriya o'chirishda xatolik yuz berdi"
-        );
-      }
-    },
-  });
+  const deleteMutation = useDeleteCategoryMutation();
 
   function onSubmit() {
-    deleteMutation.mutate();
+    if (data?._id) {
+      deleteMutation.mutate(data?._id, {
+        onSuccess: (response) => {
+          if (response.success) {
+            setList((prev) => prev.filter((c) => c._id !== data?._id));
+            setData(null);
+            toast.success("Kategoriya o'chirildi");
+            setOpen(false);
+            form.reset();
+          } else {
+            toast.error(
+              response.error || "Kategoriya o'chirishda xatolik yuz berdi"
+            );
+          }
+        },
+      });
+    }
   }
 
   return data ? (
@@ -291,16 +284,7 @@ export function CategoryDeleteModal({
 
 export function CategoryFilmsModal() {
   const modal = useCategoryFilmsModal();
-  const getDataQuery = useQuery({
-    queryKey: ["category-films", modal.data?._id],
-    queryFn: async () => {
-      const { data: response } = await axios.get(
-        `/api/category/${modal.data?._id}/films`
-      );
-      console.log(response);
-      return response;
-    },
-  });
+  const getDataQuery = useGetCategoryFilms(modal.data?._id);
 
   return (
     <Dialog open={modal.open} onOpenChange={modal.setOpen}>

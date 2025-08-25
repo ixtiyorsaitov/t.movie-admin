@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import { CacheTags } from "@/lib/utils";
 import Category from "@/models/category.model";
 import { ICategory } from "@/types";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -10,10 +12,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = body as ICategory;
     if (!data.name) {
-      return NextResponse.json({
-        success: false,
-        error: "Please enter the categorie's name",
-      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Please enter the categorie's name",
+        },
+        { status: 400 }
+      );
     }
     const slug = slugify(data.name, {
       lower: true,
@@ -24,7 +29,11 @@ export async function POST(req: NextRequest) {
       name: data.name,
       slug,
     });
-    return NextResponse.json({ success: true, data: newCategory });
+    revalidateTag(CacheTags.CATEGORIES);
+    return NextResponse.json(
+      { success: true, data: newCategory },
+      { status: 201 }
+    );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -38,11 +47,15 @@ export async function GET() {
   try {
     await connectToDatabase();
     const categories = await Category.find();
-    return NextResponse.json(categories);
+
+    return NextResponse.json(
+      { datas: categories, success: true },
+      { status: 200 }
+    );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { success: false, message: "Server error" },
+      { error: "Server xatoligi. Keyinroq urinib ko'ring" },
       { status: 500 }
     );
   }

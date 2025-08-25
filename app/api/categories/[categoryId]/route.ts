@@ -1,7 +1,9 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import { CacheTags } from "@/lib/utils";
 import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import { ICategory } from "@/types";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -33,6 +35,8 @@ export async function PUT(
       },
       { new: true }
     );
+    revalidateTag(CacheTags.CATEGORIES);
+    revalidateTag(`${CacheTags.CATEGORIES}-${categoryId}`);
     return NextResponse.json({ success: true, data: updatedGenre });
   } catch (error) {
     console.log(error);
@@ -64,7 +68,8 @@ export async function DELETE(
     );
 
     await Category.findByIdAndDelete(categoryId);
-
+    revalidateTag(CacheTags.CATEGORIES);
+    revalidateTag(`${CacheTags.CATEGORIES}-${categoryId}`);
     return NextResponse.json({
       success: true,
       message: "Category deleted and removed from films",

@@ -149,11 +149,15 @@ export interface ICategory {
   _id: string;
   name: string;
   slug: string;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface IGenre {
   _id: string;
   name: string;
   slug: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export enum BUCKETS {

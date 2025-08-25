@@ -10,6 +10,9 @@ export const CacheTags = {
   SLIDER: "slider",
   NEWS: "news",
   ANIME: "anime",
+  CATEGORIES: "categories",
+  GENRES: "genres",
+  CATEGORY_FILMS: "category-films",
 };
 
 export function formatFileSize(bytes: number): string {

@@ -41,6 +41,7 @@ export async function PUT(
         );
       }
       revalidateTag(CacheTags.SLIDER);
+      revalidateTag(`${CacheTags.SLIDER}-${sliderId}`);
 
       return NextResponse.json(
         { success: true, data: { ...slider.toObject(), film } },
@@ -72,6 +73,7 @@ export async function DELETE(
         );
       }
       revalidateTag(CacheTags.SLIDER);
+      revalidateTag(`${CacheTags.SLIDER}-${sliderId}`);
 
       return NextResponse.json(
         { success: true, message: "Slider deleted successfully", data: slider },

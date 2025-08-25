@@ -4,6 +4,7 @@ import React from "react";
 
 async function getSliderData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/slider`, {
+    cache: "force-cache",
     next: { tags: [CacheTags.SLIDER] },
   });
 
@@ -13,7 +14,6 @@ async function getSliderData() {
     return { error: "Failed to fetch slider data" };
   }
   const data = await res.json();
-  console.log(data);
 
   return data;
 }
