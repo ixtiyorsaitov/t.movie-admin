@@ -1,8 +1,8 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import { CacheTags, generateSlug } from "@/lib/utils";
-import Category from "@/models/category.model";
-import { ICategory } from "@/types";
+import Genre from "@/models/genre.model";
+import { IGenre } from "@/types";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -11,33 +11,32 @@ export async function POST(req: NextRequest) {
     try {
       await connectToDatabase();
       const body = await req.json();
-      const data = body as ICategory;
+      const data = body as IGenre;
       if (!data.name) {
         return NextResponse.json(
           {
-            error: "Iltimos kategoriya nomini kiriting",
+            error: "Iltimos janr nomini kiriting",
           },
           { status: 400 }
         );
       }
-
       const slug = generateSlug(data.name);
-      const existing = await Category.findOne({ slug });
+      const existing = await Genre.findOne({ slug });
       if (existing) {
         return NextResponse.json(
           {
-            error: "Bu kategoriya allaqachon mavjud.",
+            error: "Bu janr allaqachon mavjud.",
           },
           { status: 400 }
         );
       }
-      const newCategory = await Category.create({
+      const newGenre = await Genre.create({
         name: data.name,
         slug,
       });
-      revalidateTag(CacheTags.CATEGORIES);
+      revalidateTag(CacheTags.GENRES);
       return NextResponse.json(
-        { success: true, data: newCategory },
+        { success: true, data: newGenre },
         { status: 201 }
       );
     } catch (error) {
@@ -50,16 +49,13 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     await connectToDatabase();
-    const categories = await Category.find();
+    const genres = await Genre.find();
 
-    return NextResponse.json(
-      { datas: categories, success: true },
-      { status: 200 }
-    );
+    return NextResponse.json({ datas: genres, success: true }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Server xatoligi. Keyinroq urinib ko'ring" },
+      { success: false, message: "Server error" },
       { status: 500 }
     );
   }

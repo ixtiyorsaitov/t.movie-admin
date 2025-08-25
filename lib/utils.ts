@@ -1,5 +1,6 @@
 import { PaginationType } from "@/types";
 import { clsx, type ClassValue } from "clsx";
+import slugify from "slugify";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -13,8 +14,18 @@ export const CacheTags = {
   CATEGORIES: "categories",
   GENRES: "genres",
   CATEGORY_FILMS: "category-films",
+  GENRE_FILMS: "genre-films",
 };
 
+export function generateSlug(title: string) {
+  const onlyLettersAndNumbers = true;
+  const removeSpecialCharacters = /['".,!?]/g;
+  return slugify(title, {
+    lower: true,
+    strict: onlyLettersAndNumbers,
+    remove: removeSpecialCharacters,
+  });
+}
 export function formatFileSize(bytes: number): string {
   const kb = 1024;
   const mb = kb * 1024;

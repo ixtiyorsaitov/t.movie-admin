@@ -24,8 +24,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import { deleteSchema, genreSchema } from "@/lib/validation";
 import { Label } from "../ui/label";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "sonner";
 import { Eye, Film, Loader2, Trash2 } from "lucide-react";
 import {
@@ -41,9 +39,14 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { Badge, badgeVariants } from "../ui/badge";
+import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
+import {
+  useCreateGenre,
+  useDeleteGenreMutation,
+  useGetGenreFilms,
+  useUpdateGenre,
+} from "@/hooks/useGenre";
 
 interface Props {
   setDatas: Dispatch<SetStateAction<IGenre[]>>;
@@ -65,50 +68,43 @@ const GenreModal = ({ setDatas }: Props) => {
     }
   }, [genreModal.data]);
 
-  const addMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof genreSchema>) => {
-      const { data: response } = await axios.post("/api/genre", values);
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setDatas((prev) => [...prev, response.data]);
-        toast.success("Genre added successfully!");
-        form.reset();
-      } else {
-        toast.error(response.error || "Error adding genre");
-      }
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (values: z.infer<typeof genreSchema>) => {
-      const { data: response } = await axios.put(
-        `/api/genre/${genreModal.data?._id}`,
-        values
-      );
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setDatas((prev) =>
-          prev.map((c) => (c._id === response.data._id ? response.data : c))
-        );
-        toast.success("Genre updated successfully!");
-        genreModal.setOpen(false);
-
-        form.reset();
-      } else {
-        toast.error(response.error || "Error updating genre");
-      }
-    },
-  });
+  const createMutation = useCreateGenre();
+  const updateMutation = useUpdateGenre();
 
   function onSubmit(values: z.infer<typeof genreSchema>) {
     if (genreModal.data) {
-      updateMutation.mutate(values);
+      updateMutation.mutate(
+        { values, genreId: genreModal.data._id },
+        {
+          onSuccess: (response) => {
+            if (response.success) {
+              setDatas((prev) =>
+                prev.map((c) =>
+                  c._id === response.data._id ? response.data : c
+                )
+              );
+              toast.success("Janrni muvaffaqiyatli yangilandi!");
+              genreModal.setOpen(false);
+
+              form.reset();
+            } else {
+              toast.error(response.error || "Janrni yangilashda xatolik");
+            }
+          },
+        }
+      );
     } else {
-      addMutation.mutate(values);
+      createMutation.mutate(values, {
+        onSuccess: (response) => {
+          if (response.success) {
+            setDatas((prev) => [...prev, response.data]);
+            toast.success("Janr muvaffaqiyatli qo'shildi!");
+            form.reset();
+          } else {
+            toast.error(response.error || "Janr qo'shishda xatolik");
+          }
+        },
+      });
     }
   }
 
@@ -175,26 +171,26 @@ export function GenreDeleteModal({
     }
   }, [open]);
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const { data: response } = await axios.delete(`/api/genre/${data?._id}`);
-      return response;
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        setList((prev) => prev.filter((c) => c._id !== data?._id));
-        setData(null);
-        toast.success("Janr o'chirildi");
-        setOpen(false);
-        form.reset();
-      } else {
-        toast.error(response.error || "Janrni o'chirishda xatolik yuz berdi");
-      }
-    },
-  });
+  const deleteMutation = useDeleteGenreMutation();
 
   function onSubmit() {
-    deleteMutation.mutate();
+    if (data) {
+      deleteMutation.mutate(data?._id, {
+        onSuccess: (response) => {
+          if (response.success) {
+            setList((prev) => prev.filter((c) => c._id !== data?._id));
+            setData(null);
+            toast.success("Janr o'chirildi");
+            setOpen(false);
+            form.reset();
+          } else {
+            toast.error(
+              response.error || "Janrni o'chirishda xatolik yuz berdi"
+            );
+          }
+        },
+      });
+    }
   }
 
   return data ? (
@@ -270,15 +266,7 @@ export function GenreDeleteModal({
 
 export function GenreFilmsModal() {
   const modal = useGenreFilmsModal();
-  const getDataQuery = useQuery({
-    queryKey: ["genre-films", modal.data?._id],
-    queryFn: async () => {
-      const { data: response } = await axios.get(
-        `/api/genre/${modal.data?._id}/films`
-      );
-      return response;
-    },
-  });
+  const getDataQuery = useGetGenreFilms(modal.data?._id);
 
   return (
     <Dialog open={modal.open} onOpenChange={modal.setOpen}>
