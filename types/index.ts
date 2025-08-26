@@ -34,6 +34,10 @@ export interface IFilm {
   meta: {
     likes: number;
     watchList: number;
+    views: {
+      total: number;
+      unique: number;
+    };
   };
   slug: string;
   published: boolean;

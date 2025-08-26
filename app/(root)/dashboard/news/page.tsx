@@ -5,9 +5,9 @@ import { Heading } from "@/components/ui/heading";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-const limit = 1;
+const limit = 9;
 
-async function getSliderData() {
+async function getNewsData() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news?limit=${limit}`,
     {
@@ -24,7 +24,7 @@ async function getSliderData() {
 }
 
 const NewsServerPage = async () => {
-  const datas = await getSliderData();
+  const datas = await getNewsData();
 
   if (!datas?.success) return null;
 
@@ -34,7 +34,7 @@ const NewsServerPage = async () => {
         <Heading
           title="Yangiliklar"
           description="Yangiliklarni boshqarish (Server jadval funksiyalari orqali)"
-        ></Heading>
+        />
         <Link href={"/dashboard/news/create"} className={cn(buttonVariants())}>
           <Plus />
           {"Qo'shish"}

@@ -6,6 +6,7 @@ import "@/models/episode.model";
 import { IFilm } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
+import mongoose from "mongoose";
 
 export async function GET(
   req: NextRequest,
@@ -14,19 +15,20 @@ export async function GET(
   try {
     await connectToDatabase();
     const { filmId } = await params;
-
+    if (!mongoose.Types.ObjectId.isValid(filmId)) {
+      return NextResponse.json(
+        { error: "Film ID formati xato" },
+        { status: 400 }
+      );
+    }
     const film = await Film.findById(filmId).populate("genres seasons");
     if (!film) {
-      return NextResponse.json({ success: false, error: "Film not found" });
+      return NextResponse.json({ error: "Film topilmadi" });
     }
-    // return NextResponse.json(film ? film : null);
-    return NextResponse.json({ success: true, data: film });
+    return NextResponse.json({ success: true, data: film }, { status: 200 });
   } catch (error) {
     console.log(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
   }
 }
 export async function PUT(
@@ -41,7 +43,6 @@ export async function PUT(
     const body = await req.json();
     const datas = body as IFilm;
 
-    // Genrelarni to'g'ri yig'ish
     const genreDocs = await Promise.all(
       body.genres.map((g: string) => Genre.findById(g))
     );
@@ -50,7 +51,6 @@ export async function PUT(
       .filter((genre) => genre !== null)
       .map((genre) => genre!._id);
 
-    // Slug yaratish
     const slug = slugify(datas.title, {
       lower: true,
       strict: true,
@@ -91,17 +91,13 @@ export async function PUT(
 
     if (!updatedFilm) {
       return NextResponse.json({
-        error: "Film not found",
-        success: false,
+        error: "Film topilmadi",
       });
     }
 
     return NextResponse.json({ success: true, film: updatedFilm, form: datas });
   } catch (error) {
     console.log(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
   }
 }

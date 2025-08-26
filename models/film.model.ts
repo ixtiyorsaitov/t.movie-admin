@@ -13,6 +13,10 @@ const FilmSchema = new mongoose.Schema(
     meta: {
       likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       watchList: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      views: {
+        total: { type: Number, default: 0 },
+        unique: { type: Number, default: 0 },
+      },
     },
     slug: { type: String, required: true, unique: true },
     published: Boolean,

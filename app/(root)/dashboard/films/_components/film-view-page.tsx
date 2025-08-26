@@ -1,22 +1,9 @@
-import { notFound } from "next/navigation";
 import FilmForm from "./film-form";
+import { getFilmById } from "@/lib/api/films";
 
 type TProductViewPageProps = {
   filmId: string;
 };
-
-export async function getData(filmId: string) {
-  const req = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/film/${filmId}`,
-    {
-      cache: "no-store",
-      method: "GET",
-    }
-  );
-
-  const res = await req.json();
-  return res;
-}
 
 export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
   let film = null;
@@ -24,9 +11,9 @@ export default async function FilmViewPage({ filmId }: TProductViewPageProps) {
 
   if (filmId !== "new") {
     pageTitle = `Edit Product`;
-    const data = await getData(filmId);
+    const data = await getFilmById(filmId);
     if (!data.success) {
-      notFound();
+      throw new Error(data.error);
     }
     film = data.data;
   }

@@ -131,13 +131,38 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
-    const datas = await Film.find().populate("genres");
 
-    const filtered = datas.map((data) => {
-      const obj = data.toObject(); // <-- fix
+    const { searchParams } = new URL(req.url);
+
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const search = searchParams.get("search") || "";
+
+    const skip = (page - 1) * limit;
+
+    // Search query
+    const query = search
+      ? {
+          $or: [{ title: { $regex: search, $options: "i" } }],
+        }
+      : {};
+
+    // Count total
+    const total = await Film.countDocuments(query);
+
+    // Get films with pagination
+    const films = await Film.find(query)
+      .populate("genres")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Modify response (meta counts)
+    const filtered = films.map((data) => {
+      const obj = data.toObject();
       return {
         ...obj,
         meta: {
@@ -147,12 +172,18 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(filtered);
+    return NextResponse.json({
+      datas: filtered,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+      success: true,
+    });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    console.error("GET /films error:", error);
+    return NextResponse.json({ error: "Server xatoligi" }, { status: 500 });
   }
 }
