@@ -33,12 +33,8 @@ const FilmSchema = new mongoose.Schema(
     },
     genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "Genre" }],
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    seasons: {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Season" }],
-      default: [],
-      required: true,
-    },
-    video: {
+    episodes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Episode" }],
+    movie: {
       type: {
         url: { type: String },
         name: { type: String },
