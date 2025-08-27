@@ -30,13 +30,13 @@ import {
 } from "@/components/ui/table";
 import { getSearchedFilms } from "@/lib/api/films";
 import { cn, getPageNumbers } from "@/lib/utils";
-import { FilmType, IFilm, PaginationType } from "@/types";
+import { FilmType, PaginationType } from "@/types";
+import { IFilm } from "@/types/film";
 import { format } from "date-fns";
 import { debounce } from "lodash";
 import {
   Copy,
   Edit,
-  Eye,
   EyeIcon,
   MoreVertical,
   PlusIcon,
@@ -45,6 +45,7 @@ import {
   StarIcon,
   ThumbsUp,
   Trash2,
+  Tv,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -161,29 +162,35 @@ const FilmsPageMain = ({
                       {data.title}
                     </p>
                   </TableCell>
-                  <TableCell className="font-medium ">
+                  <TableCell className="font-medium">
                     {data.type === FilmType.SERIES ? "Serial" : "Kino"}
                   </TableCell>
-                  <TableCell className="font-medium flex items-center justify-start gap-3">
-                    <div className="flex items-center justify-start gap-1">
+                  <TableCell className="font-medium flex items-center justify-start gap-3 relative top-1.5">
+                    <div className="flex items-center gap-1">
                       {data.meta.views?.total || 0}
                       <EyeIcon size={20} />
                     </div>
-                    <div className="flex items-center justify-start gap-1">
+                    <div className="flex items-center gap-1">
                       {data.rating.avarage}/10
                       <StarIcon className="fill-primary" size={20} />
                     </div>
-                    <div className="flex items-center justify-start gap-1">
-                      {/* {data.meta.views} */}
+                    <div className="flex items-center gap-1">
                       {data.meta.likes}
                       <ThumbsUp size={17} />
                     </div>
                   </TableCell>
+
                   <TableCell>Ongoing</TableCell>
                   <TableCell className="space-x-2">
-                    {data.genres.slice(0, 2).map((genre) => (
-                      <Badge key={genre._id}>{genre.name}</Badge>
-                    ))}
+                    {data.genres.length === 0 ? (
+                      <div>Janrlar {"yo'q"}</div>
+                    ) : (
+                      data.genres
+                        .slice(0, 2)
+                        .map((genre) => (
+                          <Badge key={genre._id}>{genre.name}</Badge>
+                        ))
+                    )}
                     {data.genres.length > 2 && (
                       <Badge variant={"secondary"}>
                         +{data.genres.length - 2}
@@ -226,8 +233,10 @@ const FilmsPageMain = ({
                         </DropdownMenuItem>
                         <Link href={`/dashboard/films/${data._id}/control`}>
                           <DropdownMenuItem className="cursor-pointer">
-                            <Settings className="mr-2 h-4 w-4" />
-                            Boshqarish
+                            <Tv className="mr-2 h-4 w-4" />
+                            {data.type === FilmType.SERIES
+                              ? "Seriyalar"
+                              : "Kino"}
                           </DropdownMenuItem>
                         </Link>
                         <Link href={`/dashboard/films/${data._id}`}>

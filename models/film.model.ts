@@ -1,18 +1,24 @@
+import { FilmType } from "@/types";
+import { IFilm } from "@/types/film";
 import mongoose from "mongoose";
 
-const FilmSchema = new mongoose.Schema(
+const FilmSchema = new mongoose.Schema<IFilm>(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    type: { type: String, enum: ["series", "movie"], default: "series" },
+    type: {
+      type: String,
+      enum: [FilmType.SERIES, FilmType.MOVIE],
+      default: FilmType.SERIES,
+    },
     rating: {
       avarage: { type: Number, default: 0 },
       total: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
     },
     meta: {
-      likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-      watchList: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      likes: { type: Number, default: 0 },
+      watchList: { type: Number, default: 0 },
       views: {
         total: { type: Number, default: 0 },
         unique: { type: Number, default: 0 },
@@ -33,25 +39,13 @@ const FilmSchema = new mongoose.Schema(
     },
     genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "Genre" }],
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-    episodes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Episode" }],
-    movie: {
-      type: {
-        url: { type: String },
-        name: { type: String },
-        resolution: {
-          type: String,
-          enum: ["360p", "480p", "720p", "1080p", "4k"],
-          default: "720p",
-        },
-        size: String,
-        duration: String,
-      },
-      required: false,
-    },
+    episodes: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Episode", default: [] },
+    ],
   },
   { timestamps: true }
 );
 
-const Film = mongoose.models.Film || mongoose.model("Film", FilmSchema);
+const Film = mongoose.models.Film || mongoose.model<IFilm>("Film", FilmSchema);
 
 export default Film;

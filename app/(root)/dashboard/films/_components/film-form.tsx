@@ -3,7 +3,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { filmFormSchema } from "@/lib/validation";
-import { FilmType, type IFilm } from "@/types";
+import { FilmType } from "@/types";
 import {
   Form,
   FormControl,
@@ -36,7 +36,6 @@ import {
 import { ChevronDown, Loader } from "lucide-react";
 import MultiSelect from "@/components/ui/multi-select";
 import { useSelectGenre } from "@/hooks/use-select-genre";
-import { useFilmMutations } from "@/hooks/use-film-mutations";
 import type { FilmFormProps, LoadingStep } from "@/types/film-form.types";
 import type z from "zod";
 import { createImagePreviewUrl } from "@/lib/supabase-utils";
@@ -45,6 +44,7 @@ import { CreationLoadingModal } from "@/components/modals/loading-modals/creatio
 import { ImageUploadField } from "@/components/form-fields/image-upload-field";
 import { useCreateFilmMutation, useUpdateFilmMutation } from "@/hooks/useFilms";
 import { toast } from "sonner";
+import { IFilm } from "@/types/film";
 
 const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   // State management
@@ -100,18 +100,6 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
     setBackgroundFile(null);
     setCardFile(null);
   }, []);
-
-  // Mutations
-  const { isLoading } = useFilmMutations({
-    initialData: initialDataState,
-    selectedGenres,
-    backgroundFile,
-    cardFile,
-    setCreatingStep,
-    setUpdatingStep,
-    onCreateSuccess: handleCreateSuccess,
-    onUpdateSuccess: handleUpdateSuccess,
-  });
 
   const createMutation = useCreateFilmMutation({
     backgroundFile,
@@ -225,7 +213,9 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                   previewUrl={backgroundPreviewUrl}
                   onFileChange={handleBackgroundFileChange}
                   onRemove={removeBackgroundImage}
-                  isLoading={isLoading}
+                  isLoading={
+                    createMutation.isPending || updateMutation.isPending
+                  }
                   className="lg:col-span-2"
                   aspectRatio="h-[300px] sm:h-[400px] lg:h-[500px]"
                   inputId="uploadbg"
@@ -237,7 +227,9 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                   previewUrl={cardPreviewUrl}
                   onFileChange={handleCardFileChange}
                   onRemove={removeCardImage}
-                  isLoading={isLoading}
+                  isLoading={
+                    createMutation.isPending || updateMutation.isPending
+                  }
                   className="lg:col-span-1"
                   aspectRatio="aspect-[2/3] max-w-[300px] mx-auto lg:mx-0"
                   inputId="uploadcard"
@@ -258,8 +250,11 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            disabled={isLoading}
-                            placeholder="Enter film title..."
+                            disabled={
+                              createMutation.isPending ||
+                              updateMutation.isPending
+                            }
+                            placeholder="Film nomini kiriting..."
                             className="h-11"
                             {...field}
                           />
@@ -280,7 +275,9 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          disabled={isLoading}
+                          disabled={
+                            createMutation.isPending || updateMutation.isPending
+                          }
                         >
                           <FormControl>
                             <SelectTrigger className="h-11 w-full">
@@ -303,7 +300,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                     <FormLabel className="text-base font-semibold">
                       Janrlar
                     </FormLabel>
-                    {!isLoading && (
+                    {!createMutation.isPending && !updateMutation.isPending && (
                       <Dialog
                         open={selectGenreModal.open}
                         onOpenChange={selectGenreModal.setOpen}
@@ -313,7 +310,10 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                             type="button"
                             variant="outline"
                             className="w-full h-11 flex items-center justify-between bg-transparent"
-                            disabled={isLoading}
+                            disabled={
+                              createMutation.isPending ||
+                              updateMutation.isPending
+                            }
                           >
                             <span>
                               {selectedGenres.length > 0
@@ -352,8 +352,11 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         </FormLabel>
                         <FormControl>
                           <Textarea
-                            disabled={isLoading}
-                            placeholder="Enter film description..."
+                            disabled={
+                              createMutation.isPending ||
+                              updateMutation.isPending
+                            }
+                            placeholder="Film tavsifini kiriting..."
                             className="min-h-[120px] resize-none"
                             {...field}
                           />
@@ -379,7 +382,10 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         </div>
                         <FormControl>
                           <Switch
-                            disabled={isLoading}
+                            disabled={
+                              createMutation.isPending ||
+                              updateMutation.isPending
+                            }
                             checked={field.value}
                             onCheckedChange={field.onChange}
                           />
@@ -395,9 +401,11 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                 <Button
                   type="submit"
                   className="w-full h-12 text-base font-semibold"
-                  disabled={isLoading}
+                  disabled={
+                    createMutation.isPending || updateMutation.isPending
+                  }
                 >
-                  {isLoading && (
+                  {(createMutation.isPending || updateMutation.isPending) && (
                     <Loader className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   {initialData ? "Filmni yangilash" : "Filmni yaratish"}

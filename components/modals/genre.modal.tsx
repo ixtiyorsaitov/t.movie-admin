@@ -8,7 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { IFilm, IGenre } from "@/types";
+import { IGenre } from "@/types";
+import { IFilm } from "@/types/film";
 import {
   Form,
   FormControl,

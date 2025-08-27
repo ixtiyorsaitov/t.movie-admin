@@ -1,9 +1,8 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
-import "@/models/season.model";
 import "@/models/episode.model";
-import { IFilm } from "@/types";
+import { IFilm } from "@/types/film";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { CacheTags, generateSlug } from "@/lib/utils";
@@ -22,7 +21,7 @@ export async function GET(
         { status: 400 }
       );
     }
-    const film = await Film.findById(filmId).populate("genres seasons");
+    const film = await Film.findById(filmId).populate("genres");
     if (!film) {
       return NextResponse.json({ error: "Film topilmadi" });
     }
@@ -59,18 +58,8 @@ export async function PUT(
         title: datas.title,
         slug,
         description: datas.description,
-        type: datas.type,
         published: datas.published,
         genres: sortedGenres,
-        rating: {
-          avarage: datas.rating.avarage,
-          total: datas.rating.total,
-          count: datas.rating.count,
-        },
-        meta: {
-          likes: datas.meta.likes,
-          watchList: datas.meta.watchList,
-        },
         images: {
           image: {
             url: datas.images.image.url,

@@ -1,3 +1,5 @@
+import { IFilm } from "./film";
+
 export enum FilmType {
   SERIES = "series",
   MOVIE = "movie",
@@ -20,35 +22,13 @@ export interface IError extends Error {
   response: { data: { message: string } };
 }
 
-export interface IFilm {
+export interface IEpisode {
   _id: string;
   title: string;
   description: string;
-  type: FilmType;
-  category: ICategory;
-  rating: {
-    avarage: number;
-    total: number;
-    count: number;
-  };
-  meta: {
-    likes: number;
-    watchList: number;
-    views: {
-      total: number;
-      unique: number;
-    };
-  };
-  slug: string;
-  published: boolean;
-  images: {
-    image: ImageType;
-    additionImages?: ImageType[];
-    backgroundImage: ImageType;
-  };
   video: IVideo;
-  genres: IGenre[];
-  seasons: ISeason[];
+  season: string;
+  episodeNumber: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,26 +59,6 @@ export interface ISlider {
   _id: string;
 }
 
-export interface ISeason {
-  _id: string;
-  seasonNumber: number;
-  title: string;
-  description: string;
-  episodes: IEpisode[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-export interface IEpisode {
-  _id: string;
-  title: string;
-  description: string;
-  video: IVideo;
-  season: string;
-  episodeNumber: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
 export interface IVideo {
   _id: string;
   url: string;
@@ -108,7 +68,7 @@ export interface IVideo {
   duration: string;
 }
 
-type ImageType = {
+export type ImageType = {
   url: string;
   name: string;
 };
@@ -167,7 +127,6 @@ export interface IGenre {
 export enum BUCKETS {
   BACKGROUNDS = "backgrounds",
   IMAGES = "images",
-  MOVIES = "movies",
-  SERIES = "series",
+  EPISODES = "episodes",
   NEWS = "news",
 }

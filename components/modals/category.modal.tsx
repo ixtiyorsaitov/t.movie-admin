@@ -7,7 +7,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
-import { IFilm, ICategory } from "@/types";
+import { ICategory } from "@/types";
 import {
   Form,
   FormControl,
@@ -45,6 +45,7 @@ import {
   useGetCategoryFilms,
   useUpdateCategory,
 } from "@/hooks/useCategory";
+import { IFilm } from "@/types/film";
 
 interface Props {
   setDatas: Dispatch<SetStateAction<ICategory[]>>;

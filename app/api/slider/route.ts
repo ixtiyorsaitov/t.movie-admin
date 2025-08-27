@@ -4,7 +4,7 @@ import { CacheTags } from "@/lib/utils";
 import Film from "@/models/film.model";
 import "@/models/genre.model";
 import Slider from "@/models/slider.model";
-import { IFilm } from "@/types";
+import { IFilm } from "@/types/film";
 import mongoose from "mongoose";
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";

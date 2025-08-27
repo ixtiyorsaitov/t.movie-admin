@@ -3,12 +3,13 @@ import { Play, Plus } from "lucide-react";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import EpisodeForm from "./episode-form";
 import EpisodeCard, { EpisodeCardSkeleton } from "./episode-card";
-import { IEpisode, IFilm, ISeason } from "@/types";
+import { IEpisode, ISeason } from "@/types";
 import axios from "axios";
 import { toast } from "sonner";
 import { EpisodeDeleteModal } from "@/components/modals/episode.modal";
 import SeasonModal from "@/components/modals/season.modal";
 import DeleteSeasonModal from "@/components/modals/delete.season.modal";
+import { IFilm } from "@/types/film";
 
 const SelectedSeason = ({
   data,

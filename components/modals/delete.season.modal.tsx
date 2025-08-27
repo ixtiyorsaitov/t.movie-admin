@@ -17,12 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircleIcon, Loader2, Trash } from "lucide-react";
-import { BUCKETS, IEpisode, IFilm, ISeason } from "@/types";
+import { BUCKETS, IEpisode, ISeason } from "@/types";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { removeVideo } from "@/lib/supabase-utils";
 import axios from "axios";
 import { toast } from "sonner";
+import { IFilm } from "@/types/film";
 
 const DeleteSeasonModal = ({
   initialData,

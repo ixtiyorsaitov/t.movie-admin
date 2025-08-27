@@ -1,6 +1,7 @@
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
 import { filmFormSchema } from "@/lib/validation";
-import { BUCKETS, IFilm } from "@/types";
+import { BUCKETS } from "@/types";
+import { IFilm } from "@/types/film";
 import { LoadingStep } from "@/types/film-form.types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -19,36 +20,22 @@ export const useCreateFilmMutation = ({
 }) => {
   return useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      const { data: createdData } = await axios.post("/api/films", {
-        ...values,
-        genres: selectedGenres,
-      });
-
-      if (!createdData.success) {
-        setCreatingStep(null);
-        throw new Error(createdData.error);
-      }
-
-      setCreatingStep(2);
-
       // Step 2: Upload background image
+      setCreatingStep(1);
       const uploadBg = await uploadImage(backgroundFile!, BUCKETS.BACKGROUNDS);
       if (!uploadBg.success) {
         setCreatingStep(null);
         throw new Error("Background upload failed");
       }
-
+      setCreatingStep(2);
       // Step 3: Upload card image
       const uploadImg = await uploadImage(cardFile!, BUCKETS.IMAGES);
       if (!uploadImg.success) {
         setCreatingStep(null);
         throw new Error("Card image upload failed");
       }
-
       setCreatingStep(3);
-
-      // Final step: Update film with images
-      const finalFormData = {
+      const { data: createdData } = await axios.post("/api/films", {
         ...values,
         genres: selectedGenres,
         images: {
@@ -61,11 +48,14 @@ export const useCreateFilmMutation = ({
             url: uploadImg.url,
           },
         },
-      };
+      });
 
-      const { data: finalData } = await axios.put("/api/films", finalFormData);
+      if (!createdData.success) {
+        setCreatingStep(null);
+        throw new Error(createdData.error);
+      }
 
-      return finalData;
+      return createdData;
     },
     onError: (error) => {
       console.error("Create error:", error);

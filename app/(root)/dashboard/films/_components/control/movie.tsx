@@ -1,23 +1,24 @@
 "use client";
 
 import VideoPlayModal from "@/components/modals/video-play.modal";
-import { UploadProgressDialog } from "@/components/modals/upload-progress-dialog"; // New import
+import { UploadProgressDialog } from "@/components/modals/upload-progress-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { usePlayModal } from "@/hooks/use-play-modal";
 import { removeVideo, uploadVideo } from "@/lib/supabase-utils";
 import { cn, formatFileSize, getVideoDuration } from "@/lib/utils";
-import { BUCKETS, IFilm, IVideo } from "@/types"; // Assuming IFilm and IVideo are defined here
+import { BUCKETS } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { FileVideo, Film, Loader2, Play, Save, Upload } from "lucide-react";
 import React, { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { IFilm } from "@/types/film";
 
 const MovieControl = ({ data }: { data: IFilm }) => {
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [file, setFile] = useState<File | null>(null);
   const [currentData, setCurrentData] = useState<IFilm>(data);
-  const [uploadProgress, setUploadProgress] = useState(0); // New state for upload progress
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const hasVideoUrl = !!currentData.video?.url;
   const videoModal = usePlayModal();
