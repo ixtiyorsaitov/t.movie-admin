@@ -1,38 +1,24 @@
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import axios from "axios";
-import { BUCKETS, type IFilm } from "@/types";
-import type { LoadingStep } from "@/types/film-form.types";
-import type z from "zod";
-import type { filmFormSchema } from "@/lib/validation";
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
+import { filmFormSchema } from "@/lib/validation";
+import { BUCKETS, IFilm } from "@/types";
+import { LoadingStep } from "@/types/film-form.types";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import z from "zod";
 
-interface UseFilmMutationsProps {
-  initialData: IFilm | null;
-  selectedGenres: string[];
-  backgroundFile: File | null;
-  cardFile: File | null;
-  setCreatingStep: (step: LoadingStep) => void;
-  setUpdatingStep: (step: LoadingStep) => void;
-  onCreateSuccess: () => void;
-  onUpdateSuccess: (film: IFilm) => void;
-}
-
-export const useFilmMutations = ({
-  initialData,
+export const useCreateFilmMutation = ({
+  setCreatingStep,
   selectedGenres,
   backgroundFile,
   cardFile,
-  setCreatingStep,
-  setUpdatingStep,
-  onCreateSuccess,
-  onUpdateSuccess,
-}: UseFilmMutationsProps) => {
-  const createMutation = useMutation({
+}: {
+  setCreatingStep: (step: LoadingStep) => void;
+  selectedGenres: string[];
+  backgroundFile: File | null;
+  cardFile: File | null;
+}) => {
+  return useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      setCreatingStep(1);
-
-      // Step 1: Create film record
       const { data: createdData } = await axios.post("/api/films", {
         ...values,
         genres: selectedGenres,
@@ -40,7 +26,6 @@ export const useFilmMutations = ({
 
       if (!createdData.success) {
         setCreatingStep(null);
-        toast.error(createdData.error);
         throw new Error(createdData.error);
       }
 
@@ -50,7 +35,6 @@ export const useFilmMutations = ({
       const uploadBg = await uploadImage(backgroundFile!, BUCKETS.BACKGROUNDS);
       if (!uploadBg.success) {
         setCreatingStep(null);
-        toast.error("Something went wrong with upload background image");
         throw new Error("Background upload failed");
       }
 
@@ -58,7 +42,6 @@ export const useFilmMutations = ({
       const uploadImg = await uploadImage(cardFile!, BUCKETS.IMAGES);
       if (!uploadImg.success) {
         setCreatingStep(null);
-        toast.error("Something went wrong with upload image");
         throw new Error("Card image upload failed");
       }
 
@@ -82,16 +65,6 @@ export const useFilmMutations = ({
 
       const { data: finalData } = await axios.put("/api/films", finalFormData);
 
-      if (finalData.success) {
-        setCreatingStep("final");
-        toast.success("Film created successfully!");
-
-        setTimeout(() => {
-          setCreatingStep(null);
-          onCreateSuccess();
-        }, 2000);
-      }
-
       return finalData;
     },
     onError: (error) => {
@@ -99,10 +72,24 @@ export const useFilmMutations = ({
       setCreatingStep(null);
     },
   });
+};
 
-  const updateMutation = useMutation({
+export const useUpdateFilmMutation = ({
+  setUpdatingStep,
+  selectedGenres,
+  backgroundFile,
+  cardFile,
+  initialData,
+}: {
+  setUpdatingStep: (step: LoadingStep) => void;
+  selectedGenres: string[];
+  backgroundFile: File | null;
+  cardFile: File | null;
+  initialData: IFilm | null;
+}) => {
+  return useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
-      if (!initialData) throw new Error("No initial data for update");
+      if (!initialData) throw new Error("Tahrirlanayotgan film yo'q");
 
       setUpdatingStep(1);
 
@@ -133,7 +120,6 @@ export const useFilmMutations = ({
           backgroundImage.name = uploadedBg.fileName!;
         } else {
           setUpdatingStep(null);
-          toast.error("Error with upload background image");
           throw new Error("Background upload failed");
         }
       }
@@ -148,7 +134,6 @@ export const useFilmMutations = ({
           cardImage.name = uploadedImg.fileName!;
         } else {
           setUpdatingStep(null);
-          toast.error("Error with upload image");
           throw new Error("Card image upload failed");
         }
       }
@@ -171,20 +156,6 @@ export const useFilmMutations = ({
         formData
       );
 
-      if (data.success) {
-        setUpdatingStep("final");
-        toast.success("Film updated successfully!");
-
-        setTimeout(() => {
-          setUpdatingStep(null);
-          onUpdateSuccess(data.film);
-        }, 2000);
-      } else {
-        setUpdatingStep(null);
-        toast.error(data.error);
-        throw new Error(data.error);
-      }
-
       return data;
     },
     onError: (error) => {
@@ -192,10 +163,4 @@ export const useFilmMutations = ({
       setUpdatingStep(null);
     },
   });
-
-  return {
-    createMutation,
-    updateMutation,
-    isLoading: createMutation.isPending || updateMutation.isPending,
-  };
 };

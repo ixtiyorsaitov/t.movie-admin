@@ -5,8 +5,9 @@ import "@/models/season.model";
 import "@/models/episode.model";
 import { IFilm } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
-import slugify from "slugify";
 import mongoose from "mongoose";
+import { CacheTags, generateSlug } from "@/lib/utils";
+import { revalidateTag } from "next/cache";
 
 export async function GET(
   req: NextRequest,
@@ -51,11 +52,7 @@ export async function PUT(
       .filter((genre) => genre !== null)
       .map((genre) => genre!._id);
 
-    const slug = slugify(datas.title, {
-      lower: true,
-      strict: true,
-      remove: /['".,!?]/g,
-    });
+    const slug = generateSlug(datas.title);
     const updatedFilm = await Film.findByIdAndUpdate(
       filmId,
       {
@@ -94,6 +91,8 @@ export async function PUT(
         error: "Film topilmadi",
       });
     }
+    revalidateTag(CacheTags.ANIME);
+    revalidateTag(`${CacheTags.ANIME}-${filmId}`);
 
     return NextResponse.json({ success: true, film: updatedFilm, form: datas });
   } catch (error) {

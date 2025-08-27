@@ -23,7 +23,7 @@ export default async function Page(props: PageProps) {
   }
   return (
     <div className="flex-1 space-y-4">
-      <FilmForm initialData={film} pageTitle={pageTitle} />;
+      <FilmForm initialData={film} pageTitle={pageTitle} />
     </div>
   );
 }

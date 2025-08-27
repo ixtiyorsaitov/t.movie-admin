@@ -5,20 +5,20 @@ import type { LoadingModalProps, StepInfo } from "@/types/film-form.types";
 const steps: StepInfo[] = [
   {
     step: 1,
-    title: "Creating Film Record",
-    description: "Setting up your film in the database...",
+    title: "Filmni yaratish",
+    description: "Malumotlar bazasiga filmni yaratish...",
     icon: Database,
   },
   {
     step: 2,
-    title: "Uploading Background Image",
-    description: "Processing and uploading background image...",
+    title: "Rasmlarni yuklash",
+    description: "Muqova va slider uchun rasmlarni yuklash...",
     icon: Upload,
   },
   {
     step: 3,
-    title: "Uploading Card Image",
-    description: "Processing and uploading poster image...",
+    title: "Filmni saqlash",
+    description: "Filmni rasmlar bilan birga salqash...",
     icon: FileImage,
   },
 ];
@@ -35,9 +35,9 @@ export const CreationLoadingModal = ({
 
       <div className="relative bg-background border rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
         <div className="text-center mb-6">
-          <h3 className="text-lg font-semibold mb-2">Creating Your Film</h3>
+          <h3 className="text-lg font-semibold mb-2">Film yaratilyapti</h3>
           <p className="text-sm text-muted-foreground">
-            Please wait while we process your film...
+            Iltimos kuting, film yaratilish jarayonida
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export const CreationLoadingModal = ({
               </div>
               <div className="flex-1">
                 <p className="font-medium text-sm text-green-600 dark:text-green-400">
-                  Film Created Successfully!
+                  Film muvafaqqiyatli yaratildi
                 </p>
                 <p className="text-xs text-green-600/70 dark:text-green-400/70">
                   Your film has been created and is ready to use.

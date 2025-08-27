@@ -34,12 +34,14 @@ import { FilmType, IFilm, PaginationType } from "@/types";
 import { format } from "date-fns";
 import { debounce } from "lodash";
 import {
+  Copy,
   Edit,
   Eye,
   EyeIcon,
   MoreVertical,
   PlusIcon,
   Search,
+  Settings,
   StarIcon,
   ThumbsUp,
   Trash2,
@@ -212,6 +214,22 @@ const FilmsPageMain = ({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            navigator.clipboard.writeText(data._id);
+                            toast.success("ID nusxalandi");
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          ID ni nusxalash
+                        </DropdownMenuItem>
+                        <Link href={`/dashboard/films/${data._id}/control`}>
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Boshqarish
+                          </DropdownMenuItem>
+                        </Link>
                         <Link href={`/dashboard/films/${data._id}`}>
                           <DropdownMenuItem className="cursor-pointer">
                             <Edit className="mr-2 h-4 w-4" />

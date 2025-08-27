@@ -3,7 +3,6 @@
 import { X, Search } from "lucide-react";
 import { Button } from "./button";
 import { useSelectGenre } from "@/hooks/use-select-genre";
-import { GENRES } from "@/lib/constants";
 import { Checkbox } from "./checkbox";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -16,6 +15,8 @@ import {
 } from "react";
 import { IGenre } from "@/types";
 import axios from "axios";
+import { getGenres } from "@/lib/api/genres";
+import { toast } from "sonner";
 
 interface Props {
   selectedGenres: string[];
@@ -29,21 +30,25 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
   const [currentSelectedGenres, setCurrentSelectedGenres] = useState<string[]>([
     ...selectedGenres,
   ]);
-
-  // ✅ Genres fetch
-  const { data: genres, isLoading } = useQuery({
-    queryKey: ["genres"],
-    queryFn: async () => {
-      const { data } = await axios.get<IGenre[]>("/api/genre");
-
-      return data;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  const [genres, setGenres] = useState<IGenre[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  useEffect(() => {
+    const fetchGenres = async () => {
+      setIsLoading(true);
+      const result = await getGenres();
+      if (result.success) {
+        setGenres(result.datas);
+      } else {
+        toast.error("Janrlarni olishda xatolik");
+      }
+      setIsLoading(false);
+    };
+    fetchGenres();
+  }, []);
 
   const filteredGenres = useMemo(() => {
     if (!genres) return [];
-    return genres.filter((genre) =>
+    return genres.filter((genre: IGenre) =>
       genre.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, genres]);
@@ -74,7 +79,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
       <div className="bg-white dark:bg-secondary w-full max-w-2xl rounded-lg shadow-xl relative overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold">Select Genres</h2>
+          <h2 className="text-2xl font-bold">Janr tanlash</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -95,7 +100,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
                 ref={inputRef}
                 type="text"
                 className="w-full text-sm border-none outline-none"
-                placeholder="Type something to select genre"
+                placeholder="Janrni qidirish uchun"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 aria-label="Search genres"
@@ -115,7 +120,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredGenres.map((genre) => (
+              {filteredGenres.map((genre: IGenre) => (
                 <GenreItem
                   key={genre._id}
                   genre={genre}
@@ -128,7 +133,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
 
           {filteredGenres.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No genres found matching "{searchTerm}"</p>
+              <p>Bu kalitga oid janr topilmadi {`"${searchTerm}"`}</p>
             </div>
           )}
         </div>
@@ -136,7 +141,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t ">
           <Button variant="outline" onClick={onCancel} className="px-6">
-            Cancel
+            Bekor qilish
           </Button>
           <Button
             onClick={() => {
@@ -146,7 +151,7 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
             }}
             className="px-6"
           >
-            Apply Selection
+            Tasdiqlash
           </Button>
         </div>
       </div>

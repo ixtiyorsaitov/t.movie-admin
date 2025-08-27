@@ -1,7 +1,6 @@
 "use client";
 
 import SeasonModal from "@/components/modals/season.modal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { IFilm } from "@/types";
 import { Folder, Tv } from "lucide-react";

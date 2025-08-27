@@ -4,7 +4,7 @@ import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
-import { Loader2, MoreVertical, Plus, SaveIcon, Settings } from "lucide-react";
+import { Loader2, Plus, SaveIcon, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { IFilm, ISeason } from "@/types";
@@ -62,7 +62,7 @@ const SeasonModal = ({
     mutationFn: async (values: z.infer<typeof seasonSchema>) => {
       setLoading(true);
       const { data: response } = await axios.post(
-        `/api/film/${data._id}/control/season`,
+        `/api/films/${data._id}/control/season`,
         { ...values, number: Number(values.number) }
       );
       if (response.success) {
@@ -88,7 +88,7 @@ const SeasonModal = ({
     mutationFn: async (values: z.infer<typeof seasonSchema>) => {
       setLoading(true);
       const { data: response } = await axios.put(
-        `/api/film/${data._id}/control/season/${initialSeason?._id}`,
+        `/api/films/${data._id}/control/season/${initialSeason?._id}`,
         { ...values, number: Number(values.number) }
       );
       if (response.success) {

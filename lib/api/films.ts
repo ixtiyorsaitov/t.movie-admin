@@ -15,8 +15,8 @@ export async function getFilmById(filmId: string) {
   const req = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}`,
     {
-      cache: "no-store",
-      method: "GET",
+      cache: "force-cache",
+      next: { tags: [CacheTags.ANIME, `${CacheTags.ANIME}-${filmId}`] },
     }
   );
 

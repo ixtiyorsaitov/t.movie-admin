@@ -43,6 +43,8 @@ import { createImagePreviewUrl } from "@/lib/supabase-utils";
 import { UpdateLoadingModal } from "@/components/modals/loading-modals/update-loading-modal";
 import { CreationLoadingModal } from "@/components/modals/loading-modals/creation-loading-modal";
 import { ImageUploadField } from "@/components/form-fields/image-upload-field";
+import { useCreateFilmMutation, useUpdateFilmMutation } from "@/hooks/useFilms";
+import { toast } from "sonner";
 
 const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   // State management
@@ -100,7 +102,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   }, []);
 
   // Mutations
-  const { createMutation, updateMutation, isLoading } = useFilmMutations({
+  const { isLoading } = useFilmMutations({
     initialData: initialDataState,
     selectedGenres,
     backgroundFile,
@@ -109,6 +111,20 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
     setUpdatingStep,
     onCreateSuccess: handleCreateSuccess,
     onUpdateSuccess: handleUpdateSuccess,
+  });
+
+  const createMutation = useCreateFilmMutation({
+    backgroundFile,
+    cardFile,
+    setCreatingStep,
+    selectedGenres,
+  });
+  const updateMutation = useUpdateFilmMutation({
+    backgroundFile,
+    cardFile,
+    setUpdatingStep,
+    selectedGenres,
+    initialData,
   });
 
   // File handlers
@@ -142,9 +158,37 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
         if (!cardFile && !initialDataState) return;
 
         if (initialDataState) {
-          updateMutation.mutate(values);
+          updateMutation.mutate(values, {
+            onSuccess: (finalData) => {
+              if (finalData.success) {
+                setUpdatingStep("final");
+                toast.success("Film muvaffaqiyatli yangilandi!");
+
+                setTimeout(() => {
+                  setUpdatingStep(null);
+                  handleUpdateSuccess(finalData.film);
+                }, 2000);
+              } else {
+                setUpdatingStep(null);
+                toast.error(finalData.error);
+                throw new Error(finalData.error);
+              }
+            },
+          });
         } else {
-          createMutation.mutate(values);
+          createMutation.mutate(values, {
+            onSuccess: (finalData) => {
+              if (finalData.success) {
+                setCreatingStep("final");
+                toast.success("Film muvaffaqiyatli yaratildi!");
+
+                setTimeout(() => {
+                  setCreatingStep(null);
+                  handleCreateSuccess();
+                }, 2000);
+              }
+            },
+          });
         }
       } catch (error) {
         console.error("Submit error:", error);
@@ -176,8 +220,8 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
               {/* Images Section */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <ImageUploadField
-                  label="Background Image"
-                  description="Upload a high-quality background image for the film (recommended: 1920x1080px)"
+                  label="Slider rasmi"
+                  description="Orqa fon va slider uchun sifatliroq katta hajmdagi rasm yulang (tavsiya: 1920x1080px)"
                   previewUrl={backgroundPreviewUrl}
                   onFileChange={handleBackgroundFileChange}
                   onRemove={removeBackgroundImage}
@@ -188,8 +232,8 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                 />
 
                 <ImageUploadField
-                  label="Card Image"
-                  description="Upload the main poster image (recommended: 300x450px)"
+                  label="Muqova rasmi"
+                  description="Muqova uchun rasm yuklang (tavsiya: 300x450px)"
                   previewUrl={cardPreviewUrl}
                   onFileChange={handleCardFileChange}
                   onRemove={removeCardImage}
@@ -210,7 +254,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          Title
+                          Nomi
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -231,7 +275,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          Type
+                          Turi
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -240,16 +284,14 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         >
                           <FormControl>
                             <SelectTrigger className="h-11 w-full">
-                              <SelectValue placeholder="Select film type" />
+                              <SelectValue placeholder="Film turini belgilash" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value={FilmType.SERIES}>
-                              Series
+                              Serial
                             </SelectItem>
-                            <SelectItem value={FilmType.MOVIE}>
-                              Movie
-                            </SelectItem>
+                            <SelectItem value={FilmType.MOVIE}>Kino</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -259,7 +301,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
 
                   <div className="space-y-2">
                     <FormLabel className="text-base font-semibold">
-                      Genres
+                      Janrlar
                     </FormLabel>
                     {!isLoading && (
                       <Dialog
@@ -275,19 +317,17 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                           >
                             <span>
                               {selectedGenres.length > 0
-                                ? `${selectedGenres.length} genre${
-                                    selectedGenres.length > 1 ? "s" : ""
-                                  } selected`
-                                : "Select genres"}
+                                ? `${selectedGenres.length} ta janr tanlangan`
+                                : "Janrlarni tanlash"}
                             </span>
                             <ChevronDown className="h-4 w-4 opacity-50" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md">
                           <DialogHeader>
-                            <DialogTitle>Select Genres</DialogTitle>
+                            <DialogTitle>Janrni tanlash</DialogTitle>
                             <DialogDescription>
-                              Choose the genres that best describe this film.
+                              Filmni tasvirlab bera oladigan janrlarni tanlang
                             </DialogDescription>
                           </DialogHeader>
                           <MultiSelect
@@ -308,7 +348,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-base font-semibold">
-                          Description
+                          Tavsif
                         </FormLabel>
                         <FormControl>
                           <Textarea
@@ -330,10 +370,11 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-base font-semibold">
-                            Published
+                            Nashr etish
                           </FormLabel>
                           <FormDescription>
-                            Make this film visible to the public.
+                            {`Foydalanuvchilarga ko'rinishini xoxlasangiz buni
+                            yoqib qo'ying`}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -359,7 +400,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                   {isLoading && (
                     <Loader className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {initialData ? "Update Film" : "Create Film"}
+                  {initialData ? "Filmni yangilash" : "Filmni yaratish"}
                 </Button>
               </div>
             </form>

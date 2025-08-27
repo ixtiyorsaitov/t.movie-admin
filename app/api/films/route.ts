@@ -1,8 +1,10 @@
 import { connectToDatabase } from "@/lib/mongoose";
+import { CacheTags, generateSlug } from "@/lib/utils";
 import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
 import { IFilm } from "@/types";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 export async function POST(req: NextRequest) {
@@ -23,18 +25,16 @@ export async function POST(req: NextRequest) {
       .map((genre) => genre!._id);
 
     // Slug yaratish
-    const slug = slugify(datas.title, {
-      lower: true,
-      strict: true,
-      remove: /['".,!?]/g,
-    });
+    const slug = generateSlug(datas.title);
 
     const isAvailable = await Film.findOne({ slug });
     if (isAvailable) {
-      return NextResponse.json({
-        error: "This film already created",
-        success: false,
-      });
+      return NextResponse.json(
+        {
+          error: "Bu film allaqachon yaratilgan",
+        },
+        { status: 409 }
+      );
     }
 
     const newFilm = await Film.create({
@@ -48,11 +48,11 @@ export async function POST(req: NextRequest) {
       seasons: datas.type === "series" ? [] : undefined,
     });
 
-    return NextResponse.json({ success: true, film: newFilm });
+    return NextResponse.json({ success: true, film: newFilm }, { status: 201 });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
-      { success: false, message: "Server error" },
+      { success: false, message: "Server xatosi" },
       { status: 500 }
     );
   }
@@ -74,11 +74,7 @@ export async function PUT(req: NextRequest) {
       .map((genre) => genre!._id);
 
     // Slug yaratish
-    const slug = slugify(datas.title, {
-      lower: true,
-      strict: true,
-      remove: /['".,!?]/g,
-    });
+    const slug = generateSlug(datas.title);
 
     const editedFilm = await Film.findOneAndUpdate(
       { slug },
@@ -116,16 +112,15 @@ export async function PUT(req: NextRequest) {
 
     if (!editedFilm) {
       return NextResponse.json({
-        error: "Film not found",
-        success: false,
+        error: "Film topilmadi",
       });
     }
-
+    revalidateTag(CacheTags.ANIME);
     return NextResponse.json({ success: true, film: editedFilm });
   } catch (error) {
     console.log(error);
     return NextResponse.json(
-      { success: false, message: "Server error" },
+      { success: false, message: "Server xatosi" },
       { status: 500 }
     );
   }

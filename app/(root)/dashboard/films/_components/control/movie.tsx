@@ -88,7 +88,7 @@ const MovieControl = ({ data }: { data: IFilm }) => {
       setFile(null);
       setUploadProgress(0); // Reset progress on success
       const { data: response } = await axios.post(
-        `/api/film/${currentData._id}/control/movie`,
+        `/api/films/${currentData._id}/control/movie`,
         uploaded
       );
       console.log(response);
