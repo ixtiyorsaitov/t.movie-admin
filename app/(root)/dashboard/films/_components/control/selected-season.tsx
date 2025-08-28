@@ -58,33 +58,6 @@ const SelectedSeason = ({
   return (
     <>
       <div className="rounded-xl border p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">
-            Season {season.seasonNumber} Episodes {season.episodes.length}
-          </h3>
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              disabled={initialEpisodeData !== null && showEpisodeForm}
-              onClick={() => {
-                setInitialEpisodeData(null);
-                setShowEpisodeForm(!showEpisodeForm);
-              }}
-            >
-              <Plus className="w-4 h-4" />
-              <span className="sm:flex hidden">Add Episode</span>
-            </Button>
-            <SeasonModal data={data} setData={setData} initialSeason={season} />
-            {season && (
-              <DeleteSeasonModal
-                data={data}
-                setData={setData}
-                episodes={episodes}
-                initialData={season}
-                setInitialData={setSeason}
-              />
-            )}
-          </div>
-        </div>
         {showEpisodeForm && (
           <EpisodeForm
             initialEpisode={initialEpisodeData}

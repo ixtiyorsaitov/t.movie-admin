@@ -27,7 +27,7 @@ export interface IEpisode {
   title: string;
   description: string;
   video: IVideo;
-  season: string;
+  film: IFilm;
   episodeNumber: number;
   createdAt: Date;
   updatedAt: Date;

@@ -15,12 +15,8 @@ const EpisodeSchema = new mongoose.Schema(
       size: String,
       duration: String,
     },
+    film: { type: mongoose.Schema.Types.ObjectId, ref: "Film", required: true },
     episodeNumber: { type: Number, required: true },
-    season: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Season",
-      required: true,
-    },
   },
   { timestamps: true }
 );

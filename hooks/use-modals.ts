@@ -60,7 +60,6 @@ export const useDeleteCategory = create<ModalStore<IGenre>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
-
 export const useDeleteNews = create<ModalStore<INews>>()((set) => ({
   open: false,
   setOpen: (open) => set({ open }),
