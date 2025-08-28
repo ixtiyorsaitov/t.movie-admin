@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import Episode from "@/models/episode.model";
-import Season from "@/models/season.model";
+import Film from "@/models/film.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -15,16 +15,13 @@ export async function PUT(
       new: true,
     });
     if (!episode) {
-      return NextResponse.json({ success: false, error: "Episode not found" });
+      return NextResponse.json({ error: "Epizod topilmadi" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: episode });
+    return NextResponse.json({ success: true, data: episode }, { status: 200 });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    console.error("PUT error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 export async function DELETE(
@@ -34,30 +31,19 @@ export async function DELETE(
   try {
     await connectToDatabase();
 
-    const { episodeId } = await params;
+    const { episodeId, filmId } = await params;
 
     const deleted = await Episode.findByIdAndDelete(episodeId);
     if (!deleted) {
-      return NextResponse.json({ error: "Episode not found", success: false });
+      return NextResponse.json({ error: "Epizod topilmadi" }, { status: 404 });
     }
+    await Film.findByIdAndUpdate(filmId, {
+      $pull: { episodes: episodeId },
+    });
 
-    const season = await Season.findById(deleted.season);
-    if (!season) {
-      return NextResponse.json({ error: "Season not found", success: false });
-    }
-
-    // Remove episode from season.episodes array
-    season.episodes = season.episodes.filter(
-      (epId: string) => epId.toString() !== deleted._id.toString()
-    );
-    await season.save();
-
-    return NextResponse.json({ success: true, data: deleted });
+    return NextResponse.json({ success: true, data: deleted }, { status: 200 });
   } catch (error) {
     console.error("DELETE error:", error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Server xatosi" }, { status: 500 });
   }
 }

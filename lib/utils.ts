@@ -11,6 +11,7 @@ export const CacheTags = {
   SLIDER: "slider",
   NEWS: "news",
   ANIME: "anime",
+  EPISODES: "episodes",
   CATEGORIES: "categories",
   GENRES: "genres",
   CATEGORY_FILMS: "category-films",

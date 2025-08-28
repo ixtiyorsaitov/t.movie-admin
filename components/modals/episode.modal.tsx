@@ -17,7 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -26,21 +25,25 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { toast } from "sonner";
-import axios from "axios";
 import { removeVideo } from "@/lib/supabase-utils";
 import { BUCKETS, IEpisode } from "@/types";
 import { deleteSchema, episodeSchmea } from "@/lib/validation";
 import { Textarea } from "../ui/textarea";
 import { Label } from "../ui/label";
-import { useAddEpisode } from "@/hooks/useEpisode";
+import {
+  useAddEpisode,
+  useDeleteEpisodeMutation,
+  useUpdateEpisode,
+} from "@/hooks/useEpisode";
 
 export function DeleteEpisodeModal({
   setEpisodes,
+  filmId,
 }: {
+  filmId: string;
   setEpisodes: Dispatch<SetStateAction<IEpisode[]>>;
 }) {
   const { open, data, setOpen, setData } = useDeleteEpisode();
-  const [loading, setLoading] = useState<boolean>(false);
 
   // Initialize react-hook-form
   const form = useForm<z.infer<typeof deleteSchema>>({
@@ -49,6 +52,7 @@ export function DeleteEpisodeModal({
       confirmText: "",
     },
   });
+  const deleteMutation = useDeleteEpisodeMutation(filmId);
 
   // Reset form when the modal opens/closes
   useEffect(() => {
@@ -59,37 +63,29 @@ export function DeleteEpisodeModal({
   }, [open, setData, form]);
 
   const onSubmit = async () => {
-    // try {
-    //   setLoading(true);
-    //   const deletedVideo = await removeVideo(
-    //     [data?.video.name as string],
-    //     BUCKETS.SERIES
-    //   );
-    //   if (!deletedVideo.success) {
-    //     toast.error("ERROR", {
-    //       description: "Error with deleting video",
-    //     });
-    //   }
-    //   const { data: response } = await axios.delete(
-    //     `/api/film/filmId/control/episode/${data?._id}`
-    //   );
-    //   console.log(response);
-    //   if (response.success) {
-    //     setData(null);
-    //     setOpen(false);
-    //     toast.success("Success", {
-    //       description: "Season deleted successfuly!",
-    //     });
-    //     setEpisodes((prev) => prev.filter((c) => c._id !== response.data._id));
-    //   }
-    // } catch (error) {
-    //   toast.error("ERROR", {
-    //     description: "Something went wrong with deleting episode",
-    //   });
-    //   console.log(error);
-    // } finally {
-    //   setLoading(false);
-    // }
+    if (data) {
+      deleteMutation.mutate(
+        {
+          episodeId: data?._id,
+          videoName: data?.video.name,
+        },
+        {
+          onSuccess: (res) => {
+            console.log(res);
+
+            if (res.success) {
+              setEpisodes((prev) => prev.filter((d) => d._id !== data?._id));
+              form.reset();
+              setData(null);
+              setOpen(false);
+              toast.success("Epizod o'chirildi");
+            } else {
+              toast.error(res.error);
+            }
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -99,26 +95,12 @@ export function DeleteEpisodeModal({
         <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you absolutely sure you want to delete "{data.title}"?
+              Siz aniq bu epizod ni {"o'chirmoqchimisiz"} {`"${data.title}"`}?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              episode{" "}
-              <span className="font-medium text-foreground">
-                "{data.title}"
-              </span>{" "}
-              and remove its associated data from our servers.
+              Bu operatsiyani orqaga qaytarib {"bo'lmaydi"}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <Alert variant="destructive" className="mb-4">
-            <Trash2 className="h-4 w-4" />
-            <AlertTitle>Permanent Deletion Warning</AlertTitle>
-            <AlertDescription>
-              Deleting this episode is irreversible. All related content,
-              comments, and analytics will be lost forever. Please proceed with
-              caution.
-            </AlertDescription>
-          </Alert>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
@@ -128,7 +110,7 @@ export function DeleteEpisodeModal({
                   <FormItem>
                     <FormLabel>
                       Tasdiqlash uchun, pastga{" "}
-                      <span className="font-bold text-red-500">
+                      <span className="font-bold text-destructive">
                         {"'DELETE'"}
                       </span>
                       deb yozing:
@@ -136,8 +118,8 @@ export function DeleteEpisodeModal({
                     <FormControl>
                       <Input
                         autoComplete="off"
-                        disabled={loading}
-                        placeholder="Type delete"
+                        disabled={deleteMutation.isPending}
+                        placeholder="DELETE deb yozing"
                         {...field}
                       />
                     </FormControl>
@@ -147,23 +129,26 @@ export function DeleteEpisodeModal({
               <div className="w-full flex items-center justify-end gap-1">
                 <Button
                   variant={"secondary"}
-                  disabled={loading}
+                  disabled={deleteMutation.isPending}
                   type="button"
                   onClick={() => {
                     setData(null);
                     setOpen(false);
                   }}
                 >
-                  Cancel
+                  Bekor qilish
                 </Button>
                 <Button
-                  disabled={loading}
+                  disabled={deleteMutation.isPending}
                   type="submit"
-                  className="!bg-red-900"
                   variant={"destructive"}
                 >
-                  {loading ? <Loader2 className="animate-spin" /> : <Trash />}
-                  Submit
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Trash />
+                  )}
+                  {"O'chirish"}
                 </Button>
               </div>
             </form>
@@ -174,22 +159,65 @@ export function DeleteEpisodeModal({
   );
 }
 
-export const EpisodeModal = ({ filmId }: { filmId: string }) => {
-  const { open, setOpen, data } = useEpisodeModal();
+export const EpisodeModal = ({
+  filmId,
+  setDatas,
+}: {
+  filmId: string;
+  setDatas: Dispatch<SetStateAction<IEpisode[]>>;
+}) => {
+  const { open, setOpen, data, setData } = useEpisodeModal();
   const [videoFile, setVideoFile] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof episodeSchmea>>({
     resolver: zodResolver(episodeSchmea),
     defaultValues: {
-      title: data ? data.title : "",
-      description: data ? data.description : "",
-      episodeNumber: data ? String(data.episodeNumber) : "",
+      title: "",
+      description: "",
+      episodeNumber: "",
     },
   });
+
+  // data o'zgarganda formni yangilash
+  useEffect(() => {
+    if (data) {
+      form.reset({
+        title: data.title,
+        description: data.description,
+        episodeNumber: String(data.episodeNumber),
+      });
+    } else {
+      form.reset({
+        title: "",
+        description: "",
+        episodeNumber: "",
+      });
+    }
+  }, [data, form]);
+
   const addMutation = useAddEpisode({ filmId, videoFile });
+  const updateMutation = useUpdateEpisode({ filmId, videoFile });
   function onSubmit(values: z.infer<typeof episodeSchmea>) {
     if (data) {
-      // updateEpisodeMutation.mutate(values);
+      updateMutation.mutate(
+        { values, oldVideoName: data.video.name, episodeId: data._id },
+        {
+          onSuccess: (res) => {
+            if (res.success) {
+              setDatas((prev) =>
+                prev.map((d) => (d._id === res.data._id ? res.data : d))
+              );
+              toast.success("Epizod muvafaqqiyatli yangilandi!");
+              form.reset();
+              setData(null);
+              setOpen(false);
+              setVideoFile(null);
+            } else {
+              toast.error(res.error);
+            }
+          },
+        }
+      );
     } else {
       if (!videoFile) {
         return toast.error("Xatolik", {
@@ -199,9 +227,11 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
       addMutation.mutate(values, {
         onSuccess: (res) => {
           if (res.success) {
-            // setDatas((prev) => [...prev, response.data]);
+            setDatas((prev) => [res.data, ...prev]);
             toast.success("Epizod muvafaqqiyatli qo'shildi!");
             form.reset();
+            setData(null);
+            setOpen(false);
             setVideoFile(null);
           } else {
             toast.error(res.error);
@@ -213,6 +243,7 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogContent>
+        <AlertDialogTitle />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <h4 className="text-lg font-medium mb-4">
@@ -228,7 +259,11 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
                       <FormItem>
                         <FormLabel>Epizod raqami</FormLabel>
                         <FormControl>
-                          <Input disabled={false} type="number" {...field} />
+                          <Input
+                            disabled={addMutation.isPending}
+                            type="number"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -244,7 +279,7 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
                         <FormLabel>Epizod nomini</FormLabel>
                         <FormControl>
                           <Input
-                            disabled={false}
+                            disabled={addMutation.isPending}
                             placeholder="Epizod nomini kiriting..."
                             {...field}
                           />
@@ -264,7 +299,7 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
                       <FormLabel>Epizod tavsifi</FormLabel>
                       <FormControl>
                         <Textarea
-                          disabled={false}
+                          disabled={addMutation.isPending}
                           placeholder="Epizod tavsifini kiriting..."
                           rows={3}
                           {...field}
@@ -291,7 +326,7 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
                       </div>
                     )}
                   </div>
-                  {true && (
+                  {!addMutation.isPending && (
                     <input
                       type="file"
                       accept="video/*"
@@ -310,13 +345,22 @@ export const EpisodeModal = ({ filmId }: { filmId: string }) => {
               <div className="flex justify-end space-x-3 sm:flex-row flex-col-reverse">
                 <Button
                   className="sm:w-auto w-full"
-                  disabled={false}
+                  disabled={addMutation.isPending}
                   variant={"outline"}
+                  type="button"
+                  onClick={() => {
+                    setData(null);
+                    setOpen(false);
+                  }}
                 >
                   Bekor qilish
                 </Button>
-                <Button className="md:mb-0 mb-2" type="submit" disabled={false}>
-                  {false ? (
+                <Button
+                  className="md:mb-0 mb-2"
+                  type="submit"
+                  disabled={addMutation.isPending}
+                >
+                  {addMutation.isPending ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     <Save className="w-4 h-4" />
