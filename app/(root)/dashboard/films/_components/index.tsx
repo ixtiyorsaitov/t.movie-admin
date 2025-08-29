@@ -66,7 +66,6 @@ const FilmsPageMain = ({
     useState<PaginationType>(defaultPagination);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     setSearchTerm(e.target.value);
     if (e.target.value.trim() === "") {
       setCurrentDatas(datas);

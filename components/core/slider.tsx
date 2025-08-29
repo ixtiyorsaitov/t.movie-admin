@@ -41,7 +41,6 @@ export default function HeroSlider({
         error: string;
         data: ISlider;
       }>("/slider", { id });
-      console.log(res);
       return res;
     },
     onSuccess: (res) => {
@@ -70,7 +69,6 @@ export default function HeroSlider({
       sliderId: string;
     }) => {
       const { data: res } = await api.put(`/slider/${sliderId}`, { filmId });
-      console.log("updated", res);
 
       return res;
     },
@@ -98,7 +96,6 @@ export default function HeroSlider({
       const { data: res } = await api.delete(
         `/slider/${deleteSlider.data?._id}`
       );
-      console.log(res);
 
       return res;
     },
@@ -115,7 +112,6 @@ export default function HeroSlider({
   });
 
   const handleSubmit = (values: z.infer<typeof sliderSchema>) => {
-    console.log(values);
     if (sliderModal.data) {
       // Update mutation
       updateMutation.mutate({
@@ -221,8 +217,6 @@ function Slider({ slider }: { slider: ISlider | null }) {
         </p>
         <Button
           onClick={() => {
-            console.log(slider);
-
             sliderModal.setData(null);
             sliderModal.setOpen(true);
           }}

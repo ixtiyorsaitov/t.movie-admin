@@ -8,7 +8,6 @@ type PageProps = { params: Promise<{ filmId: string }> };
 const ControlPage = async ({ params }: PageProps) => {
   const { filmId } = await params;
   const data = await getEpisodes(filmId, limit);
-  console.log(data);
 
   if (!data.success) throw new Error(data.error);
 

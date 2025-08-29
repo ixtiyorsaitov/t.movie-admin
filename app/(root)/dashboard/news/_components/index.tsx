@@ -50,7 +50,6 @@ const getSearchedData = async (
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
-  console.log(data);
 
   return data;
 };
@@ -90,7 +89,6 @@ const NewsPage = ({
     },
   });
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     setSearchTerm(e.target.value);
     if (e.target.value.trim() === "") {
       setCurrentDatas(datas);

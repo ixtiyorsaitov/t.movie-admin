@@ -63,7 +63,6 @@ export async function POST(
       await connectToDatabase();
       const body = await req.json();
       const { filmId } = await params;
-      console.log(filmId);
 
       const film = await Film.findById(filmId);
 

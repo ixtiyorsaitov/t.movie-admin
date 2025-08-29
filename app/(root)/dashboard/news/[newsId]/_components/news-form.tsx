@@ -137,7 +137,6 @@ export default function NewsForm({ initialData }: NewsFormProps) {
   function handleSubmit(values: z.infer<typeof newsSchema>) {
     if (initialData) {
       updateMutation.mutate(values as INews);
-      console.log(values);
     } else {
       createMutation.mutate(values as INews);
     }

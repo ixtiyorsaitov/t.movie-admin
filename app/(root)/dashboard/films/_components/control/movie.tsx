@@ -92,7 +92,6 @@ const MovieControl = ({ data }: { data: IFilm }) => {
         `/api/films/${currentData._id}/control/movie`,
         uploaded
       );
-      console.log(response);
       if (response.success) {
         setCurrentData(response.data);
         toast.success("Uploaded successfully!");

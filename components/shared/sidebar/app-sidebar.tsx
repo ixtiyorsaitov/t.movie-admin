@@ -23,91 +23,15 @@ import {
   Bell,
   ChevronDown,
   ChevronsDown,
-  ClipboardList,
   CreditCard,
-  FilmIcon,
-  GalleryHorizontal,
-  Home,
-  Layers,
-  LayoutGrid,
   LogOut,
-  MessageSquare,
-  Newspaper,
-  Search,
-  Settings,
-  Star,
-  Tag,
   UserCircle,
-  Users,
 } from "lucide-react";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { IUser } from "@/types";
-
-// Menu items.
-const items = [
-  {
-    title: "Dashboard",
-    url: "/dashboard/overview",
-    icon: Home,
-  },
-  {
-    title: "Barcha filmlar",
-    url: "/dashboard/films",
-    icon: FilmIcon,
-  },
-  {
-    title: "Janrlar",
-    url: "/dashboard/genres",
-    icon: Layers,
-  },
-  {
-    title: "Kategoriyalar",
-    url: "/dashboard/categories",
-    icon: LayoutGrid,
-  },
-  {
-    title: "Sliderlar",
-    url: "/dashboard/sliders",
-    icon: GalleryHorizontal,
-  },
-  {
-    title: "Yangiliklar",
-    url: "/dashboard/news",
-    icon: Newspaper,
-  },
-  {
-    title: "Yo'riqnomalar",
-    icon: ClipboardList,
-    url: "/admin/annotations",
-  },
-  {
-    title: "Izohlar",
-    icon: MessageSquare,
-    url: "/admin/comments",
-  },
-  {
-    title: "Sharhlar",
-    icon: Star,
-    url: "/admin/reviews",
-  },
-  {
-    title: "Foydalanuvchilar",
-    icon: Users,
-    url: "/admin/users",
-  },
-  {
-    title: "Narxlar",
-    icon: Tag,
-    url: "/admin/prices",
-  },
-  {
-    title: "To'lovlar",
-    icon: CreditCard,
-    url: "/admin/payments",
-  },
-];
+import { sidebarItems } from "@/lib/constants";
 
 export function AppSidebar() {
   const { data: session } = useSession();
@@ -140,7 +64,7 @@ export function AppSidebar() {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link href={item.url}>

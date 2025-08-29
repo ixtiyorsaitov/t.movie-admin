@@ -18,7 +18,6 @@ export async function GET(
   try {
     await connectToDatabase();
     const { newsId } = await params;
-    console.log("api called");
 
     const news = await News.findById(newsId);
     if (!news) {

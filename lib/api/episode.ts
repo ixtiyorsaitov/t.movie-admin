@@ -7,7 +7,7 @@ export async function getEpisodes(filmId: string, limit: number) {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}/episodes?limit=${limit}`,
     {
-      // cache: "force-cache",
+      cache: "force-cache",
       next: {
         tags: [
           CacheTags.ANIME,

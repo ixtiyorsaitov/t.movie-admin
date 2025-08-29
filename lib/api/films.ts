@@ -4,7 +4,7 @@ export async function getFilms(limit: number) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films?limit=${limit}`,
     {
-      // cache: "force-cache",
+      cache: "force-cache",
       next: { tags: [CacheTags.ANIME] },
     }
   );
@@ -15,7 +15,7 @@ export async function getFilmById(filmId: string) {
   const req = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}`,
     {
-      // cache: "force-cache",
+      cache: "force-cache",
       next: { tags: [CacheTags.ANIME, `${CacheTags.ANIME}-${filmId}`] },
     }
   );

@@ -71,8 +71,6 @@ export function DeleteEpisodeModal({
         },
         {
           onSuccess: (res) => {
-            console.log(res);
-
             if (res.success) {
               setEpisodes((prev) => prev.filter((d) => d._id !== data?._id));
               form.reset();

@@ -12,7 +12,6 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     await connectToDatabase();
-    console.log("called api");
 
     const datas = await Slider.find().populate({
       path: "film",
