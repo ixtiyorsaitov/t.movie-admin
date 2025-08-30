@@ -82,6 +82,7 @@ export async function PUT(
     }
     revalidateTag(CacheTags.ANIME);
     revalidateTag(`${CacheTags.ANIME}-${filmId}`);
+    revalidateTag(CacheTags.SLIDER);
 
     return NextResponse.json({ success: true, film: updatedFilm, form: datas });
   } catch (error) {

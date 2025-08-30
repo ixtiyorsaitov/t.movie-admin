@@ -45,7 +45,7 @@ export const sidebarItems = [
     icon: Newspaper,
   },
   {
-    title: "Yo'riqnomalar",
+    title: "Anotatsiyalar",
     icon: ClipboardList,
     url: "/dashboard/annotations",
   },

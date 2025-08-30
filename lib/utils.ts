@@ -16,7 +16,19 @@ export const CacheTags = {
   GENRES: "genres",
   CATEGORY_FILMS: "category-films",
   GENRE_FILMS: "genre-films",
+  ANNOTATION: "annotation",
 };
+
+export function youTubeEmbed(url: string) {
+  const getVideoId = (link: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
+    const match = link.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
+  const videoId = getVideoId(url);
+  return { url: `https://www.youtube.com/embed/${videoId}`, id: videoId };
+}
 
 export function generateSlug(title: string) {
   const onlyLettersAndNumbers = true;

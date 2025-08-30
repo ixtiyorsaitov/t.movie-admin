@@ -45,3 +45,16 @@ export const newsSchema = z.object({
   published: z.boolean(),
   // expireAt: z.date().optional().nullable(), // 👈 Date bo‘ladi
 });
+
+export const annotationSchema = z.object({
+  subtitle: z.string().min(2, {
+    message: "Subtitr kamida 2 ta belgidan iborat bo'lishi kerak`",
+  }),
+  title: z.string().min(2, {
+    message: "Sarlavha kamida 2 ta belgidan iborat bo'lishi kerak`",
+  }),
+  description: z
+    .string()
+    .min(20, { message: "Tavsif kamida 20 ta belgidan iborat bo'lishi kerak" }),
+  ytUrl: z.string().url(),
+});

@@ -1,4 +1,5 @@
 import { IEpisode, IGenre, INews } from "@/types";
+import { IAnnotation } from "@/types/annotation";
 import { create } from "zustand";
 
 type ModalStore<T> = {
@@ -61,6 +62,18 @@ export const useDeleteCategory = create<ModalStore<IGenre>>()((set) => ({
   setData: (data) => set({ data }),
 }));
 export const useDeleteNews = create<ModalStore<INews>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useAnnotationModal = create<ModalStore<IAnnotation>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteAnnotation = create<ModalStore<IAnnotation>>()((set) => ({
   open: false,
   setOpen: (open) => set({ open }),
   data: null,
