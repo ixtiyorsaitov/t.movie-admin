@@ -5,7 +5,7 @@ export interface IFilm {
   type: FilmType;
   category: ICategory;
   rating: {
-    avarage: number;
+    average: number;
     total: number;
     count: number;
   };

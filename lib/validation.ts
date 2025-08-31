@@ -58,3 +58,8 @@ export const annotationSchema = z.object({
     .min(20, { message: "Tavsif kamida 20 ta belgidan iborat bo'lishi kerak" }),
   ytUrl: z.string().url(),
 });
+
+export const reviewSchema = z.object({
+  rating: z.number().min(1).max(5),
+  text: z.string().optional(),
+});

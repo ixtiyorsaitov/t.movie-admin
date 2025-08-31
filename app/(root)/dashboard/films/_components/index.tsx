@@ -170,7 +170,7 @@ const FilmsPageMain = ({
                       <EyeIcon size={20} />
                     </div>
                     <div className="flex items-center gap-1">
-                      {data.rating.avarage}/10
+                      {data.rating.average}/10
                       <StarIcon className="fill-primary" size={20} />
                     </div>
                     <div className="flex items-center gap-1">

@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const ReviewSchema = new mongoose.Schema(
   {
-    film: { type: mongoose.Schema.Types.ObjectId, ref: "Film" },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    film: { type: mongoose.Schema.Types.ObjectId, ref: "Film" },
     rating: { type: Number, min: 1, max: 10 },
-    comment: { type: String },
+    text: { type: String },
   },
   { timestamps: true }
 );

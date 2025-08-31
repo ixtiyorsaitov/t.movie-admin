@@ -17,6 +17,7 @@ export const CacheTags = {
   CATEGORY_FILMS: "category-films",
   GENRE_FILMS: "genre-films",
   ANNOTATION: "annotation",
+  REVIEWS: "reviews",
 };
 
 export function youTubeEmbed(url: string) {

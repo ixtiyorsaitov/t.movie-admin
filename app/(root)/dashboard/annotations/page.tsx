@@ -1,6 +1,6 @@
 import { getAnnotations } from "@/lib/api/annotations";
 import React from "react";
-import AnnotationsPageMain from "./_components/annotations-page-main";
+import AnnotationsPageMain from "./_components";
 
 const AnnotationsPage = async () => {
   const datas = await getAnnotations();

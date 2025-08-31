@@ -12,7 +12,7 @@ const FilmSchema = new mongoose.Schema<IFilm>(
       default: FilmType.SERIES,
     },
     rating: {
-      avarage: { type: Number, default: 0 },
+      average: { type: Number, default: 0 },
       total: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
     },

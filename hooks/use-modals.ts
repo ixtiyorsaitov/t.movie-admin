@@ -1,5 +1,6 @@
 import { IEpisode, IGenre, INews } from "@/types";
 import { IAnnotation } from "@/types/annotation";
+import { IReview } from "@/types/review";
 import { create } from "zustand";
 
 type ModalStore<T> = {
@@ -74,6 +75,18 @@ export const useAnnotationModal = create<ModalStore<IAnnotation>>()((set) => ({
   setData: (data) => set({ data }),
 }));
 export const useDeleteAnnotation = create<ModalStore<IAnnotation>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useReviewModal = create<ModalStore<IReview>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteReview = create<ModalStore<IReview>>()((set) => ({
   open: false,
   setOpen: (open) => set({ open }),
   data: null,

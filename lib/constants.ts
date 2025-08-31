@@ -50,14 +50,14 @@ export const sidebarItems = [
     url: "/dashboard/annotations",
   },
   {
-    title: "Izohlar",
-    icon: MessageSquare,
-    url: "/dashboard/comments",
-  },
-  {
     title: "Sharhlar",
     icon: Star,
     url: "/dashboard/reviews",
+  },
+  {
+    title: "Izohlar",
+    icon: MessageSquare,
+    url: "/dashboard/comments",
   },
   {
     title: "Foydalanuvchilar",
