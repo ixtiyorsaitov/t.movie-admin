@@ -63,3 +63,7 @@ export const reviewSchema = z.object({
   rating: z.number().min(1).max(5),
   text: z.string().optional(),
 });
+export const replyReviewSchema = z.object({
+  text: z.string().min(1, { message: "Javobingizni kiriting" }),
+  asAdmin: z.boolean(),
+});

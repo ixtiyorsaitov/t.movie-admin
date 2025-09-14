@@ -7,6 +7,11 @@ export interface IReview {
   film: IFilm;
   rating: number;
   text?: string;
+  reply: {
+    text: string;
+    user: IUser | undefined;
+    asAdmin: boolean
+  };
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,6 +1,11 @@
 "use client";
 
-import ReviewModal from "@/components/modals/review.modal";
+import ReviewModal, {
+  ReviewDeleteModal,
+} from "@/components/modals/review.modal";
+import ReviewReplyModal, {
+  ReviewDeleteReplyModal,
+} from "@/components/modals/review.reply.modal";
 import { UserAvatarProfile } from "@/components/shared/user/user-avatar-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,13 +30,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useReviewModal } from "@/hooks/use-modals";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  useDeleteRepliedReview,
+  useDeleteReview,
+  useReviewModal,
+  useReviewReplyModal,
+} from "@/hooks/use-modals";
 import { PaginationType } from "@/types";
 import { IReview } from "@/types/review";
 import { format } from "date-fns";
 import {
-  ChevronLeftIcon,
+  CheckCircle,
   Copy,
+  DeleteIcon,
   Edit,
   Film,
   MessageCircleIcon,
@@ -40,6 +56,7 @@ import {
   Reply,
   Trash2,
   User,
+  XCircle,
 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -55,6 +72,9 @@ const ReviewsPageMain = ({
   const [pagination, setPagination] =
     useState<PaginationType>(defaultPagination);
   const reviewModal = useReviewModal();
+  const reviewReplyModal = useReviewReplyModal();
+  const deleteModal = useDeleteReview();
+  const deleteReplyModal = useDeleteRepliedReview();
   const onCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Nusxalandi");
@@ -117,28 +137,94 @@ const ReviewsPageMain = ({
                         {data.film.title}
                       </p>
                     </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          data.rating >= 8
-                            ? "default"
+                    <TableCell className="space-y-2">
+                      <div className="grid grid-cols-1 gap-1 items-center">
+                        <Badge
+                          variant={
+                            data.rating >= 8
+                              ? "default"
+                              : data.rating >= 5
+                              ? "secondary"
+                              : "destructive"
+                          }
+                        >
+                          {data.rating}/10
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {data.rating >= 8
+                            ? "Yaxshi"
                             : data.rating >= 5
-                            ? "secondary"
-                            : "destructive"
-                        }
-                      >
-                        {data.rating}/10
-                      </Badge>
+                            ? "O'rtacha"
+                            : "Yomon"}
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {data?.text?.trim() !== "" ? (
-                        <p className="max-w-[300px] truncate">{data.text}</p>
+                        <div className="max-w-[250px]">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="truncate cursor-help">
+                                {data.text}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              className="max-w-[400px] p-3"
+                            >
+                              <div className="space-y-2">
+                                <p className="font-medium">{"To'liq"} fikr:</p>
+                                <p className="text-sm leading-relaxed break-all">
+                                  {data.text}
+                                </p>
+                                <div className="text-xs border-t pt-2">
+                                  {data.text?.length} belgi •{" "}
+                                  {format(
+                                    new Date(data.createdAt),
+                                    "dd.MM.yyyy HH:mm"
+                                  )}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                          <span className="text-xs text-muted-foreground">
+                            {data.text?.length} belgi
+                          </span>
+                        </div>
                       ) : (
-                        <span className="text-destructive">{"Fikr yo'q"}</span>
+                        <span className="text-destructive text-sm">
+                          Fikr {"yo'q"}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(data.createdAt), "HH:mm | dd.MM.yyyy")}
+                      <div className="flex items-center gap-2">
+                        {data.reply ? (
+                          <>
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span className="text-sm text-green-600">
+                              Javob berilgan
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4 text-destructive" />
+                            <span className="text-sm text-destructive">
+                              Javob {"yo'q"}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>
+                          {format(new Date(data.createdAt), "dd.MM.yyyy")}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(data.createdAt), "HH:mm")}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
@@ -199,20 +285,50 @@ const ReviewsPageMain = ({
                             <Edit className="mr-2 h-4 w-4" />
                             Tahrirlash
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              reviewModal.setData(data);
-                              reviewModal.setOpen(true);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Reply className="mr-2 h-4 w-4" />
-                            Javob berish
-                          </DropdownMenuItem>
+                          {data.reply ? (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                reviewReplyModal.setData(data);
+                                reviewReplyModal.setOpen(true);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Reply className="mr-2 h-4 w-4" />
+                              Javobni tahrirlash
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                reviewReplyModal.setData(data);
+                                reviewReplyModal.setOpen(true);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <Reply className="mr-2 h-4 w-4" />
+                              Javob berish
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuSeparator />
+                          {data.reply && (
+                            <DropdownMenuItem
+                              onClick={() => {
+                                deleteReplyModal.setData(data);
+                                deleteReplyModal.setOpen(true);
+                              }}
+                              variant="destructive"
+                              className="cursor-pointer"
+                            >
+                              <DeleteIcon className="mr-2 h-4 w-4" />
+                              Javobni {"o'chirish"}
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             variant="destructive"
                             className="cursor-pointer text-destructive focus:text-destructive"
+                            onClick={() => {
+                              deleteModal.setData(data);
+                              deleteModal.setOpen(true);
+                            }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             {"O'chirish"}
@@ -228,6 +344,9 @@ const ReviewsPageMain = ({
         </div>
       </div>
       <ReviewModal setDatas={setDatas} />
+      <ReviewDeleteModal setList={setDatas} />
+      <ReviewReplyModal setList={setDatas} />
+      <ReviewDeleteReplyModal setList={setDatas} />
     </>
   );
 };

@@ -26,7 +26,11 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { IReview } from "@/types/review";
-import { useCreateReview } from "@/hooks/useReviews";
+import {
+  useCreateReview,
+  useDeleteReviewMutation,
+  useUpdateReview,
+} from "@/hooks/useReviews";
 import { Rating } from "../ui/rating";
 import { Loader2, Trash2 } from "lucide-react";
 
@@ -40,14 +44,14 @@ const ReviewModal = ({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
       text: reviewModal.data ? reviewModal.data.text : "",
-      rating: reviewModal.data ? reviewModal.data.rating : 5,
+      rating: reviewModal.data ? reviewModal.data.rating / 2 : 5,
     },
   });
   useEffect(() => {
     if (reviewModal.data) {
       form.reset({
         text: reviewModal.data.text,
-        rating: reviewModal.data.rating,
+        rating: reviewModal.data.rating / 2,
       });
     } else {
       form.reset({ text: "", rating: 5 });
@@ -55,31 +59,34 @@ const ReviewModal = ({
   }, [reviewModal.data]);
 
   const createMutation = useCreateReview();
-  //   const updateMutation = useUpdateGenre();
+  const updateMutation = useUpdateReview();
 
   function onSubmit(values: z.infer<typeof reviewSchema>) {
     console.log(values);
 
     if (reviewModal.data) {
-      //   updateMutation.mutate(
-      //     { values, genreId: reviewModal.data._id },
-      //     {
-      //       onSuccess: (response) => {
-      //         if (response.success) {
-      //           setDatas((prev) =>
-      //             prev.map((c) =>
-      //               c._id === response.data._id ? response.data : c
-      //             )
-      //           );
-      //           toast.success("Sharh muvaffaqiyatli yangilandi!");
-      //           reviewModal.setOpen(false);
-      //           form.reset();
-      //         } else {
-      //           toast.error(response.error || "Sharhni yangilashda xatolik");
-      //         }
-      //       },
-      //     }
-      //   );
+      updateMutation.mutate(
+        { values, reviewId: reviewModal.data._id },
+        {
+          onSuccess: (response) => {
+            console.log(response);
+
+            if (response.success) {
+              reviewModal.setOpen(false);
+              reviewModal.setData(null);
+              setDatas((prev) =>
+                prev.map((c) =>
+                  c._id === response.data._id ? response.data : c
+                )
+              );
+              toast.success("Sharh muvaffaqiyatli yangilandi!");
+              form.reset();
+            } else {
+              toast.error(response.error || "Sharhni yangilashda xatolik");
+            }
+          },
+        }
+      );
     } else {
       createMutation.mutate(
         { values, filmId: "68b14323731a95d2b6675986" },
@@ -90,6 +97,7 @@ const ReviewModal = ({
             if (response.success) {
               setDatas((prev) => [...prev, response.data]);
               toast.success("Sharh muvaffaqiyatli qo'shildi!");
+              reviewModal.setOpen(false);
               form.reset();
             } else {
               toast.error(response.error || "Sharh qo'shishda xatolik");
@@ -162,11 +170,6 @@ export function ReviewDeleteModal({
   setList: Dispatch<SetStateAction<IReview[]>>;
 }) {
   const { open, data, setOpen, setData } = useDeleteReview();
-  useEffect(() => {
-    if (open) {
-      form.reset();
-    }
-  }, [open]);
 
   const deleteMutation = useDeleteReviewMutation();
 
@@ -197,8 +200,7 @@ export function ReviewDeleteModal({
             {`Siz "${data.film.title}" filmidan ${data.text} sharhni o'chirmoqchiligingizga aminmisiz?`}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Bu buyruqni orqaga qaytarib {"bo'lmaydi"}. Sharh {"o'chgandan"}{" "}
-            keyin shu sharh {"o'chirish"}
+            Bu buyruqni orqaga qaytarib {"bo'lmaydi"}
           </AlertDialogDescription>
         </AlertDialogHeader>
 

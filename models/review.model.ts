@@ -6,6 +6,14 @@ const ReviewSchema = new mongoose.Schema(
     film: { type: mongoose.Schema.Types.ObjectId, ref: "Film" },
     rating: { type: Number, min: 1, max: 10 },
     text: { type: String },
+    reply: {
+      type: {
+        text: { type: String },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        asAdmin: { type: Boolean, default: false },
+      },
+      required: false,
+    },
   },
   { timestamps: true }
 );

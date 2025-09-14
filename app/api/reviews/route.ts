@@ -92,7 +92,10 @@ export async function POST(req: NextRequest) {
       rating,
       text,
     });
-
+    const populatedReview = await Review.findById(review._id)
+      .populate("user", "name avatar")
+      .populate("film", "title")
+      .lean();
     const updatedFilm = await Film.findByIdAndUpdate(
       filmId,
       {
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
     updatedFilm.rating.average = Math.round(avg * 10) / 10;
     await updatedFilm.save();
 
-    return NextResponse.json({ success: true, data: review });
+    return NextResponse.json({ success: true, data: populatedReview });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Server xatosi" }, { status: 500 });

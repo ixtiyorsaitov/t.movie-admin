@@ -92,3 +92,15 @@ export const useDeleteReview = create<ModalStore<IReview>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+export const useReviewReplyModal = create<ModalStore<IReview>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteRepliedReview = create<ModalStore<IReview>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));

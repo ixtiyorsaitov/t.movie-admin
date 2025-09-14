@@ -16,29 +16,57 @@ export async function PUT(
       text: string;
       rating: number;
     };
+
     if (!text || !rating) {
       return NextResponse.json(
         { error: "Kerakli ma'lumotlarni to'liq kiriting" },
         { status: 400 }
       );
     }
-    const review = await Review.findByIdAndUpdate(
-      reviewId,
+
+    // Eski reviewni olish
+    const oldReview = await Review.findById(reviewId);
+    if (!oldReview) {
+      return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });
+    }
+
+    const oldRating = oldReview.rating;
+
+    // Reviewni yangilash
+    oldReview.text = text;
+    oldReview.rating = rating;
+    await oldReview.save();
+    const populatedReview = await Review.findById(reviewId)
+      .populate("user", "name avatar")
+      .populate("film", "title")
+      .lean();
+
+    // Film reytingini yangilash
+    const updatedFilm = await Film.findByIdAndUpdate(
+      oldReview.film,
       {
-        text,
-        rating,
+        $inc: {
+          "rating.total": -oldRating + rating,
+        },
       },
       { new: true }
     );
-    if (!review) {
-      return NextResponse.json(
-        { error: "Anontatsiya topilmadi" },
-        { status: 400 }
-      );
+
+    if (!updatedFilm) {
+      return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
     }
-    return NextResponse.json({ success: true, data: review }, { status: 200 });
+
+    // O‘rtacha hisoblash
+    const avg = updatedFilm.rating.total / updatedFilm.rating.count;
+    updatedFilm.rating.average = Math.round(avg * 10) / 10;
+    await updatedFilm.save();
+
+    return NextResponse.json(
+      { success: true, data: populatedReview },
+      { status: 200 }
+    );
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
   }
 }
@@ -78,17 +106,17 @@ export async function DELETE(
       { new: true }
     );
 
-    if (updatedFilm) {
-      if (updatedFilm.rating.count > 0) {
-        const avg = updatedFilm.rating.total / updatedFilm.rating.count;
-        updatedFilm.rating.average = Math.round(avg * 10) / 10;
-      } else {
-        updatedFilm.rating.total = 0;
-        updatedFilm.rating.average = 0;
-      }
-      await updatedFilm.save();
+    if (!updatedFilm) {
+      return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
     }
 
+    if (updatedFilm.rating.count > 0) {
+      const avg = updatedFilm.rating.total / updatedFilm.rating.count;
+      updatedFilm.rating.average = Math.round(avg * 10) / 10;
+    } else {
+      updatedFilm.rating.average = 0;
+    }
+    await updatedFilm.save();
     return NextResponse.json({ success: true, data: review });
   } catch (error) {
     console.log(error);
