@@ -22,6 +22,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Heading } from "@/components/ui/heading";
+import { Input } from "@/components/ui/input";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -41,9 +57,11 @@ import {
   useReviewModal,
   useReviewReplyModal,
 } from "@/hooks/use-modals";
+import { getPageNumbers } from "@/lib/utils";
 import { PaginationType } from "@/types";
 import { IReview } from "@/types/review";
 import { format } from "date-fns";
+import { debounce } from "lodash";
 import {
   CheckCircle,
   Copy,
@@ -54,21 +72,74 @@ import {
   MoreVertical,
   PlusIcon,
   Reply,
+  Search,
   Trash2,
   User,
   XCircle,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { toast } from "sonner";
+
+type ReplyFilterType = "all" | "replied" | "not-replied";
+type RatingFilterType = "all" | "high" | "medium" | "low";
+type SortByType = "newest" | "oldest" | "popular";
+
+const getSearchedData = async ({
+  searchTerm,
+  page,
+  limit,
+  replyFilter,
+  ratingFilter,
+  sortBy,
+  setLoading,
+}: {
+  searchTerm: string;
+  page: number;
+  limit: number;
+  replyFilter: ReplyFilterType;
+  ratingFilter: RatingFilterType;
+  sortBy: SortByType;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+}) => {
+  try {
+    setLoading(true);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
+    );
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    return {
+      error: "Ma'lumotlarni olishda xatolik yuz berdi",
+      datas: [],
+      pagination: { page: 1, limit, total: 0, totalPages: 0 },
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 const ReviewsPageMain = ({
   datas: defaultDatas,
   pagination: defaultPagination,
+  limit,
 }: {
   datas: IReview[];
   pagination: PaginationType;
+  limit: number;
 }) => {
   const [datas, setDatas] = useState<IReview[]>(defaultDatas);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [replyFilter, setReplyFilter] = useState<ReplyFilterType>("all");
+  const [ratingFilter, setRatingFilter] = useState<RatingFilterType>("all");
+  const [sortBy, setSortBy] = useState<SortByType>("newest");
   const [pagination, setPagination] =
     useState<PaginationType>(defaultPagination);
   const reviewModal = useReviewModal();
@@ -79,6 +150,68 @@ const ReviewsPageMain = ({
     navigator.clipboard.writeText(text);
     toast.success("Nusxalandi");
   };
+
+  const handlePageChange = async (page: number) => {
+    const newData = await getSearchedData({
+      searchTerm,
+      page,
+      limit,
+      replyFilter,
+      ratingFilter,
+      sortBy,
+      setLoading,
+    });
+    if (newData.error) {
+      toast.error(newData.error);
+      return;
+    }
+    setDatas(newData.datas);
+    setPagination(newData.pagination);
+  };
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (e.target.value.trim() === "") {
+      setDatas(defaultDatas);
+      setPagination(defaultPagination);
+      return;
+    }
+    const newData = await getSearchedData({
+      searchTerm: e.target.value,
+      page: pagination.page,
+      limit,
+      replyFilter,
+      ratingFilter,
+      sortBy,
+      setLoading,
+    });
+    if (newData.error) {
+      toast.error(newData.error);
+    }
+    setDatas(newData.datas);
+    setPagination(newData.pagination);
+  };
+  const handleDebouncedSearch = useCallback(debounce(handleSearch, 300), []);
+
+  useEffect(() => {
+    (async () => {
+      const newData = await getSearchedData({
+        searchTerm,
+        page: 1,
+        limit,
+        replyFilter,
+        ratingFilter,
+        sortBy,
+        setLoading,
+      });
+      if (newData.error) {
+        toast.error(newData.error);
+      }
+      console.log(newData);
+
+      setDatas(newData.datas);
+      setPagination(newData.pagination);
+    })();
+  }, [replyFilter, ratingFilter, sortBy]);
   return (
     <>
       <div className="w-full flex items-center justify-center flex-col px-2">
@@ -93,6 +226,62 @@ const ReviewsPageMain = ({
             <PlusIcon className="mr-2 h-4 w-4" /> {"Qo'shish"}
           </Button>
         </div>
+        <div className="flex items-center space-x-2 mb-3 w-full justify-between">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Sharhlar ichida qidirish..."
+              onChange={handleDebouncedSearch}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <Select
+              value={ratingFilter}
+              onValueChange={(value) =>
+                setRatingFilter(value as RatingFilterType)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Reyting" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barcha reytinglar</SelectItem>
+                <SelectItem value="high">Yuqori (8-10)</SelectItem>
+                <SelectItem value="medium">{"O'rta"} (5-7)</SelectItem>
+                <SelectItem value="low">Past (1-4)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={replyFilter}
+              onValueChange={(value) =>
+                setReplyFilter(value as ReplyFilterType)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Javob" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barchasi</SelectItem>
+                <SelectItem value="replied">Javob berilgan</SelectItem>
+                <SelectItem value="not-replied">Javob berilmagan</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as SortByType)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Saralash" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Eng yangi</SelectItem>
+                <SelectItem value="oldest">Eng eski</SelectItem>
+                <SelectItem value="popular">Mashhur</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="w-full rounded-lg border bg-card">
           <Table>
             <TableHeader>
@@ -101,6 +290,7 @@ const ReviewsPageMain = ({
                 <TableHead>Film</TableHead>
                 <TableHead>Reyting</TableHead>
                 <TableHead>Fikr</TableHead>
+                <TableHead>Javob holati</TableHead>
                 <TableHead>Vaqt</TableHead>
                 <TableHead />
               </TableRow>
@@ -109,7 +299,7 @@ const ReviewsPageMain = ({
               {datas.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center py-8 text-muted-foreground"
                   >
                     Hech qanday sharh topilmadi
@@ -342,6 +532,53 @@ const ReviewsPageMain = ({
             </TableBody>
           </Table>
         </div>
+        {pagination.total > limit && (
+          <Pagination className="mt-5 justify-end">
+            <PaginationContent>
+              {/* Prev tugmasi */}
+              <PaginationItem>
+                <PaginationPrevious
+                  className="cursor-pointer"
+                  onClick={() =>
+                    pagination.page > 1 && handlePageChange(pagination.page - 1)
+                  }
+                />
+              </PaginationItem>
+
+              {/* Sahifa tugmalari */}
+              {getPageNumbers(pagination).map((page, i) =>
+                page === "..." ? (
+                  <PaginationItem key={`ellipsis-${i}`}>
+                    <span className="px-2">...</span>
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem
+                    key={`page-${page}`}
+                    className="cursor-pointer"
+                  >
+                    <PaginationLink
+                      isActive={page === pagination.page}
+                      onClick={() => handlePageChange(page as number)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
+
+              {/* Next tugmasi */}
+              <PaginationItem>
+                <PaginationNext
+                  className="cursor-pointer"
+                  onClick={() =>
+                    pagination.page < pagination.totalPages &&
+                    handlePageChange(pagination.page + 1)
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
       <ReviewModal setDatas={setDatas} />
       <ReviewDeleteModal setList={setDatas} />

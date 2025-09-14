@@ -113,7 +113,7 @@ const ReviewModal = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {reviewModal.data === null ? "Shar yozish" : "Sharhni yangilash"}
+            {reviewModal.data === null ? "Sharh yozish" : "Sharhni yangilash"}
           </AlertDialogTitle>
           <AlertDialogDescription>
             Iltimos,{" "}

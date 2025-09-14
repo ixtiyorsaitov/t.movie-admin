@@ -75,7 +75,7 @@ export const Rating = React.forwardRef<HTMLDivElement, RatingProps>(
               className={cn(
                 sizeMap[size],
                 "cursor-pointer transition-colors size-full",
-                filled ? "text-yellow-400 fill-yellow-400" : "text-gray-300",
+                filled ? "text-primary fill-primary" : "text-gray-300",
                 readOnly && "cursor-default"
               )}
               onMouseEnter={() => handleMouseEnter(index + 1)}

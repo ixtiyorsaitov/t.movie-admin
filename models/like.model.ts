@@ -4,6 +4,8 @@ const LikeSchema = new mongoose.Schema(
   {
     film: { type: mongoose.Schema.Types.ObjectId, ref: "Film" },
     episode: { type: mongoose.Schema.Types.ObjectId, ref: "Episode" },
+    review: { type: mongoose.Schema.Types.ObjectId, ref: "Review" },
+    comment: { type: mongoose.Schema.Types.ObjectId, ref: "Comment" },
     news: { type: mongoose.Schema.Types.ObjectId, ref: "News" },
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },

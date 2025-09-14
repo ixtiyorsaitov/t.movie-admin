@@ -8,7 +8,13 @@ const ReviewsPage = async () => {
   const datas = await getReviews({ limit, page: 1 });
   if (!datas.success) throw new Error(datas.error);
 
-  return <ReviewsPageMain pagination={datas.pagination} datas={datas.datas} />;
+  return (
+    <ReviewsPageMain
+      limit={limit}
+      pagination={datas.pagination}
+      datas={datas.datas}
+    />
+  );
 };
 
 export default ReviewsPage;
