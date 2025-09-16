@@ -42,6 +42,7 @@ const FilmSchema = new mongoose.Schema<IFilm>(
     episodes: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Episode", default: [] },
     ],
+    disableComments: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

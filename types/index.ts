@@ -88,19 +88,6 @@ export interface IUser {
   updatedAt: Date;
 }
 
-export interface IComment {
-  user: IUser;
-  containSpoiler: boolean;
-  film: IFilm;
-  content: string;
-  parent: IComment | null;
-  likes: number;
-  score: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  _id: string;
-}
-
 export interface INotification {
   _id: string;
   film: IFilm;

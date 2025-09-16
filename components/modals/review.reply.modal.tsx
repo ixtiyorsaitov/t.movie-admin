@@ -111,6 +111,7 @@ const ReviewReplyModal = ({
                   <Label>Javob matni</Label>
                   <FormControl>
                     <Input
+                      disabled={replyReviewMutation.isPending}
                       autoComplete="off"
                       placeholder="Javobingizni yozing..."
                       {...field}
@@ -155,6 +156,7 @@ const ReviewReplyModal = ({
                     </div>
                     <FormControl>
                       <Switch
+                        disabled={replyReviewMutation.isPending}
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         className="ml-3"
@@ -167,9 +169,25 @@ const ReviewReplyModal = ({
             />
 
             <AlertDialogFooter className="gap-2">
-              <AlertDialogCancel type="button">Bekor qilish</AlertDialogCancel>
-              <Button type="submit" className="min-w-[100px]">
-                Davom etish
+              <AlertDialogCancel
+                type="button"
+                onClick={() => {
+                  setData(null);
+                  setOpen(false);
+                }}
+                disabled={replyReviewMutation.isPending}
+              >
+                Bekor qilish
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                className="min-w-[100px]"
+                disabled={replyReviewMutation.isPending}
+              >
+                {replyReviewMutation.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {data?.reply ? "Tahrirlash" : "Javob berish"}
               </Button>
             </AlertDialogFooter>
           </form>

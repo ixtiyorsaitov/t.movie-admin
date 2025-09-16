@@ -27,6 +27,7 @@ export interface IFilm {
   video: IVideo;
   genres: IGenre[];
   episodes: IEpisode[];
+  disableComments: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

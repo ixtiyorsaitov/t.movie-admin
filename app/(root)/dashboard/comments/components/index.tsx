@@ -1,12 +1,6 @@
 "use client";
 
-import ReviewModal, {
-  ReviewDeleteModal,
-} from "@/components/modals/review.modal";
-import ReviewReplyModal, {
-  ReviewDeleteReplyModal,
-} from "@/components/modals/review.reply.modal";
-import { UserAvatarProfile } from "@/components/shared/user/user-avatar-profile";
+import CommentModal from "@/components/modals/comment.modal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,13 +46,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  useDeleteRepliedReview,
-  useDeleteReview,
-  useReviewModal,
-  useReviewReplyModal,
+  useCommentModal,
+  useCommentReplyModal,
+  useDeleteComment,
+  useDeleteRepliedComment,
 } from "@/hooks/use-modals";
 import { getPageNumbers, onCopy } from "@/lib/utils";
 import { PaginationType } from "@/types";
+import { IComment } from "@/types/comment";
 import { IReview } from "@/types/review";
 import { format } from "date-fns";
 import { debounce } from "lodash";
@@ -67,65 +62,22 @@ import {
   Copy,
   DeleteIcon,
   Edit,
-  Film,
+  FilmIcon,
   MessageCircleIcon,
   MoreVertical,
   PlusIcon,
   Reply,
   Search,
   Trash2,
-  User,
+  UserIcon,
   XCircle,
 } from "lucide-react";
-import React, {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import React, { useCallback, useState } from "react";
 import { toast } from "sonner";
-
 type ReplyFilterType = "all" | "replied" | "not-replied";
 type RatingFilterType = "all" | "high" | "medium" | "low";
 type SortByType = "newest" | "oldest" | "popular";
-
-const getSearchedData = async ({
-  searchTerm,
-  page,
-  limit,
-  replyFilter,
-  ratingFilter,
-  sortBy,
-  setLoading,
-}: {
-  searchTerm: string;
-  page: number;
-  limit: number;
-  replyFilter: ReplyFilterType;
-  ratingFilter: RatingFilterType;
-  sortBy: SortByType;
-  setLoading: Dispatch<SetStateAction<boolean>>;
-}) => {
-  try {
-    setLoading(true);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
-    );
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    return {
-      error: "Ma'lumotlarni olishda xatolik yuz berdi",
-      datas: [],
-      pagination: { page: 1, limit, total: 0, totalPages: 0 },
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const ReviewsPageMain = ({
+const CommentsPageMain = ({
   datas: defaultDatas,
   pagination: defaultPagination,
   limit,
@@ -142,81 +94,59 @@ const ReviewsPageMain = ({
   const [sortBy, setSortBy] = useState<SortByType>("newest");
   const [pagination, setPagination] =
     useState<PaginationType>(defaultPagination);
-  const reviewModal = useReviewModal();
-  const reviewReplyModal = useReviewReplyModal();
-  const deleteModal = useDeleteReview();
-  const deleteReplyModal = useDeleteRepliedReview();
-
+  const commentModal = useCommentModal();
+  const reviewReplyModal = useCommentReplyModal();
+  const deleteModal = useDeleteComment();
+  const deleteReplyModal = useDeleteRepliedComment();
   const handlePageChange = async (page: number) => {
-    const newData = await getSearchedData({
-      searchTerm,
-      page,
-      limit,
-      replyFilter,
-      ratingFilter,
-      sortBy,
-      setLoading,
-    });
-    if (newData.error) {
-      toast.error(newData.error);
-      return;
-    }
-    setDatas(newData.datas);
-    setPagination(newData.pagination);
+    // const newData = await getSearchedData({
+    //   searchTerm,
+    //   page,
+    //   limit,
+    //   replyFilter,
+    //   ratingFilter,
+    //   sortBy,
+    //   setLoading,
+    // });
+    // if (newData.error) {
+    //   toast.error(newData.error);
+    //   return;
+    // }
+    // setDatas(newData.datas);
+    // setPagination(newData.pagination);
   };
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    if (e.target.value.trim() === "") {
-      setDatas(defaultDatas);
-      setPagination(defaultPagination);
-      return;
-    }
-    const newData = await getSearchedData({
-      searchTerm: e.target.value,
-      page: pagination.page,
-      limit,
-      replyFilter,
-      ratingFilter,
-      sortBy,
-      setLoading,
-    });
-    if (newData.error) {
-      toast.error(newData.error);
-    }
-    setDatas(newData.datas);
-    setPagination(newData.pagination);
+    // setSearchTerm(e.target.value);
+    // if (e.target.value.trim() === "") {
+    //   setDatas(defaultDatas);
+    //   setPagination(defaultPagination);
+    //   return;
+    // }
+    // const newData = await getSearchedData({
+    //   searchTerm: e.target.value,
+    //   page: pagination.page,
+    //   limit,
+    //   replyFilter,
+    //   ratingFilter,
+    //   sortBy,
+    //   setLoading,
+    // });
+    // if (newData.error) {
+    //   toast.error(newData.error);
+    // }
+    // setDatas(newData.datas);
+    // setPagination(newData.pagination);
   };
   const handleDebouncedSearch = useCallback(debounce(handleSearch, 300), []);
-
-  useEffect(() => {
-    (async () => {
-      const newData = await getSearchedData({
-        searchTerm,
-        page: 1,
-        limit,
-        replyFilter,
-        ratingFilter,
-        sortBy,
-        setLoading,
-      });
-      if (newData.error) {
-        toast.error(newData.error);
-      }
-      console.log(newData);
-
-      setDatas(newData.datas);
-      setPagination(newData.pagination);
-    })();
-  }, [replyFilter, ratingFilter, sortBy]);
   return (
     <>
       <div className="w-full flex items-center justify-center flex-col px-2">
         <div className="flex items-center justify-between w-full mb-3">
-          <Heading title="Sharhlar" description="" />
+          <Heading title="Izohlar" description="" />
           <Button
             onClick={() => {
-              reviewModal.setData(null);
-              reviewModal.setOpen(true);
+              commentModal.setData(null);
+              commentModal.setOpen(true);
             }}
           >
             <PlusIcon className="mr-2 h-4 w-4" /> {"Qo'shish"}
@@ -226,7 +156,7 @@ const ReviewsPageMain = ({
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Sharhlar ichida qidirish..."
+              placeholder="Izohlar ichida qidirish..."
               onChange={handleDebouncedSearch}
               className="pl-10"
             />
@@ -284,7 +214,6 @@ const ReviewsPageMain = ({
               <TableRow>
                 <TableHead>Foydalanuvchi</TableHead>
                 <TableHead>Film</TableHead>
-                <TableHead>Reyting</TableHead>
                 <TableHead>Fikr</TableHead>
                 <TableHead>Javob holati</TableHead>
                 <TableHead>Vaqt</TableHead>
@@ -295,10 +224,10 @@ const ReviewsPageMain = ({
               {datas.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={6}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    Hech qanday sharh topilmadi
+                    Hech qanday izoh topilmadi
                   </TableCell>
                 </TableRow>
               ) : (
@@ -322,28 +251,6 @@ const ReviewsPageMain = ({
                       <p className="max-w-[300px] truncate">
                         {data.film.title}
                       </p>
-                    </TableCell>
-                    <TableCell className="space-y-2">
-                      <div className="grid grid-cols-1 gap-1 items-center">
-                        <Badge
-                          variant={
-                            data.rating >= 8
-                              ? "default"
-                              : data.rating >= 5
-                              ? "secondary"
-                              : "destructive"
-                          }
-                        >
-                          {data.rating}/10
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {data.rating >= 8
-                            ? "Yaxshi"
-                            : data.rating >= 5
-                            ? "O'rtacha"
-                            : "Yomon"}
-                        </span>
-                      </div>
                     </TableCell>
                     <TableCell>
                       {data?.text?.trim() !== "" ? (
@@ -437,13 +344,13 @@ const ReviewsPageMain = ({
                                 <DropdownMenuItem
                                   onClick={() => onCopy(data.user._id)}
                                 >
-                                  <User />
+                                  <UserIcon />
                                   Foydalanuvchi ID
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => onCopy(data.film._id)}
                                 >
-                                  <Film />
+                                  <FilmIcon />
                                   Film ID
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
@@ -463,8 +370,8 @@ const ReviewsPageMain = ({
                           </DropdownMenuSub>
                           <DropdownMenuItem
                             onClick={() => {
-                              reviewModal.setData(data);
-                              reviewModal.setOpen(true);
+                              commentModal.setData(data);
+                              commentModal.setOpen(true);
                             }}
                             className="cursor-pointer"
                           >
@@ -576,12 +483,12 @@ const ReviewsPageMain = ({
           </Pagination>
         )}
       </div>
-      <ReviewModal setDatas={setDatas} />
-      <ReviewDeleteModal setList={setDatas} />
-      <ReviewReplyModal setList={setDatas} />
-      <ReviewDeleteReplyModal setList={setDatas} />
+      <CommentModal setDatas={setDatas} />
+      {/* <ReviewDeleteModal setList={setDatas} /> */}
+      {/* <ReviewReplyModal setList={setDatas} /> */}
+      {/* <ReviewDeleteReplyModal setList={setDatas} /> */}
     </>
   );
 };
 
-export default ReviewsPageMain;
+export default CommentsPageMain;

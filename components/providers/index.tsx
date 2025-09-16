@@ -6,14 +6,14 @@ import QueryProvider from "./query-provider";
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "../ui/sonner";
 import NextTopLoader from "nextjs-toploader";
-import { useTheme } from "next-themes";
 
 const TopLoader = () => {
-  const { resolvedTheme } = useTheme();
   return (
     <NextTopLoader
       showSpinner={false}
-      color={resolvedTheme === "dark" ? "white" : "black"}
+      color={getComputedStyle(document.documentElement).getPropertyValue(
+        "--primary"
+      )}
     />
   );
 };

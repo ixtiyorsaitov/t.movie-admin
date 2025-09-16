@@ -1,4 +1,4 @@
-import { IEpisode, IGenre, INews } from "@/types";
+import { IComment, IEpisode, IGenre, INews } from "@/types";
 import { IAnnotation } from "@/types/annotation";
 import { IReview } from "@/types/review";
 import { create } from "zustand";
@@ -104,3 +104,29 @@ export const useDeleteRepliedReview = create<ModalStore<IReview>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+export const useCommentModal = create<ModalStore<IComment>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteComment = create<ModalStore<IComment>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useCommentReplyModal = create<ModalStore<IComment>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteRepliedComment = create<ModalStore<IComment>>()(
+  (set) => ({
+    open: false,
+    setOpen: (open) => set({ open }),
+    data: null,
+    setData: (data) => set({ data }),
+  })
+);

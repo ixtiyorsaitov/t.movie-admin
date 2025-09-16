@@ -1,6 +1,7 @@
 import { PaginationType } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import slugify from "slugify";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -18,8 +19,13 @@ export const CacheTags = {
   GENRE_FILMS: "genre-films",
   ANNOTATION: "annotation",
   REVIEWS: "reviews",
+  COMMENTS: "comments",
 };
 
+export const onCopy = (text: string) => {
+  navigator.clipboard.writeText(text);
+  toast.success("Nusxalandi");
+};
 export function youTubeEmbed(url: string) {
   const getVideoId = (link: string) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#\&\?]*).*/;
