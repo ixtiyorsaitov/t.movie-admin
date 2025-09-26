@@ -1,5 +1,9 @@
-import { useCommentModal } from "@/hooks/use-modals";
-import { useCreateComment, useUpdateComment } from "@/hooks/useComments";
+import { useCommentModal, useDeleteComment } from "@/hooks/use-modals";
+import {
+  useCreateComment,
+  useDeleteCommentMutation,
+  useUpdateComment,
+} from "@/hooks/useComments";
 import { commentSchema } from "@/lib/validation";
 import { IReview } from "@/types/review";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,24 +30,26 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Loader2, SendIcon } from "lucide-react";
+import { Loader2, SendIcon, Trash2 } from "lucide-react";
+import { IComment } from "@/types/comment";
+import { Textarea } from "../ui/textarea";
 
 const CommentModal = ({
   setDatas,
 }: {
-  setDatas: Dispatch<SetStateAction<IReview[]>>;
+  setDatas: Dispatch<SetStateAction<IComment[]>>;
 }) => {
   const commentModal = useCommentModal();
   const form = useForm<z.infer<typeof commentSchema>>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
-      content: commentModal.data ? commentModal.data.text : "",
+      content: commentModal.data ? commentModal.data.content : "",
     },
   });
   useEffect(() => {
     if (commentModal.data) {
       form.reset({
-        content: commentModal.data.text,
+        content: commentModal.data.content,
       });
     } else {
       form.reset({ content: "" });
@@ -87,7 +93,7 @@ const CommentModal = ({
             console.log(response);
 
             if (response.success) {
-              //   setDatas((prev) => [...prev, response.data]);
+              setDatas((prev) => [response.data, ...prev]);
               toast.success("Izoh muvaffaqiyatli qo'shildi!");
               commentModal.setOpen(false);
               form.reset();
@@ -121,7 +127,8 @@ const CommentModal = ({
                 <FormItem>
                   <FormLabel>Fikr</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
+                      className="max-h-[200px] scrollbar-thin scrollbar-thumb-primary scrollbar-track-secondary"
                       disabled={
                         createMutation.isPending || updateMutation.isPending
                       }
@@ -166,3 +173,69 @@ const CommentModal = ({
 };
 
 export default CommentModal;
+
+export function CommentDeleteModal({
+  setList,
+}: {
+  setList: Dispatch<SetStateAction<IComment[]>>;
+}) {
+  const { open, setOpen, data, setData } = useDeleteComment();
+  const deleteComment = useDeleteCommentMutation();
+  function handleDelete() {
+    if (!data) return;
+    deleteComment.mutate(data._id, {
+      onSuccess: (response) => {
+        if (response.success) {
+          toast.success("Izoh muvaffaqiyatli o'chirildi!");
+          
+          setList((prev) =>
+            prev.filter((c) => c._id !== data._id && c.parent !== data._id)
+          );
+          setOpen(false);
+          setData(null);
+        } else {
+          toast.error(response.error || "Izohni o'chirishda xatolik");
+        }
+      },
+    });
+  }
+  return (
+    data && (
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{"Izohni o'chirib tashlash"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Siz haqiqatdan ham
+              <span className="font-bold text-white">{` ${data.content} `}</span>
+              izohini {"o'chirib"} tashlamoqchimisiz?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deleteComment.isPending}
+              onClick={() => {
+                setData(null);
+                setOpen(false);
+              }}
+            >
+              Bekor qilish
+            </AlertDialogCancel>
+            <Button
+              disabled={deleteComment.isPending}
+              variant={"destructive"}
+              onClick={handleDelete}
+            >
+              {deleteComment.isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Trash2 />
+              )}
+              {"O'chirish"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )
+  );
+}

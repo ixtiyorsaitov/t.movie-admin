@@ -71,6 +71,6 @@ export const commentSchema = z.object({
   content: z.string().min(3, { message: "Izohingizni kiriting" }),
 });
 export const replyCommentSchema = z.object({
-  text: z.string().min(1, { message: "Javobingizni kiriting" }),
+  content: z.string().min(1, { message: "Javobingizni kiriting" }),
   asAdmin: z.boolean(),
 });

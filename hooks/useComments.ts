@@ -5,6 +5,7 @@ import {
   getComments,
   replyComment,
   updateComment,
+  updateReplyComment,
 } from "@/lib/api/comments";
 import { CacheTags } from "@/lib/utils";
 import { commentSchema } from "@/lib/validation";
@@ -66,14 +67,33 @@ export const useReplyCommentMutation = () => {
   return useMutation({
     mutationFn: async ({
       commentId,
-      text,
+      filmId,
+      content,
       asAdmin,
     }: {
       commentId: string;
-      text: string;
+      filmId: string;
+      content: string;
       asAdmin: boolean;
     }) => {
-      const res = await replyComment({ commentId, text, asAdmin });
+      const res = await replyComment({ commentId, content, asAdmin, filmId });
+      return res;
+    },
+  });
+};
+
+export const useUpdateReplyCommentMutation = () => {
+  return useMutation({
+    mutationFn: async ({
+      commentId,
+      content,
+      asAdmin,
+    }: {
+      commentId: string;
+      content: string;
+      asAdmin: boolean;
+    }) => {
+      const res = await updateReplyComment({ commentId, content, asAdmin });
       return res;
     },
   });

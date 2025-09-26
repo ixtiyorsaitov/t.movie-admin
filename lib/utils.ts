@@ -1,4 +1,4 @@
-import { PaginationType } from "@/types";
+import { PaginationType, ROLE } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import slugify from "slugify";
 import { toast } from "sonner";
@@ -35,6 +35,24 @@ export function youTubeEmbed(url: string) {
 
   const videoId = getVideoId(url);
   return { url: `https://www.youtube.com/embed/${videoId}`, id: videoId };
+}
+
+export function checkRoleIsOriginal(role: ROLE) {
+  return role === ROLE.SUPERADMIN || role === ROLE.ADMIN;
+}
+export function translateRole(role: ROLE) {
+  switch (role) {
+    case ROLE.SUPERADMIN:
+      return "Superadmin";
+    case ROLE.ADMIN:
+      return "Admin";
+    case ROLE.MEMBER:
+      return "Xodim";
+    case ROLE.USER:
+      return "Oddiy foydalanuvchi";
+    default:
+      return "Noma'lum";
+  }
 }
 
 export function generateSlug(title: string) {

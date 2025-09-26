@@ -1,11 +1,11 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "./auth-options";
-import { ROLE } from "@/types";
+import { IUser, ROLE } from "@/types";
 
 export const allowedRoles = [ROLE.ADMIN, ROLE.SUPERADMIN];
 
-export async function adminOnly(handler: () => Promise<Response>) {
+export async function adminOnly(handler: (admin: IUser) => Promise<Response>) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -14,5 +14,5 @@ export async function adminOnly(handler: () => Promise<Response>) {
     return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 
-  return handler();
+  return handler(session.currentUser);
 }

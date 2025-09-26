@@ -1,5 +1,6 @@
-import { IComment, IEpisode, IGenre, INews } from "@/types";
+import { IEpisode, IGenre, INews } from "@/types";
 import { IAnnotation } from "@/types/annotation";
+import { IComment } from "@/types/comment";
 import { IReview } from "@/types/review";
 import { create } from "zustand";
 
