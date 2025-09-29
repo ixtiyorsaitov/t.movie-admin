@@ -41,7 +41,6 @@ import {
   MoreVertical,
   PlusIcon,
   Search,
-  Settings,
   StarIcon,
   ThumbsUp,
   Trash2,
