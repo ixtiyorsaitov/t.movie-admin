@@ -1,4 +1,4 @@
-import { IEpisode, IGenre, INews } from "@/types";
+import { IEpisode, IGenre, INews, IUser } from "@/types";
 import { IAnnotation } from "@/types/annotation";
 import { IComment } from "@/types/comment";
 import { IReview } from "@/types/review";
@@ -131,3 +131,9 @@ export const useDeleteRepliedComment = create<ModalStore<IComment>>()(
     setData: (data) => set({ data }),
   })
 );
+export const useUserModal = create<ModalStore<IUser>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
