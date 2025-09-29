@@ -1,5 +1,6 @@
 import { getCategories } from "@/lib/api/categories";
 import CategoriesPageMain from "./_components";
+export const dynamic = "force-dynamic";
 
 async function getCategoryData() {
   const data = await getCategories();
@@ -9,7 +10,6 @@ async function getCategoryData() {
 
   return data;
 }
-
 const CategoriesPage = async () => {
   const data = await getCategoryData();
 

@@ -1,6 +1,6 @@
 import { getGenres } from "@/lib/api/genres";
 import GenresPageMain from "./_components";
-
+export const dynamic = "force-dynamic";
 async function getGenreData() {
   const data = await getGenres();
   if (!data.success) {

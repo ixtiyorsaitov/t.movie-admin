@@ -7,8 +7,8 @@ export async function getCategories() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/categories`,
     {
-      // cache: "force-cache",
-      // next: { tags: [CacheTags.CATEGORIES] },
+      cache: "force-cache",
+      next: { tags: [CacheTags.CATEGORIES] },
     }
   );
   const data = await res.json();
