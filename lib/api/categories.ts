@@ -4,14 +4,16 @@ import { categorySchema } from "../validation";
 import { CacheTags } from "../utils";
 
 export async function getCategories() {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/categories`,
-    {
-      // cache: "force-cache",
-      // next: { tags: [CacheTags.CATEGORIES] },
-    }
-  );
-  const data = await res.json();
+  // const res = await fetch(
+  //   `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/categories`,
+  //   {
+  //     cache: "force-cache",
+  //     next: { tags: [CacheTags.CATEGORIES] },
+  //   }
+  // );
+  // const data = await res.json();
+
+  const { data } = await api.get("/categories");
   return data;
 }
 export async function getCategoryFilms(categoryId?: string) {
