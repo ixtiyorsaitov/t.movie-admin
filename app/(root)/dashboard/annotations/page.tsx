@@ -1,6 +1,7 @@
 import { getAnnotations } from "@/lib/api/annotations";
 import React from "react";
 import AnnotationsPageMain from "./_components";
+export const dynamic = "force-dynamic";
 const AnnotationsPage = async () => {
   const datas = await getAnnotations();
 
