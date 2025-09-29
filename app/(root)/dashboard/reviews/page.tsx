@@ -1,7 +1,7 @@
 import React from "react";
 import ReviewsPageMain from "./_components";
 import { getReviews } from "@/lib/api/reviews";
-
+export const dynamic = "force-dynamic";
 const limit = 10;
 
 const ReviewsPage = async () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import CommentsPageMain from "./components";
 import { getComments } from "@/lib/api/comments";
-
+export const dynamic = "force-dynamic";
 const limit = 5;
 
 const CommentsPage = async () => {

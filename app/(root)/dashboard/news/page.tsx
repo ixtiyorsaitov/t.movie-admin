@@ -5,8 +5,8 @@ import { Heading } from "@/components/ui/heading";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+export const dynamic = "force-dynamic";
 const limit = 9;
-
 async function getNewsData() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news?limit=${limit}`,

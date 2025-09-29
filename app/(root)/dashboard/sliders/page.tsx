@@ -1,7 +1,7 @@
 import HeroSlider from "@/components/core/slider";
 import { CacheTags } from "@/lib/utils";
 import React from "react";
-
+export const dynamic = "force-dynamic";
 async function getSliderData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/slider`, {
     cache: "force-cache",
