@@ -1,5 +1,6 @@
 import { getFilms } from "@/lib/api/films";
 import FilmsPageMain from "./_components";
+export const dynamic = "force-dynamic";
 const limit = 2;
 
 async function getFilmsData() {
