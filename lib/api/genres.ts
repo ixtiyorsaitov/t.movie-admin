@@ -4,13 +4,11 @@ import { genreSchema } from "../validation";
 import { CacheTags } from "../utils";
 
 export async function getGenres() {
-  // const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/genres`, {
-  //   cache: "force-cache",
-  //   next: { tags: [CacheTags.GENRES] },
-  // });
-  // const data = await res.json();
-
-  const { data } = await api.get("/genres");
+  const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/genres`, {
+    // cache: "force-cache",
+    // next: { tags: [CacheTags.GENRES] },
+  });
+  const data = await res.json();
   return data;
 }
 export async function getGenreFilms(genreId?: string) {

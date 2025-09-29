@@ -9,8 +9,8 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     await connectToDatabase();
-
     const datas = await Annotation.find().lean();
+    console.log("datas", datas);
     return NextResponse.json({ success: true, datas });
   } catch (error) {
     console.log(error);
