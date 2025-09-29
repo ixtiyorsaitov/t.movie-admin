@@ -60,7 +60,7 @@ const MovieControl = ({ data }: { data: IFilm }) => {
       if (currentData.video?.url) {
         const removed = await removeVideo(
           [currentData.video.name],
-          BUCKETS.MOVIES
+          BUCKETS.EPISODES
         );
         if (!removed.success) {
           throw new Error("Video removal failed");
@@ -70,7 +70,7 @@ const MovieControl = ({ data }: { data: IFilm }) => {
       // Pass the setUploadProgress callback to the uploadVideo function
       const uploaded = await uploadVideo(
         file,
-        BUCKETS.MOVIES,
+        BUCKETS.EPISODES,
         setUploadProgress
       );
       if (!uploaded.success) {

@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { UserAvatarProfile } from "../user/user-avatar-profile";
-import { user } from "@/lib/constants";
 import { signOut, useSession } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { IUser } from "@/types";

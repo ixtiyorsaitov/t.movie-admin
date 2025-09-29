@@ -1,4 +1,5 @@
-import type { IFilm, FilmType } from "@/types";
+import type { FilmType } from "@/types";
+import { IFilm } from "./film";
 
 export interface FilmFormProps {
   initialData: IFilm | null;
