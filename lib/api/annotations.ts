@@ -7,8 +7,8 @@ export async function getAnnotations() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/annotations`,
     {
-      cache: "force-cache",
-      next: { tags: [CacheTags.ANNOTATION] },
+      // cache: "force-cache",
+      // next: { tags: [CacheTags.ANNOTATION] },
     }
   );
   const data = await res.json();
