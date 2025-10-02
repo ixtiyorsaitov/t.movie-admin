@@ -74,3 +74,8 @@ export const replyCommentSchema = z.object({
   content: z.string().min(1, { message: "Javobingizni kiriting" }),
   asAdmin: z.boolean(),
 });
+export const userSchema = z.object({
+  name: z.string().min(2, { message: "Ismini kiriting" }),
+  email: z.string().email({ message: "Email formatini kiriting" }),
+  role: z.string().min(1, { message: "Rolni kiriting" }),
+});

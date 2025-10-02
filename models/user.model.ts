@@ -6,23 +6,23 @@ const UserSchema = new mongoose.Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     avatar: { type: String },
-    meta: {
-      likes: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "Film",
-        default: [],
-      },
-      watchList: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "Film",
-        default: [],
-      },
-      submitList: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "Film",
-        default: [],
-      },
-    },
+    // meta: {
+    //   likes: {
+    //     type: [mongoose.Schema.Types.ObjectId],
+    //     ref: "Film",
+    //     default: [],
+    //   },
+    //   watchList: {
+    //     type: [mongoose.Schema.Types.ObjectId],
+    //     ref: "Film",
+    //     default: [],
+    //   },
+    //   submitList: {
+    //     type: [mongoose.Schema.Types.ObjectId],
+    //     ref: "Film",
+    //     default: [],
+    //   },
+    // },
     role: {
       type: String,
       enum: [ROLE.SUPERADMIN, ROLE.ADMIN, ROLE.MEMBER, ROLE.USER],
