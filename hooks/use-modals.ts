@@ -137,3 +137,9 @@ export const useUserModal = create<ModalStore<IUser>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+export const useDeleteUserModal = create<ModalStore<IUser>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));

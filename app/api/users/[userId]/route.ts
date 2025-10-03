@@ -1,5 +1,7 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
+import Comment from "@/models/comment.model";
+import Review from "@/models/review.model";
 import User from "@/models/user.model";
 import { IUser, ROLE } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -63,19 +65,20 @@ export async function DELETE(
   return adminOnly(async (admin) => {
     try {
       await connectToDatabase();
+      if (admin.role !== ROLE.SUPERADMIN) {
+        return NextResponse.json(
+          { error: "Siz bu huquqga ega emassiz" },
+          { status: 401 }
+        );
+      }
       const { userId } = await params;
       const user = await User.findById(userId);
 
       if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-
-      if (user.role === ROLE.SUPERADMIN) {
-        return NextResponse.json(
-          { error: "Super admin huquqini o'chirish mumkin" },
-          { status: 401 }
-        );
-      }
+      await Comment.deleteMany({ user: userId });
+      await Review.deleteMany({ user: userId });
 
       await user.deleteOne();
 

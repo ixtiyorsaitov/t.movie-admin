@@ -21,8 +21,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { userSchema } from "@/lib/validation";
-import { Loader2 } from "lucide-react";
-import { useUserModal } from "@/hooks/use-modals";
+import { Loader2, Trash2 } from "lucide-react";
+import { useDeleteUserModal, useUserModal } from "@/hooks/use-modals";
 import { IUser, ROLE } from "@/types";
 import {
   Select,
@@ -32,8 +32,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useCreateUser, useUpdateUser } from "@/hooks/useUsers";
+import { useCreateUser, useDeleteUser, useUpdateUser } from "@/hooks/useUsers";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 const UserModal = ({
   setDatas,
@@ -259,3 +268,68 @@ const UserModal = ({
 };
 
 export default UserModal;
+
+export const DeleteUserModal = ({
+  setDatas,
+}: {
+  setDatas: Dispatch<SetStateAction<IUser[]>>;
+}) => {
+  const { open, setOpen, data, setData } = useDeleteUserModal();
+  const deleteMutation = useDeleteUser();
+
+  const onDelete = () => {
+    if (data) {
+      deleteMutation.mutate(data._id, {
+        onSuccess: (response) => {
+          if (response.success) {
+            setDatas((prev) => prev.filter((c) => c._id !== data._id));
+            setOpen(false);
+            setData(null);
+            toast.success("Foydalanuvchi o'chirildi");
+          } else {
+            toast.error(response.error);
+          }
+        },
+      });
+    }
+  };
+  return (
+    data && (
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{"Foydalanuvchini o'chirish"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              Siz haqiqatdan ham
+              <span className="font-bold text-white">{` ${data.name} `}</span>
+              ni {"o'chirib"} tashlamoqchimisiz?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              disabled={deleteMutation.isPending}
+              onClick={() => {
+                setData(null);
+                setOpen(false);
+              }}
+            >
+              Bekor qilish
+            </AlertDialogCancel>
+            <Button
+              disabled={deleteMutation.isPending}
+              variant={"destructive"}
+              onClick={onDelete}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Trash2 />
+              )}
+              {"O'chirish"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    )
+  );
+};

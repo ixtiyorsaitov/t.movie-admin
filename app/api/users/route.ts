@@ -14,13 +14,20 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const search = searchParams.get("search") || "";
+    const roleFilter = searchParams.get("roleFilter") || "all";
 
     const skip = (page - 1) * limit;
 
+    // filter
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: any = {
-      role: { $ne: ROLE.SUPERADMIN },
+      role: { $ne: ROLE.SUPERADMIN }, // superadminlar chiqmaydi
     };
+
+    if (roleFilter !== "all") {
+      filter.role = roleFilter;
+    }
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -28,7 +35,11 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const users = await User.find(filter).skip(skip).limit(limit).lean();
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 }) // eng oxirgi qo‘shilganlardan boshlab
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
     const total = await User.countDocuments(filter);
 

@@ -10,12 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUserModal } from "@/hooks/use-modals";
+import { useDeleteUserModal, useUserModal } from "@/hooks/use-modals";
 import { getSearchedUsers } from "@/lib/api/users";
 import { IUser, PaginationType, ROLE } from "@/types";
 import { debounce } from "lodash";
 import {
   CopyIcon,
+  CrownIcon,
   Edit,
   FilmIcon,
   MoreVertical,
@@ -27,7 +28,7 @@ import {
   User,
   UserIcon,
 } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import Loading from "../loading";
 import {
@@ -51,9 +52,18 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn, onCopy } from "@/lib/utils";
+import { cn, getPageNumbers, onCopy } from "@/lib/utils";
 import { format } from "date-fns";
-import UserModal from "@/components/modals/user.modal";
+import UserModal, { DeleteUserModal } from "@/components/modals/user.modal";
+import { useSession } from "next-auth/react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const UsersMainPage = ({
   datas: defaultDatas,
@@ -64,7 +74,9 @@ const UsersMainPage = ({
   pagination: PaginationType;
   limit: number;
 }) => {
+  const { data: session } = useSession();
   const userModal = useUserModal();
+  const deleteModal = useDeleteUserModal();
   const [datas, setDatas] = useState<IUser[]>(defaultDatas);
   const [loading, setLoading] = useState<boolean>(false);
   const [pagination, setPagination] =
@@ -72,6 +84,21 @@ const UsersMainPage = ({
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [roleFilter, setRoleFilter] = useState<ROLE | "all">("all");
 
+  const handlePageChange = async (page: number) => {
+    const newData = await getSearchedUsers({
+      searchTerm,
+      page,
+      limit,
+      roleFilter,
+      setLoading,
+    });
+    if (newData.error) {
+      toast.error(newData.error);
+      return;
+    }
+    setDatas(newData.datas);
+    setPagination(newData.pagination);
+  };
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     if (e.target.value.trim() === "") {
@@ -83,7 +110,7 @@ const UsersMainPage = ({
       searchTerm: e.target.value,
       page: pagination.page,
       limit,
-      roleFilter: roleFilter,
+      roleFilter,
       setLoading,
     });
     if (newData.error) {
@@ -94,13 +121,29 @@ const UsersMainPage = ({
   };
   const handleDebouncedSearch = useCallback(debounce(handleSearch, 300), []);
 
-  return loading ? (
-    <Loading />
-  ) : (
+  useEffect(() => {
+    const handleRoleChange = async () => {
+      const newData = await getSearchedUsers({
+        searchTerm,
+        page: pagination.page,
+        limit,
+        roleFilter: roleFilter,
+        setLoading,
+      });
+      if (newData.error) {
+        toast.error(newData.error);
+      }
+      setDatas(newData.datas);
+      setPagination(newData.pagination);
+    };
+    handleRoleChange();
+  }, [roleFilter]);
+
+  return (
     <>
       <div className="w-full flex items-center justify-center flex-col px-2">
         <div className="flex items-center justify-between w-full mb-3">
-          <Heading title="Foydalanuvchilar" description="" />
+          <Heading title={`Foydalanuvchilar (${defaultPagination.total})`} description="" />
           <Button
             onClick={() => {
               userModal.setData(null);
@@ -132,27 +175,13 @@ const UsersMainPage = ({
                 <SelectItem value={ROLE.USER}>ODDIY FOYDALANUVCHI</SelectItem>
                 <SelectItem value={ROLE.MEMBER}>HODIM</SelectItem>
                 <SelectItem value={ROLE.ADMIN}>ADMIN</SelectItem>
-                <SelectItem value={ROLE.SUPERADMIN} disabled>
-                  SUPER ADMIN
-                </SelectItem>
+                {session?.currentUser.role === ROLE.SUPERADMIN && (
+                  <SelectItem value={ROLE.SUPERADMIN}>SUPER ADMIN</SelectItem>
+                )}
               </SelectContent>
             </Select>
+
             {/* <Select
-              value={replyFilter}
-              onValueChange={(value) =>
-                setReplyFilter(value as ReplyFilterType)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Javob" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Barchasi</SelectItem>
-                <SelectItem value="replied">Javob berilgan</SelectItem>
-                <SelectItem value="not-replied">Javob berilmagan</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
               value={sortBy}
               onValueChange={(value) => setSortBy(value as SortByType)}
             >
@@ -183,7 +212,7 @@ const UsersMainPage = ({
               {datas.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={6}
                     className="text-center py-8 text-muted-foreground"
                   >
                     Hech qanday foydalanuvchi topilmadi
@@ -195,12 +224,12 @@ const UsersMainPage = ({
                     key={data._id}
                     className={cn(
                       "hover:bg-muted/30 transition-colors",
-                      data.role === ROLE.SUPERADMIN && "hidden"
+                      data.role === ROLE.SUPERADMIN && "bg-accent"
                     )}
                   >
                     <TableCell>
                       <div className="flex items-center justify-start gap-2 ">
-                        <Avatar>
+                        <Avatar className="border">
                           <AvatarImage src={data.avatar || ""} />
                           <AvatarFallback>
                             {data.name.slice(0, 2)?.toUpperCase()}
@@ -230,7 +259,7 @@ const UsersMainPage = ({
                       ) : data.role === ROLE.SUPERADMIN ? (
                         <div className="flex items-center justify-start gap-1">
                           Super admin{" "}
-                          <CheckMarkIcon className="fill-primary w-4 h-4" />
+                          <CrownIcon className="h-4 w-4 fill-yellow-500 text-yellow-500" />
                         </div>
                       ) : (
                         <div className="flex items-center justify-start gap-1"></div>
@@ -294,8 +323,8 @@ const UsersMainPage = ({
                             variant="destructive"
                             className="cursor-pointer text-destructive focus:text-destructive"
                             onClick={() => {
-                              // deleteModal.setData(data);
-                              // deleteModal.setOpen(true);
+                              deleteModal.setData(data);
+                              deleteModal.setOpen(true);
                             }}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -310,12 +339,60 @@ const UsersMainPage = ({
             </TableBody>
           </Table>
         </div>
+        {pagination.total > limit && (
+          <Pagination className="mt-5 justify-end">
+            <PaginationContent>
+              {/* Prev tugmasi */}
+              <PaginationItem>
+                <PaginationPrevious
+                  className="cursor-pointer"
+                  onClick={() =>
+                    pagination.page > 1 && handlePageChange(pagination.page - 1)
+                  }
+                />
+              </PaginationItem>
+
+              {/* Sahifa tugmalari */}
+              {getPageNumbers(pagination).map((page, i) =>
+                page === "..." ? (
+                  <PaginationItem key={`ellipsis-${i}`}>
+                    <span className="px-2">...</span>
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem
+                    key={`page-${page}`}
+                    className="cursor-pointer"
+                  >
+                    <PaginationLink
+                      isActive={page === pagination.page}
+                      onClick={() => handlePageChange(page as number)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
+
+              {/* Next tugmasi */}
+              <PaginationItem>
+                <PaginationNext
+                  className="cursor-pointer"
+                  onClick={() =>
+                    pagination.page < pagination.totalPages &&
+                    handlePageChange(pagination.page + 1)
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
       <UserModal
         setDatas={setDatas}
         setLoading={setLoading}
         loading={loading}
       />
+      <DeleteUserModal setDatas={setDatas} />
     </>
   );
 };
