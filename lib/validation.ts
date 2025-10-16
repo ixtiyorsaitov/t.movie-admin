@@ -1,5 +1,4 @@
-"use client";
-
+import { PeriodType } from "@/types";
 import { z } from "zod";
 
 export const filmFormSchema = z.object({
@@ -78,4 +77,36 @@ export const userSchema = z.object({
   name: z.string().min(2, { message: "Ismini kiriting" }),
   email: z.string().email({ message: "Email formatini kiriting" }),
   role: z.string().min(1, { message: "Rolni kiriting" }),
+});
+export const priceSchema = z.object({
+  name: z
+    .string()
+    .min(5, { message: "Nomi kamida 5 ta belgidan iborat bo'lishi kerak" }),
+  price: z.string().min(0, {
+    message: "Narxini kiriting",
+  }),
+  period: z.enum([PeriodType.MONTHLY, PeriodType.YEARLY], {
+    message: "Davrni tanlang",
+  }),
+  expiresPeriodCount: z.string().min(1, {
+    message: "Muddati kamida 1 bo'lishi kerak",
+  }),
+  description: z
+    .string()
+    .min(5, { message: "Tavsif kamida 5 ta belgidan iborat bo'lishi kerak" }),
+  features: z.array(
+    z.object({
+      text: z.string().min(2, {
+        message: "Tavsif kamida 2 ta belgidan iborat bo'lishi kerak",
+      }),
+      included: z.boolean(),
+    })
+  ),
+  buttonText: z.string().min(2, {
+    message: "Buton teksti kamida 2 ta belgidan iborat bo'lishi kerak",
+  }),
+  buttonVariant: z.enum(["default", "outline", "secondary"], {
+    message: "Buton varianti tanlang",
+  }),
+  recommended: z.boolean(),
 });

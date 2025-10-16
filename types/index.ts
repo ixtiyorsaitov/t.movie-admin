@@ -4,6 +4,10 @@ export enum FilmType {
   SERIES = "series",
   MOVIE = "movie",
 }
+export enum PeriodType {
+  MONTHLY = "monthly",
+  YEARLY = "yearly",
+}
 export enum ROLE {
   SUPERADMIN = "superAdmin",
   ADMIN = "admin",

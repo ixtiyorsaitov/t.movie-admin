@@ -20,6 +20,8 @@ export const CacheTags = {
   ANNOTATION: "annotation",
   REVIEWS: "reviews",
   COMMENTS: "comments",
+  USERS: "users",
+  PRICES: "prices",
 };
 
 export const onCopy = (text: string) => {
