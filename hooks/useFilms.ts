@@ -11,10 +11,12 @@ export const useCreateFilmMutation = ({
   setCreatingStep,
   selectedGenres,
   backgroundFile,
+  selectedCategory,
   cardFile,
 }: {
   setCreatingStep: (step: LoadingStep) => void;
   selectedGenres: string[];
+  selectedCategory: string;
   backgroundFile: File | null;
   cardFile: File | null;
 }) => {
@@ -38,6 +40,7 @@ export const useCreateFilmMutation = ({
       const { data: createdData } = await axios.post("/api/films", {
         ...values,
         genres: selectedGenres,
+        category: selectedCategory,
         images: {
           backgroundImage: {
             name: uploadBg.fileName,
@@ -70,12 +73,14 @@ export const useUpdateFilmMutation = ({
   backgroundFile,
   cardFile,
   initialData,
+  selectedCategory,
 }: {
   setUpdatingStep: (step: LoadingStep) => void;
   selectedGenres: string[];
   backgroundFile: File | null;
   cardFile: File | null;
   initialData: IFilm | null;
+  selectedCategory: string;
 }) => {
   return useMutation({
     mutationFn: async (values: z.infer<typeof filmFormSchema>) => {
@@ -134,6 +139,7 @@ export const useUpdateFilmMutation = ({
         ...initialData,
         ...values,
         genres: selectedGenres,
+        category: selectedCategory,
         images: {
           ...initialData.images,
           backgroundImage,

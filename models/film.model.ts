@@ -42,6 +42,8 @@ const FilmSchema = new mongoose.Schema<IFilm>(
     episodes: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Episode", default: [] },
     ],
+    actors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    translators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     disableComments: { type: Boolean, default: false },
   },
   { timestamps: true }

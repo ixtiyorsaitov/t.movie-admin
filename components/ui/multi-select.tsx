@@ -71,91 +71,72 @@ const MultiSelect = ({ selectedGenres, setSelectedGenres }: Props) => {
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="w-full h-full fixed z-[999] top-0 left-0 bg-black/40 backdrop-blur-[10px] flex items-center justify-center p-4"
-    >
-      <div className="bg-white dark:bg-secondary w-full max-w-2xl rounded-lg shadow-xl relative overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold">Janr tanlash</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            className="h-8 w-8 p-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[70vh] h-full">
-          {/* Search Input */}
-          <div className="mb-4">
-            <div className="relative flex items-center justify-start gap-2">
-              <Search className="w-4 h-4" />
-              <input
-                ref={inputRef}
-                type="text"
-                className="w-full text-sm border-none outline-none"
-                placeholder="Janrni qidirish uchun"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                aria-label="Search genres"
-                name="search"
-              />
-            </div>
+    <>
+      {/* Content */}
+      <div className="overflow-y-auto max-h-[70vh] h-full">
+        {/* Search Input */}
+        <div className="mb-4">
+          <div className="relative flex items-center justify-start gap-2">
+            <Search className="w-4 h-4" />
+            <input
+              ref={inputRef}
+              type="text"
+              className="w-full text-sm border-none outline-none"
+              placeholder="Janrni qidirish uchun"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Search genres"
+              name="search"
+            />
           </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[...Array(20)].map((_, idx) => (
-                <div
-                  key={idx}
-                  className="h-10 bg-white/5 animate-pulse rounded-lg"
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filteredGenres.map((genre: IGenre) => (
-                <GenreItem
-                  key={genre._id}
-                  genre={genre}
-                  selected={currentSelectedGenres.includes(genre._id)}
-                  onChange={onChange}
-                />
-              ))}
-            </div>
-          )}
-
-          {filteredGenres.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Bu kalitga oid janr topilmadi {`"${searchTerm}"`}</p>
-            </div>
-          )}
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t ">
-          <Button variant="outline" onClick={onCancel} className="px-6">
-            Bekor qilish
-          </Button>
-          <Button
-            onClick={() => {
-              // Handle selection logic here
-              setSelectedGenres(currentSelectedGenres);
-              setOpen(false);
-            }}
-            className="px-6"
-          >
-            Tasdiqlash
-          </Button>
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[...Array(20)].map((_, idx) => (
+              <div
+                key={idx}
+                className="h-10 bg-white/5 animate-pulse rounded-lg"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {filteredGenres.map((genre: IGenre) => (
+              <GenreItem
+                key={genre._id}
+                genre={genre}
+                selected={currentSelectedGenres.includes(genre._id)}
+                onChange={onChange}
+              />
+            ))}
+          </div>
+        )}
+
+        {filteredGenres.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>Bu kalitga oid janr topilmadi {`"${searchTerm}"`}</p>
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t ">
+        <Button variant="outline" onClick={onCancel} className="px-6">
+          Bekor qilish
+        </Button>
+        <Button
+          onClick={() => {
+            // Handle selection logic here
+            setSelectedGenres(currentSelectedGenres);
+            setOpen(false);
+          }}
+          className="px-6"
+        >
+          Tasdiqlash
+        </Button>
+      </div>
+    </>
   );
 };
 

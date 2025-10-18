@@ -1,6 +1,7 @@
 import {
   createCategory,
   deleteCategory,
+  getCategories,
   getCategoryFilms,
   updateCategory,
 } from "@/lib/api/categories";
@@ -12,6 +13,12 @@ import z from "zod";
 
 const fiveMinutes = 1000 * 60 * 5;
 
+export function useGetAllCategories() {
+  return useQuery({
+    queryKey: [CacheTags.CATEGORIES],
+    queryFn: () => getCategories(),
+  });
+}
 export function useGetCategoryFilms(categoryId?: string) {
   return useQuery({
     queryKey: [
@@ -19,7 +26,6 @@ export function useGetCategoryFilms(categoryId?: string) {
       `${CacheTags.CATEGORY_FILMS}-${categoryId}`,
     ],
     queryFn: () => getCategoryFilms(categoryId),
-    staleTime: fiveMinutes,
   });
 }
 export function useCreateCategory() {

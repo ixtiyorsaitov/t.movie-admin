@@ -2,6 +2,7 @@ import z from "zod";
 import api from "../axios";
 import { categorySchema } from "../validation";
 import { CacheTags } from "../utils";
+import { ICategory } from "@/types";
 
 export async function getCategories() {
   const res = await fetch(
@@ -12,7 +13,7 @@ export async function getCategories() {
     }
   );
   const data = await res.json();
-  return data;
+  return data as { datas: ICategory[]; error: string; success: boolean };
 }
 export async function getCategoryFilms(categoryId?: string) {
   const { data: response } = await api.get(`/categories/${categoryId}/films`);

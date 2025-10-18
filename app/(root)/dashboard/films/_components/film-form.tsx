@@ -45,6 +45,7 @@ import { ImageUploadField } from "@/components/form-fields/image-upload-field";
 import { useCreateFilmMutation, useUpdateFilmMutation } from "@/hooks/useFilms";
 import { toast } from "sonner";
 import { IFilm } from "@/types/film";
+import SelectCategory from "./select-category";
 
 const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   // State management
@@ -67,6 +68,9 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   // Genre selection
   const [selectedGenres, setSelectedGenres] = useState<string[]>(
     initialDataState ? initialDataState.genres.map((genre) => genre._id) : []
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialDataState ? initialDataState.category : ""
   );
 
   const selectGenreModal = useSelectGenre();
@@ -106,6 +110,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
     cardFile,
     setCreatingStep,
     selectedGenres,
+    selectedCategory,
   });
   const updateMutation = useUpdateFilmMutation({
     backgroundFile,
@@ -113,6 +118,7 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
     setUpdatingStep,
     selectedGenres,
     initialData,
+    selectedCategory,
   });
 
   // File handlers
@@ -337,6 +343,13 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
                         </DialogContent>
                       </Dialog>
                     )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <SelectCategory
+                      selectedCategory={selectedCategory}
+                      setSelectedCategory={setSelectedCategory}
+                    />
                   </div>
                 </div>
 

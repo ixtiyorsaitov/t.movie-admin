@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { CacheTags, generateSlug } from "@/lib/utils";
 import { revalidateTag } from "next/cache";
+import Category from "@/models/category.model";
 
 export async function GET(
   req: NextRequest,
@@ -46,6 +47,13 @@ export async function PUT(
     const genreDocs = await Promise.all(
       body.genres.map((g: string) => Genre.findById(g))
     );
+    const selectedCtg = await Category.findById(datas.category);
+    if (!selectedCtg) {
+      return NextResponse.json(
+        { error: "Kategoriya topilmadi" },
+        { status: 400 }
+      );
+    }
 
     const sortedGenres = genreDocs
       .filter((genre) => genre !== null)
@@ -60,6 +68,7 @@ export async function PUT(
         description: datas.description,
         published: datas.published,
         genres: sortedGenres,
+        category: selectedCtg._id,
         images: {
           image: {
             url: datas.images.image.url,
@@ -80,9 +89,9 @@ export async function PUT(
         error: "Film topilmadi",
       });
     }
-    revalidateTag(CacheTags.ANIME);
-    revalidateTag(`${CacheTags.ANIME}-${filmId}`);
-    revalidateTag(CacheTags.SLIDER);
+    // revalidateTag(CacheTags.ANIME);
+    // revalidateTag(`${CacheTags.ANIME}-${filmId}`);
+    // revalidateTag(CacheTags.SLIDER);
 
     return NextResponse.json({ success: true, film: updatedFilm, form: datas });
   } catch (error) {
