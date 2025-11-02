@@ -1,7 +1,7 @@
 import { getFilms } from "@/lib/api/films";
 import FilmsPageMain from "./_components";
 export const dynamic = "force-dynamic";
-const limit = 2;
+const limit = 10;
 
 async function getFilmsData() {
   const data = await getFilms(limit);

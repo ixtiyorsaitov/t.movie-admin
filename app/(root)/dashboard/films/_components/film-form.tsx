@@ -46,6 +46,7 @@ import { useCreateFilmMutation, useUpdateFilmMutation } from "@/hooks/useFilms";
 import { toast } from "sonner";
 import { IFilm } from "@/types/film";
 import SelectCategory from "./select-category";
+import FilmMembersSection from "./film-members-section";
 
 const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   // State management
@@ -71,6 +72,14 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
   );
   const [selectedCategory, setSelectedCategory] = useState<string>(
     initialDataState ? initialDataState.category : ""
+  );
+  const [selectedActors, setSelectedActors] = useState<string[]>(
+    initialDataState ? initialDataState.actors?.map((actor) => actor._id) : []
+  );
+  const [selectedTranslators, setSelectedTranslators] = useState<string[]>(
+    initialDataState
+      ? initialDataState.translators?.map((translator) => translator._id)
+      : []
   );
 
   const selectGenreModal = useSelectGenre();
@@ -355,6 +364,12 @@ const FilmForm = ({ initialData, pageTitle }: FilmFormProps) => {
 
                 {/* Right Column */}
                 <div className="space-y-6">
+                  <FilmMembersSection
+                    selectedActors={selectedActors}
+                    setSelectedActors={setSelectedActors}
+                    selectedTranslators={selectedTranslators}
+                    setSelectedTranslators={setSelectedTranslators}
+                  />
                   <FormField
                     control={form.control}
                     name="description"

@@ -25,10 +25,10 @@ export const getSearchedUsers = async ({
   page: number;
   limit: number;
   roleFilter: ROLE | "all";
-  setLoading: (loading: boolean) => void;
+  setLoading?: (loading: boolean) => void;
 }) => {
   try {
-    setLoading(true);
+    setLoading?.(true);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/users?search=${searchTerm}&page=${page}&limit=${limit}&roleFilter=${roleFilter}`
     );
@@ -42,7 +42,7 @@ export const getSearchedUsers = async ({
       pagination: { page: 1, limit, total: 0, totalPages: 0 },
     };
   } finally {
-    setLoading(false);
+    setLoading?.(false);
   }
 };
 export async function getUser(id: string) {

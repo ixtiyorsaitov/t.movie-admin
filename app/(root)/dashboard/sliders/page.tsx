@@ -4,8 +4,8 @@ import React from "react";
 export const dynamic = "force-dynamic";
 async function getSliderData() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/slider`, {
-    cache: "force-cache",
-    next: { tags: [CacheTags.SLIDER] },
+    // cache: "force-cache",
+    // next: { tags: [CacheTags.SLIDER] },
   });
 
   if (!res.ok) {
@@ -20,6 +20,8 @@ async function getSliderData() {
 
 const Sliders = async () => {
   const datas = await getSliderData();
+  console.log(datas);
+
   return datas.error ? (
     <div>{datas.error}</div>
   ) : (

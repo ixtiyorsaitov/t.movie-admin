@@ -44,20 +44,20 @@ export async function PUT(
     const body = await req.json();
     const datas = body as IFilm;
 
-    const genreDocs = await Promise.all(
-      body.genres.map((g: string) => Genre.findById(g))
-    );
-    const selectedCtg = await Category.findById(datas.category);
-    if (!selectedCtg) {
-      return NextResponse.json(
-        { error: "Kategoriya topilmadi" },
-        { status: 400 }
-      );
-    }
+    // const genreDocs = await Promise.all(
+    //   body.genres.map((g: string) => Genre.findById(g))
+    // );
+    // const selectedCtg = await Category.findById(datas.category);
+    // if (!selectedCtg) {
+    //   return NextResponse.json(
+    //     { error: "Kategoriya topilmadi" },
+    //     { status: 400 }
+    //   );
+    // }
 
-    const sortedGenres = genreDocs
-      .filter((genre) => genre !== null)
-      .map((genre) => genre!._id);
+    // const sortedGenres = genreDocs
+    //   .filter((genre) => genre !== null)
+    //   .map((genre) => genre!._id);
 
     const slug = generateSlug(datas.title);
     const updatedFilm = await Film.findByIdAndUpdate(
@@ -67,8 +67,8 @@ export async function PUT(
         slug,
         description: datas.description,
         published: datas.published,
-        genres: sortedGenres,
-        category: selectedCtg._id,
+        // genres: sortedGenres,
+        // category: selectedCtg._id,
         images: {
           image: {
             url: datas.images.image.url,
