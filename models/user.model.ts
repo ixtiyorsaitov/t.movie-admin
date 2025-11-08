@@ -1,4 +1,4 @@
-import { MemberType, ROLE } from "@/types";
+import { ROLE } from "@/types";
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
@@ -25,14 +25,9 @@ const UserSchema = new mongoose.Schema(
     // },
     role: {
       type: String,
-      enum: [ROLE.SUPERADMIN, ROLE.ADMIN, ROLE.MEMBER, ROLE.USER],
+      enum: [ROLE.SUPERADMIN, ROLE.ADMIN, ROLE.USER],
       required: true,
       default: ROLE.USER,
-    },
-    memberType: {
-      type: String,
-      required: false,
-      enum: [MemberType.ACTOR, MemberType.TRANSLATOR],
     },
     phone: String,
   },

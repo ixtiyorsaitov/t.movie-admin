@@ -1,6 +1,7 @@
 import { IEpisode, IGenre, INews, IUser } from "@/types";
 import { IAnnotation } from "@/types/annotation";
 import { IComment } from "@/types/comment";
+import { IMember } from "@/types/member";
 import { IPrice } from "@/types/price";
 import { IReview } from "@/types/review";
 import { create } from "zustand";
@@ -171,3 +172,20 @@ export const useDeletePriceModal = create<ModalStore<IPrice>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+
+export const useActorsSelectModal = create<ModalStoreStrict<IMember[]>>()(
+  (set) => ({
+    open: false,
+    setOpen: (open) => set({ open }),
+    data: [],
+    setData: (data) => set({ data }),
+  })
+);
+export const useTranslatorsSelectModal = create<ModalStoreStrict<IMember[]>>()(
+  (set) => ({
+    open: false,
+    setOpen: (open) => set({ open }),
+    data: [],
+    setData: (data) => set({ data }),
+  })
+);

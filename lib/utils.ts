@@ -8,12 +8,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 export const CacheTags = {
   SLIDER: "slider",
   NEWS: "news",
   FILMS: "films",
   EPISODES: "episodes",
+  MEMBERS: "members",
   CATEGORIES: "categories",
   GENRES: "genres",
   CATEGORY_FILMS: "category-films",
@@ -24,6 +24,20 @@ export const CacheTags = {
   USERS: "users",
   PRICES: "prices",
 };
+export function getLettersOfName(fullName: string): string {
+  if (!fullName) return "";
+
+  // So'zlarni bo'lib olish, bo'sh joy bilan split
+  const words = fullName.trim().split(/\s+/);
+
+  if (words.length === 1) {
+    // Faqat bitta so'z
+    return words[0][0].toUpperCase();
+  } else {
+    // Kamida ikki so'z → birinchi 2 so'zning bosh harfi
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+}
 
 export const onCopy = (text: string) => {
   navigator.clipboard.writeText(text);

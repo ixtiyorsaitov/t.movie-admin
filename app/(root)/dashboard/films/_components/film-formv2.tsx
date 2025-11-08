@@ -25,15 +25,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FilmType, ICategory, IGenre } from "@/types";
+import { FilmType, ICategory, IGenre, MemberType } from "@/types";
 import { IFilm } from "@/types/film";
-import { generateSlug } from "@/lib/utils";
+import { generateSlug, getLettersOfName } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { GenresSelectModal } from "@/components/modals/genre.modal";
-import { useGenresSelectModal } from "@/hooks/use-modals";
+import {
+  useActorsSelectModal,
+  useGenresSelectModal,
+  useTranslatorsSelectModal,
+} from "@/hooks/use-modals";
 import { useGenres } from "@/hooks/useGenre";
 import { toast } from "sonner";
 import { useCategories, useGetAllCategories } from "@/hooks/useCategory";
+import { useMembers } from "@/hooks/useMembers";
+import { IMember } from "@/types/member";
+import SelectActorsModal from "@/components/modals/select-actors.modal";
+import SelectTranslatorsModal from "@/components/modals/select-translator.modal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const formSchema = z.object({
   title: z
@@ -49,6 +58,8 @@ const formSchema = z.object({
   disableComments: z.boolean(),
   published: z.boolean(),
   genres: z.array(z.string()).min(1, "Kamida 1 ta janr tanlang"),
+  actors: z.array(z.string()).min(1, "Kamida 1 ta ovoz aktyorini tanlang"),
+  translators: z.array(z.string()).min(1, "Kamida 1 ta tarjimonni tanlang"),
   category: z.string().min(1, "Kategoriyani tanlang"),
 });
 
@@ -57,17 +68,36 @@ interface FilmFormProps {
 }
 
 export function FilmFormV2({ initialData }: FilmFormProps) {
-  const [step, setStep] = useState<1 | 2>(1);
   const selectedGenresModal = useGenresSelectModal();
+  const selectedActorsModal = useActorsSelectModal();
+  const selectedTranslatorsModal = useTranslatorsSelectModal();
+
+  const [step, setStep] = useState<1 | 2>(1);
+
   const genresQuery = useGenres();
   const categoriesQuery = useCategories();
-  console.log(categoriesQuery.data);
+  const membersQuery = useMembers(100);
 
   useEffect(() => {
     if (!genresQuery.isLoading && genresQuery.data.success) {
       selectedGenresModal.setData(genresQuery.data.datas);
     }
   }, [genresQuery.data]);
+
+  useEffect(() => {
+    if (!membersQuery.isLoading && membersQuery.data.success) {
+      selectedActorsModal.setData(
+        membersQuery.data.datas.filter((m: IMember) =>
+          m.type.includes(MemberType.ACTOR)
+        )
+      );
+      selectedTranslatorsModal.setData(
+        membersQuery.data.datas.filter((m: IMember) =>
+          m.type.includes(MemberType.TRANSLATOR)
+        )
+      );
+    }
+  }, [membersQuery.data]);
   const isEditing = !!initialData;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -82,6 +112,8 @@ export function FilmFormV2({ initialData }: FilmFormProps) {
           published: initialData.published,
           genres: initialData.genres.map((g) => g._id || g._id || ""), // 🔥 shu joy muhim
           category: initialData.category?._id,
+          actors: initialData.actors.map((a) => a._id || a._id || ""),
+          translators: initialData.translators.map((t) => t._id || t._id || ""),
         }
       : {
           title: "",
@@ -92,6 +124,8 @@ export function FilmFormV2({ initialData }: FilmFormProps) {
           published: false,
           genres: [],
           category: "",
+          actors: [],
+          translators: [],
         },
   });
 
@@ -114,8 +148,16 @@ export function FilmFormV2({ initialData }: FilmFormProps) {
   function onGenresChange(genres: string[]) {
     form.setValue("genres", genres);
   }
+  function onActorChange(actors: string[]) {
+    form.setValue("actors", actors);
+  }
+  function onTranslatorChange(translators: string[]) {
+    form.setValue("translators", translators);
+  }
 
   const selectedGenres = form.watch("genres");
+  const selectedActors = form.watch("actors");
+  const selectedTranslators = form.watch("translators");
 
   return (
     <>
@@ -194,6 +236,114 @@ export function FilmFormV2({ initialData }: FilmFormProps) {
                       )}
                     />
 
+                    <FormField
+                      control={form.control}
+                      name="actors"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Ovoz aktyorlari *</FormLabel>
+                          <FormControl>
+                            <div className="space-y-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  selectedActorsModal.setOpen(true)
+                                }
+                                className="w-full justify-start pl-3"
+                              >
+                                Ovoz aktyorlarini tanlash
+                              </Button>
+
+                              {selectedTranslators.length > 0 && (
+                                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                                  {selectedActors.map((translatorId) => {
+                                    const foundTranslator =
+                                      selectedTranslatorsModal.data.find(
+                                        (c) => c._id === translatorId
+                                      );
+                                    return (
+                                      <Avatar key={translatorId}>
+                                        <AvatarImage
+                                          src={
+                                            foundTranslator?.user.avatar || ""
+                                          }
+                                          alt={foundTranslator?.user.name}
+                                        />
+                                        <AvatarFallback>
+                                          {getLettersOfName(
+                                            foundTranslator?.user.name as string
+                                          )}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </FormControl>
+                          {form.formState.errors.actors && (
+                            <p className="text-sm text-destructive mt-1">
+                              {form.formState.errors.actors.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="translators"
+                      render={() => (
+                        <FormItem>
+                          <FormLabel>Tarjimonlar *</FormLabel>
+                          <FormControl>
+                            <div className="space-y-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  selectedTranslatorsModal.setOpen(true)
+                                }
+                                className="w-full justify-start pl-3"
+                              >
+                                Tarjimonlarni tanlash
+                              </Button>
+
+                              {selectedTranslators.length > 0 && (
+                                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                                  {selectedTranslators.map((translatorId) => {
+                                    const foundTranslator =
+                                      selectedTranslatorsModal.data.find(
+                                        (c) => c._id === translatorId
+                                      );
+                                    return (
+                                      <Avatar key={translatorId}>
+                                        <AvatarImage
+                                          src={
+                                            foundTranslator?.user.avatar || ""
+                                          }
+                                          alt={foundTranslator?.user.name}
+                                        />
+                                        <AvatarFallback>
+                                          {getLettersOfName(
+                                            foundTranslator?.user.name as string
+                                          )}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          </FormControl>
+                          {form.formState.errors.actors && (
+                            <p className="text-sm text-destructive mt-1">
+                              {form.formState.errors.actors.message}
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={form.control}
                       name="genres"
@@ -412,6 +562,18 @@ export function FilmFormV2({ initialData }: FilmFormProps) {
         onGenresChange={onGenresChange}
         loading={genresQuery.isLoading}
         error={genresQuery.isLoading ? undefined : genresQuery.data.error}
+      />
+      <SelectActorsModal
+        initialData={selectedActors}
+        onActorChange={onActorChange}
+        loading={membersQuery.isLoading}
+        error={membersQuery.isLoading ? undefined : membersQuery.data.error}
+      />
+      <SelectTranslatorsModal
+        initialData={selectedTranslators}
+        onTranslatorChange={onTranslatorChange}
+        loading={membersQuery.isLoading}
+        error={membersQuery.isLoading ? undefined : membersQuery.data.error}
       />
     </>
   );

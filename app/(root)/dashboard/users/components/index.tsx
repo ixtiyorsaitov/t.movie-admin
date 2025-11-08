@@ -143,7 +143,10 @@ const UsersMainPage = ({
     <>
       <div className="w-full flex items-center justify-center flex-col px-2">
         <div className="flex items-center justify-between w-full mb-3">
-          <Heading title={`Foydalanuvchilar (${defaultPagination.total})`} description="" />
+          <Heading
+            title={`Foydalanuvchilar (${defaultPagination.total})`}
+            description=""
+          />
           <Button
             onClick={() => {
               userModal.setData(null);
@@ -173,7 +176,7 @@ const UsersMainPage = ({
               <SelectContent>
                 <SelectItem value="all">Barcha rollar</SelectItem>
                 <SelectItem value={ROLE.USER}>ODDIY FOYDALANUVCHI</SelectItem>
-                <SelectItem value={ROLE.MEMBER}>HODIM</SelectItem>
+                {/* <SelectItem value={ROLE.MEMBER}>HODIM</SelectItem> */}
                 <SelectItem value={ROLE.ADMIN}>ADMIN</SelectItem>
                 {session?.currentUser.role === ROLE.SUPERADMIN && (
                   <SelectItem value={ROLE.SUPERADMIN}>SUPER ADMIN</SelectItem>
@@ -245,11 +248,6 @@ const UsersMainPage = ({
                       {data.role === ROLE.USER ? (
                         <div className="flex items-center justify-start gap-1">
                           Oddiy foydalanuvchi <UserIcon className="h-4 w-4" />
-                        </div>
-                      ) : data.role === ROLE.MEMBER ? (
-                        <div className="flex items-center justify-start gap-1">
-                          Xodim{" "}
-                          <CheckMarkIcon className="fill-primary w-4 h-4" />
                         </div>
                       ) : data.role === ROLE.ADMIN ? (
                         <div className="flex items-center justify-start gap-1">

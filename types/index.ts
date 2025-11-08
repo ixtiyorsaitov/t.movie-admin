@@ -11,15 +11,23 @@ export enum PeriodType {
 export enum ROLE {
   SUPERADMIN = "superAdmin",
   ADMIN = "admin",
-  MEMBER = "member",
   USER = "user",
 }
 export enum MemberType {
   ACTOR = "actor",
   TRANSLATOR = "translator",
 }
+export const MemberTypes = [MemberType.ACTOR, MemberType.TRANSLATOR];
 export interface ChildProps {
   children: React.ReactNode;
+}
+
+export interface IResponse<T> {
+  success: boolean;
+  data?: T;
+  datas?: T[];
+  error?: string;
+  pagination?: PaginationType;
 }
 
 export interface IError extends Error {

@@ -215,13 +215,13 @@ const UserModal = ({
                             <SelectItem value={ROLE.USER}>
                               Oddiy foydalanuvchi
                             </SelectItem>
-                            <SelectItem value={ROLE.MEMBER}>Xodim</SelectItem>
+                            {/* <SelectItem value={ROLE.MEMBER}>Xodim</SelectItem> */}
                             <SelectItem value={ROLE.ADMIN}>
                               Admin (custom)
                             </SelectItem>
-                            {/* <SelectItem value={ROLE.SUPERADMIN}>
+                            <SelectItem value={ROLE.SUPERADMIN}>
                               Super admin
-                            </SelectItem> */}
+                            </SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

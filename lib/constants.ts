@@ -11,10 +11,11 @@ import {
   Star,
   Tag,
   Users,
+  Users2,
 } from "lucide-react";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN_URI!;
-
+export const fiveMinutes = 5 * 60 * 1000;
 export const sidebarItems = [
   {
     title: "Dashboard",
@@ -65,6 +66,11 @@ export const sidebarItems = [
     title: "Foydalanuvchilar",
     icon: Users,
     url: "/dashboard/users",
+  },
+  {
+    title: "Hodimlar",
+    icon: Users2,
+    url: "/dashboard/members",
   },
   {
     title: "Narxlar",
