@@ -1,13 +1,11 @@
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
-import Genre from "@/models/genre.model";
+import "@/models/genre.model";
 import "@/models/episode.model";
 import { IFilm } from "@/types/film";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { CacheTags, generateSlug } from "@/lib/utils";
-import { revalidateTag } from "next/cache";
-import Category from "@/models/category.model";
+import { generateSlug } from "@/lib/utils";
 
 export async function GET(
   req: NextRequest,
@@ -29,7 +27,10 @@ export async function GET(
     return NextResponse.json({ success: true, data: film }, { status: 200 });
   } catch (error) {
     console.log(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Filmni olishda xatolik" },
+      { status: 500 }
+    );
   }
 }
 export async function PUT(
@@ -89,8 +90,8 @@ export async function PUT(
         error: "Film topilmadi",
       });
     }
-    // revalidateTag(CacheTags.ANIME);
-    // revalidateTag(`${CacheTags.ANIME}-${filmId}`);
+    // revalidateTag(CacheTags.FILMS);
+    // revalidateTag(`${CacheTags.FILMS}-${filmId}`);
     // revalidateTag(CacheTags.SLIDER);
 
     return NextResponse.json({ success: true, film: updatedFilm, form: datas });

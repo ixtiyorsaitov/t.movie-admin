@@ -21,7 +21,7 @@ const Error = ({ error }: { error: Error }) => {
 
       {/* Title */}
       <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-        Sahifa topilmadi
+        Xatolik!
       </h1>
 
       {/* Error message */}

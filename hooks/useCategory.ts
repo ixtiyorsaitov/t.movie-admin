@@ -13,10 +13,21 @@ import z from "zod";
 
 const fiveMinutes = 1000 * 60 * 5;
 
+export const useCategories = () => {
+  return useQuery({
+    queryKey: [CacheTags.CATEGORIES],
+    queryFn: async () => {
+      const { data: res } = await api.get("/categories");
+      return res;
+    },
+    staleTime: fiveMinutes,
+  });
+};
 export function useGetAllCategories() {
   return useQuery({
     queryKey: [CacheTags.CATEGORIES],
-    queryFn: () => getCategories(),
+    queryFn: async () => await getCategories(),
+    staleTime: fiveMinutes,
   });
 }
 export function useGetCategoryFilms(categoryId?: string) {

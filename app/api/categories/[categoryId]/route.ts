@@ -85,7 +85,7 @@ export async function DELETE(
       );
 
       await Category.findByIdAndDelete(categoryId);
-      revalidateTag(CacheTags.ANIME);
+      revalidateTag(CacheTags.FILMS);
       revalidateCtg(categoryId);
       return NextResponse.json(
         {

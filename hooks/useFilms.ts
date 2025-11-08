@@ -1,11 +1,26 @@
+import { getFilms } from "@/lib/api/films";
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
+import { CacheTags } from "@/lib/utils";
 import { filmFormSchema } from "@/lib/validation";
 import { BUCKETS } from "@/types";
 import { IFilm } from "@/types/film";
 import { LoadingStep } from "@/types/film-form.types";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import z from "zod";
+
+const fiveMinutes = 5 * 60 * 1000;
+
+export const useFilms = (limit: number) => {
+  return useQuery({
+    queryKey: [CacheTags.FILMS],
+    queryFn: async () => {
+      const res = await getFilms(limit);
+      return res;
+    },
+    staleTime: fiveMinutes,
+  });
+};
 
 export const useCreateFilmMutation = ({
   setCreatingStep,

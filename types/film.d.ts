@@ -1,3 +1,13 @@
+import {
+  FilmType,
+  ICategory,
+  IEpisode,
+  IGenre,
+  ImageType,
+  IUser,
+  IVideo,
+} from ".";
+
 export interface IFilm {
   _id: string;
   title: string;
@@ -30,6 +40,6 @@ export interface IFilm {
   actors: IUser[];
   translators: IUser[];
   disableComments: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }

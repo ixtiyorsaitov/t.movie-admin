@@ -2,14 +2,24 @@ import {
   createGenre,
   deleteGenre,
   getGenreFilms,
+  getGenres,
   updateGenre,
 } from "@/lib/api/genres";
+import api from "@/lib/axios";
 import { CacheTags } from "@/lib/utils";
 import { genreSchema } from "@/lib/validation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import z from "zod";
 
 const fiveMinutes = 1000 * 60 * 5;
+
+export const useGenres = () => {
+  return useQuery({
+    queryKey: [CacheTags.GENRES],
+    queryFn: async () => await getGenres(),
+    staleTime: fiveMinutes,
+  });
+};
 
 export function useGetGenreFilms(genreId?: string) {
   return useQuery({
@@ -18,6 +28,7 @@ export function useGetGenreFilms(genreId?: string) {
     staleTime: fiveMinutes,
   });
 }
+
 export function useCreateGenre() {
   return useMutation({
     mutationFn: (values: z.infer<typeof genreSchema>) => createGenre(values),

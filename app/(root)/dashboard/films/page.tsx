@@ -1,23 +1,19 @@
-import { getFilms } from "@/lib/api/films";
+"use client";
+
 import FilmsPageMain from "./_components";
-export const dynamic = "force-dynamic";
+import { useFilms } from "@/hooks/useFilms";
+import Loading from "./loading";
 const limit = 10;
 
-async function getFilmsData() {
-  const data = await getFilms(limit);
-  if (!data.success) {
-    throw new Error(data.error);
-  }
-  return data;
-}
-
-const FilmsPage = async () => {
-  const data = await getFilmsData();
-  return (
+const FilmsPage = () => {
+  const { data: response, isLoading } = useFilms(limit);
+  return isLoading ? (
+    <Loading />
+  ) : (
     <FilmsPageMain
       limit={limit}
-      datas={data.datas}
-      pagination={data.pagination}
+      datas={response.datas}
+      pagination={response.pagination}
     />
   );
 };

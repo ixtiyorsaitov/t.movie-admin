@@ -13,6 +13,8 @@ import {
   Users,
 } from "lucide-react";
 
+export const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN_URI!;
+
 export const sidebarItems = [
   {
     title: "Dashboard",

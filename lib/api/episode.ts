@@ -10,9 +10,9 @@ export async function getEpisodes(filmId: string, limit: number) {
       cache: "force-cache",
       next: {
         tags: [
-          CacheTags.ANIME,
+          CacheTags.FILMS,
           CacheTags.EPISODES,
-          `${CacheTags.ANIME}-${filmId}`,
+          `${CacheTags.FILMS}-${filmId}`,
         ],
       },
     }

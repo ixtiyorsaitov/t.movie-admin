@@ -178,7 +178,9 @@ const FilmsPageMain = ({
                     </div>
                   </TableCell>
 
-                  <TableCell>Ongoing</TableCell>
+                  <TableCell>
+                    {data.category ? data.category.name : "Kategoriya yo'q"}
+                  </TableCell>
                   <TableCell className="space-x-2">
                     {data.genres.length === 0 ? (
                       <div>Janrlar {"yo'q"}</div>

@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
 
     const films = await Film.find(query)
       .populate("genres")
+      .populate("category")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -96,7 +97,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    revalidateTag(CacheTags.ANIME);
+    revalidateTag(CacheTags.FILMS);
 
     return NextResponse.json({ success: true, data: newFilm }, { status: 201 });
   } catch (error) {

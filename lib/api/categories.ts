@@ -1,7 +1,6 @@
 import z from "zod";
 import api from "../axios";
 import { categorySchema } from "../validation";
-import { CacheTags } from "../utils";
 import { ICategory } from "@/types";
 
 export async function getCategories() {

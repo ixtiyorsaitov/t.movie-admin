@@ -11,6 +11,12 @@ type ModalStore<T> = {
   data: T | null;
   setData: (data: T | null) => void;
 };
+type ModalStoreStrict<T> = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  data: T;
+  setData: (data: T) => void;
+};
 
 export const useEpisodeModal = create<ModalStore<IEpisode>>()((set) => ({
   open: false,
@@ -37,6 +43,15 @@ export const useGenreFilmsModal = create<ModalStore<IGenre>>()((set) => ({
   data: null,
   setData: (data) => set({ data }),
 }));
+
+export const useGenresSelectModal = create<ModalStoreStrict<IGenre[]>>()(
+  (set) => ({
+    open: false,
+    setOpen: (open) => set({ open }),
+    data: [],
+    setData: (data) => set({ data }),
+  })
+);
 
 export const useDeleteGenre = create<ModalStore<IGenre>>()((set) => ({
   open: false,

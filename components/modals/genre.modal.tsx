@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -31,6 +31,7 @@ import {
   useDeleteGenre,
   useGenreFilmsModal,
   useGenreModal,
+  useGenresSelectModal,
 } from "@/hooks/use-modals";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import {
@@ -48,6 +49,7 @@ import {
   useGetGenreFilms,
   useUpdateGenre,
 } from "@/hooks/useGenre";
+import { Checkbox } from "../ui/checkbox";
 
 interface Props {
   setDatas: Dispatch<SetStateAction<IGenre[]>>;
@@ -382,6 +384,109 @@ export function GenreFilmsModal() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+interface GenresSelectModalProps {
+  initialData: string[];
+  onGenresChange: (genres: string[]) => void;
+  loading: boolean;
+  error: string | undefined;
+}
+
+export function GenresSelectModal({
+  initialData,
+  onGenresChange,
+  loading,
+  error,
+}: GenresSelectModalProps) {
+  const modal = useGenresSelectModal();
+
+  const handleGenreToggle = (genreId: string) => {
+    setSelectedGenres((prev) =>
+      prev.includes(genreId)
+        ? prev.filter((id) => id !== genreId)
+        : [...prev, genreId]
+    );
+  };
+
+  const [selectedGenresLocal, setSelectedGenres] =
+    useState<string[]>(initialData);
+
+  const handleConfirm = () => {
+    modal.setOpen(false);
+    onGenresChange(selectedGenresLocal);
+  };
+
+  return (
+    <Dialog open={modal.open} onOpenChange={modal.setOpen}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Janrlarni tanlang</DialogTitle>
+        </DialogHeader>
+
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="ml-2">Yuklanayapti...</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded p-3">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              Xato: {error}
+            </p>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
+            {modal.data.length === 0 ? (
+              <p className="text-sm text-gray-500">Janrlar topilmadi</p>
+            ) : (
+              modal.data.map((genre) => (
+                <div key={genre._id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={genre._id}
+                    checked={selectedGenresLocal.includes(genre._id)}
+                    onCheckedChange={() => handleGenreToggle(genre._id)}
+                  />
+                  <label
+                    htmlFor={genre._id}
+                    className="text-sm cursor-pointer flex-1"
+                  >
+                    {genre.name}
+                  </label>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setSelectedGenres(initialData);
+              modal.setOpen(false);
+            }}
+            className="flex-1"
+          >
+            Bekor qilish
+          </Button>
+          <Button
+            type="button"
+            onClick={handleConfirm}
+            disabled={loading}
+            className="flex-1"
+          >
+            Saqlash
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

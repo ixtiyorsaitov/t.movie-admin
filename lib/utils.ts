@@ -8,10 +8,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+
 export const CacheTags = {
   SLIDER: "slider",
   NEWS: "news",
-  ANIME: "anime",
+  FILMS: "films",
   EPISODES: "episodes",
   CATEGORIES: "categories",
   GENRES: "genres",
