@@ -4,7 +4,7 @@ import { genreSchema } from "../validation";
 import { CacheTags } from "../utils";
 
 export async function getGenres() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/genres`, {
+  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/genres`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.GENRES] },
   });

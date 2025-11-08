@@ -110,7 +110,7 @@ const getSearchedData = async ({
   try {
     setLoading(true);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
+      `${process.env.NEXTAUTH_URL}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
     );
     const data = await res.json();
     return data;

@@ -2,7 +2,7 @@ import { CacheTags } from "../utils";
 
 export async function getFilms(limit: number) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films?limit=${limit}`,
+    `${process.env.NEXTAUTH_URL}/api/films?limit=${limit}`,
     {
       // cache: "force-cache",
       next: { tags: [CacheTags.ANIME] },
@@ -13,7 +13,7 @@ export async function getFilms(limit: number) {
 }
 export async function getFilmById(filmId: string) {
   const req = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}`,
+    `${process.env.NEXTAUTH_URL}/api/films/${filmId}`,
     {
       // cache: "force-cache",
       next: { tags: [CacheTags.ANIME, `${CacheTags.ANIME}-${filmId}`] },
@@ -33,7 +33,7 @@ export async function getSearchedFilms({
   limit: number;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films?search=${searchTerm}&page=${page}&limit=${limit}`
+    `${process.env.NEXTAUTH_URL}/api/films?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
   return data;

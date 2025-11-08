@@ -5,7 +5,7 @@ import { IFilm } from "@/types/film";
 
 export async function getEpisodes(filmId: string, limit: number) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}/episodes?limit=${limit}`,
+    `${process.env.NEXTAUTH_URL}/api/films/${filmId}/episodes?limit=${limit}`,
     {
       cache: "force-cache",
       next: {
@@ -39,7 +39,7 @@ export async function getSearchedEpisodes({
   filmId: string;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/films/${filmId}/episodes?search=${searchTerm}&page=${page}&limit=${limit}`
+    `${process.env.NEXTAUTH_URL}/api/films/${filmId}/episodes?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
   return data;

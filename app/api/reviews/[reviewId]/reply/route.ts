@@ -10,10 +10,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  return adminOnly(async () => {
+  return adminOnly(async (admin) => {
     try {
       await connectToDatabase();
-      const session = await getServerSession(authOptions);
       const { reviewId } = await params;
       const body = await req.json();
       const { text, asAdmin } = body as {
@@ -35,15 +34,15 @@ export async function PATCH(
       }
 
       if (reply.reply) {
-        console.log("currentUserId", session?.currentUser._id.toString());
+        console.log("currentUserId", admin._id.toString());
         console.log("replyUserId", reply.reply.user.toString());
 
         if (
-          session?.currentUser._id.toString() === reply.reply.user.toString()
+          admin._id.toString() === reply.reply.user.toString()
         ) {
           reply.reply = {
             text,
-            user: session?.currentUser._id,
+            user: admin._id,
             asAdmin,
           };
         } else {
@@ -55,7 +54,7 @@ export async function PATCH(
       } else {
         reply.reply = {
           text,
-          user: session?.currentUser._id,
+          user: admin._id,
           asAdmin,
         };
       }

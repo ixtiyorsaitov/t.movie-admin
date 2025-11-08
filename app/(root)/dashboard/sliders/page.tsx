@@ -3,7 +3,7 @@ import { CacheTags } from "@/lib/utils";
 import React from "react";
 export const dynamic = "force-dynamic";
 async function getSliderData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/slider`, {
+  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/slider`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.SLIDER] },
   });

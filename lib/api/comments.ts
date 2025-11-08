@@ -12,7 +12,7 @@ export async function getComments({
   limit: number;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/comments?page=${page}&limit=${limit}`
+    `${process.env.NEXTAUTH_URL}/api/comments?page=${page}&limit=${limit}`
   );
   const data = await res.json();
   return data;

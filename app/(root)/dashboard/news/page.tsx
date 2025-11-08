@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const limit = 9;
 async function getNewsData() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news?limit=${limit}`,
+    `${process.env.NEXTAUTH_URL}/api/news?limit=${limit}`,
     {
       cache: "force-cache",
       next: { tags: [CacheTags.NEWS] },

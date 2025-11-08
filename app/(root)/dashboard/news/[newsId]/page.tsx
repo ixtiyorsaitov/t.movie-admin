@@ -9,7 +9,7 @@ type PageProps = { params: Promise<{ newsId: string }> };
 
 async function getNewsById(id: string) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/news/${id}`,
+    `${process.env.NEXTAUTH_URL}/api/news/${id}`,
     {
       cache: "force-cache",
       next: { tags: [CacheTags.NEWS, `${CacheTags.NEWS}-${id}`] },

@@ -9,7 +9,7 @@ export async function getUsers({
   page: number;
 }) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/users?limit=${limit}&page=${page}`
+    `${process.env.NEXTAUTH_URL}/api/users?limit=${limit}&page=${page}`
   );
   const data = await res.json();
   return data;
@@ -30,7 +30,7 @@ export const getSearchedUsers = async ({
   try {
     setLoading?.(true);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/users?search=${searchTerm}&page=${page}&limit=${limit}&roleFilter=${roleFilter}`
+      `${process.env.NEXTAUTH_URL}/api/users?search=${searchTerm}&page=${page}&limit=${limit}&roleFilter=${roleFilter}`
     );
     const data = await res.json();
     return data;

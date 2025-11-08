@@ -5,7 +5,7 @@ import api from "../axios";
 
 export async function getAnnotations() {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_DOMAIN_URI}/api/annotations`,
+    `${process.env.NEXTAUTH_URL}/api/annotations`,
     {
       cache: "force-cache",
       next: { tags: [CacheTags.ANNOTATION] },
