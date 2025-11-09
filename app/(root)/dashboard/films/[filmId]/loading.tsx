@@ -1,5 +1,4 @@
 import React from "react";
-import HeadingSkeleton from "@/components/ui/heading";
 import FilmFormSkeleton from "../_components/film-form-skeleton";
 
 const Loading = () => {
