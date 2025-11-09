@@ -1,6 +1,6 @@
 import { getFilmById } from "@/lib/api/films";
-import { FilmFormV2 } from "../_components/film-formv2";
 import { IFilm } from "@/types/film";
+import { FilmFormV2 } from "../_components/film-form-v2";
 
 export const metadata = {
   title: "Dashboard : Film View",

@@ -16,14 +16,6 @@ const FilmSchema = new mongoose.Schema<IFilm>(
       total: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
     },
-    meta: {
-      likes: { type: Number, default: 0 },
-      watchList: { type: Number, default: 0 },
-      views: {
-        total: { type: Number, default: 0 },
-        unique: { type: Number, default: 0 },
-      },
-    },
     slug: { type: String, required: true, unique: true },
     published: Boolean,
     images: {
@@ -38,12 +30,20 @@ const FilmSchema = new mongoose.Schema<IFilm>(
       additionImage: [{ url: String, name: String }],
     },
     genres: [{ type: mongoose.Schema.Types.ObjectId, ref: "Genre" }],
-    category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
     episodes: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Episode", default: [] },
     ],
-    actors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    translators: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    actors: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Member", default: [] },
+    ],
+    translators: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Member", default: [] },
+    ],
     disableComments: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -1,11 +1,29 @@
-import { PeriodType } from "@/types";
+import { FilmType, PeriodType } from "@/types";
 import { z } from "zod";
 
-export const filmFormSchema = z.object({
+export const filmFormSchemaV1 = z.object({
   title: z.string().min(5).max(70),
   description: z.string().min(20),
   type: z.string(),
   published: z.boolean(),
+});
+export const filmFormSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .min(3, "Title must be at least 3 characters"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .min(10, "Description must be at least 10 characters"),
+  type: z.nativeEnum(FilmType),
+  slug: z.string().optional().or(z.literal("")),
+  disableComments: z.boolean(),
+  published: z.boolean(),
+  genres: z.array(z.string()).min(1, "Kamida 1 ta janr tanlang"),
+  actors: z.array(z.string()).min(1, "Kamida 1 ta ovoz aktyorini tanlang"),
+  translators: z.array(z.string()).min(1, "Kamida 1 ta tarjimonni tanlang"),
+  category: z.string().min(1, "Kategoriyani tanlang"),
 });
 export const episodeSchmea = z.object({
   title: z.string().min(3).max(70),

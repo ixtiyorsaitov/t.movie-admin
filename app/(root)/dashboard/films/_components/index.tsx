@@ -165,7 +165,7 @@ const FilmsPageMain = ({
                   </TableCell>
                   <TableCell className="font-medium flex items-center justify-start gap-3 relative top-1.5">
                     <div className="flex items-center gap-1">
-                      {data.meta.views?.total || 0}
+                      {/* {data.meta.views?.total ?? 0} */}0
                       <EyeIcon size={20} />
                     </div>
                     <div className="flex items-center gap-1">
@@ -173,7 +173,7 @@ const FilmsPageMain = ({
                       <StarIcon className="fill-primary" size={20} />
                     </div>
                     <div className="flex items-center gap-1">
-                      {data.meta.likes}
+                      {/* {data.meta.likes ?? 0} */}0
                       <ThumbsUp size={17} />
                     </div>
                   </TableCell>

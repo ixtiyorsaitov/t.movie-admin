@@ -1,4 +1,5 @@
 import { getFilms } from "@/lib/api/films";
+import api from "@/lib/axios";
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
 import { CacheTags } from "@/lib/utils";
 import { filmFormSchema } from "@/lib/validation";
@@ -22,7 +23,30 @@ export const useFilms = (limit: number) => {
   });
 };
 
-export const useCreateFilmMutation = ({
+export const useCreateFilmMutation = () => {
+  return useMutation({
+    mutationFn: async (values: unknown) => {
+      const { data: res } = await api.post("/films", values);
+      return res;
+    },
+  });
+};
+export const useUpdateFilmMutation = () => {
+  return useMutation({
+    mutationFn: async ({
+      values,
+      filmId,
+    }: {
+      values: unknown;
+      filmId: string;
+    }) => {
+      const { data: res } = await api.put(`/films/${filmId}`, values);
+      return res;
+    },
+  });
+};
+
+export const useCreateFilmMutationV1 = ({
   setCreatingStep,
   selectedGenres,
   backgroundFile,
@@ -82,7 +106,7 @@ export const useCreateFilmMutation = ({
   });
 };
 
-export const useUpdateFilmMutation = ({
+export const useUpdateFilmMutationV1 = ({
   setUpdatingStep,
   selectedGenres,
   backgroundFile,

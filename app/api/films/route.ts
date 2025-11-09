@@ -3,6 +3,8 @@ import { CacheTags, generateSlug } from "@/lib/utils";
 import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
+import Member from "@/models/member.model";
+import { FilmType } from "@/types";
 import { IFilm } from "@/types/film";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
@@ -54,8 +56,36 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
     const body = await req.json();
     const datas = body as IFilm;
+    console.log(datas);
+
+    if (!datas.title.trim() || !datas.description.trim()) {
+      return NextResponse.json(
+        { error: "Maydonlarni to'ldiring" },
+        { status: 400 }
+      );
+    }
+
+    if (!datas.category.toString().trim().length) {
+      return NextResponse.json(
+        { error: "Kategoriya tanlang" },
+        { status: 400 }
+      );
+    }
 
     const ctg = await Category.findById(datas.category);
+    if (!ctg) {
+      return NextResponse.json(
+        { error: "Kategoriya topilmadi" },
+        { status: 404 }
+      );
+    }
+
+    if (datas.genres.length === 0) {
+      return NextResponse.json(
+        { error: "Kamida 1 ta janr tanlang" },
+        { status: 400 }
+      );
+    }
 
     const genreDocs = await Promise.all(
       body.genres.map((g: string) => Genre.findById(g))
@@ -65,13 +95,32 @@ export async function POST(req: NextRequest) {
       .filter((genre) => genre !== null)
       .map((genre) => genre!._id);
 
-    const slug = generateSlug(datas.title);
+    const actorDocs = await Promise.all(
+      body.actors.map((a: string) => Member.findById(a))
+    );
+
+    const sortedActors = actorDocs
+      .filter((actor) => actor !== null)
+      .map((actor) => actor!._id);
+
+    const translatorDocs = await Promise.all(
+      body.translators.map((t: string) => Member.findById(t))
+    );
+
+    const sortedTranslators = translatorDocs
+      .filter((translator) => translator !== null)
+      .map((translator) => translator!._id);
+
+    const slug = !datas.slug.trim()
+      ? generateSlug(datas.title)
+      : datas.slug.trim();
+    console.log("slug", datas.slug);
 
     const isAvailable = await Film.findOne({ slug });
     if (isAvailable) {
       return NextResponse.json(
         {
-          error: "Bu film allaqachon yaratilgan",
+          error: "Bu slagdagi film allaqachon yaratilgan",
         },
         { status: 409 }
       );
@@ -79,12 +128,14 @@ export async function POST(req: NextRequest) {
 
     const newFilm = await Film.create({
       title: datas.title,
-      slug,
       description: datas.description,
-      type: datas.type,
+      type: datas.type ?? FilmType.SERIES,
+      slug,
       published: datas.published || false,
       genres: sortedGenres,
-      catergory: ctg,
+      category: datas.category,
+      translators: sortedTranslators,
+      actors: sortedActors,
       images: {
         image: {
           url: datas.images.image.url,
@@ -95,6 +146,7 @@ export async function POST(req: NextRequest) {
           name: datas.images.backgroundImage.name,
         },
       },
+      disableComments: datas.disableComments ?? false,
     });
 
     revalidateTag(CacheTags.FILMS);
@@ -102,9 +154,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, data: newFilm }, { status: 201 });
   } catch (error) {
     console.log(error);
-    return NextResponse.json(
-      { success: false, message: "Server xatosi" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
   }
 }
