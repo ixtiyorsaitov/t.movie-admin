@@ -57,6 +57,7 @@ import {
   useReviewModal,
   useReviewReplyModal,
 } from "@/hooks/use-modals";
+import { SITE_URL } from "@/lib/constants";
 import { getPageNumbers, onCopy } from "@/lib/utils";
 import { PaginationType } from "@/types";
 import { IReview } from "@/types/review";
@@ -82,6 +83,7 @@ import React, {
   SetStateAction,
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { toast } from "sonner";
@@ -110,11 +112,12 @@ const getSearchedData = async ({
   try {
     setLoading(true);
     const res = await fetch(
-      `${process.env.NEXTAUTH_URL}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
+      `${SITE_URL}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
     );
     const data = await res.json();
     return data;
   } catch (error) {
+    console.error(error);
     return {
       error: "Ma'lumotlarni olishda xatolik yuz berdi",
       datas: [],
@@ -137,6 +140,7 @@ const ReviewsPageMain = ({
   const [datas, setDatas] = useState<IReview[]>(defaultDatas);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const firstRender = useRef(true);
   const [replyFilter, setReplyFilter] = useState<ReplyFilterType>("all");
   const [ratingFilter, setRatingFilter] = useState<RatingFilterType>("all");
   const [sortBy, setSortBy] = useState<SortByType>("newest");
@@ -189,6 +193,12 @@ const ReviewsPageMain = ({
   const handleDebouncedSearch = useCallback(debounce(handleSearch, 300), []);
 
   useEffect(() => {
+    // birinchi renderni o'tkazib yuborish uchun
+    if (firstRender.current) {
+      firstRender.current = false;
+      return; // ⛔ birinchi safar ishlamaydi
+    }
+
     (async () => {
       const newData = await getSearchedData({
         searchTerm,
@@ -202,8 +212,6 @@ const ReviewsPageMain = ({
       if (newData.error) {
         toast.error(newData.error);
       }
-      console.log(newData);
-
       setDatas(newData.datas);
       setPagination(newData.pagination);
     })();

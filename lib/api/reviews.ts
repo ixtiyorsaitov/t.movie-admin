@@ -1,6 +1,7 @@
 import z from "zod";
 import api from "../axios";
 import { reviewSchema } from "../validation";
+import { SITE_URL } from "../constants";
 
 export async function getReviews({
   page,
@@ -10,7 +11,7 @@ export async function getReviews({
   limit: number;
 }) {
   const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/reviews?page=${page}&limit=${limit}`
+    `${SITE_URL}/api/reviews?page=${page}&limit=${limit}`
   );
   const data = await res.json();
   return data;

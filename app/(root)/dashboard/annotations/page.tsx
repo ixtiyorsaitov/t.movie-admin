@@ -1,7 +1,11 @@
 import { getAnnotations } from "@/lib/api/annotations";
 import React from "react";
 import AnnotationsPageMain from "./_components";
+import { Metadata } from "next";
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Annotatsiyalar",
+};
 const AnnotationsPage = async () => {
   const datas = await getAnnotations();
 

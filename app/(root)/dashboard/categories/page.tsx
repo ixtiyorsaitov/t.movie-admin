@@ -1,17 +1,15 @@
 import { getCategories } from "@/lib/api/categories";
 import CategoriesPageMain from "./_components";
+import { Metadata } from "next";
 export const dynamic = "force-dynamic";
-
-async function getCategoryData() {
+export const metadata: Metadata = {
+  title: "Kategoriyalar",
+};
+const CategoriesPage = async () => {
   const data = await getCategories();
   if (!data.success) {
     throw new Error(data.error);
   }
-
-  return data;
-}
-const CategoriesPage = async () => {
-  const data = await getCategoryData();
 
   return <CategoriesPageMain datas={data.datas} />;
 };

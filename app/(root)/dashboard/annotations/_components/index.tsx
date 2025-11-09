@@ -25,7 +25,7 @@ const AnnotationsPageMain = ({
     <>
       <div className="w-full flex items-center justify-center flex-col px-2">
         <div className="flex items-center justify-between w-full mb-3">
-          <Heading title="Annontatsiyalar" description="" />
+          <Heading title="Annotatsiyalar" description="" />
           <Button
             onClick={() => {
               annotationModal.setData(null);

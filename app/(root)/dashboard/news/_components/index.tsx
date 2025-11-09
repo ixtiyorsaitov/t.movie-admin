@@ -40,16 +40,21 @@ import {
 } from "@/components/ui/pagination";
 import { getPageNumbers } from "@/lib/utils";
 import { format } from "date-fns";
+import { SITE_URL } from "@/lib/constants";
+import Loading, { TableSkeleton } from "../loading";
 
 const getSearchedData = async (
   searchTerm: string,
   page: number,
-  limit: number
+  limit: number,
+  setLoading?: (loading: boolean) => void
 ) => {
+  setLoading?.(true);
   const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/news?search=${searchTerm}&page=${page}&limit=${limit}`
+    `${SITE_URL}/api/news?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
+  setLoading?.(false);
 
   return data;
 };
@@ -64,6 +69,7 @@ const NewsPage = ({
   pagination: PaginationType;
 }) => {
   const deleteModal = useDeleteNews();
+  const [loading, setLoading] = useState(false);
   const [currentDatas, setCurrentDatas] = useState<INews[]>(datas);
   const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] =
@@ -98,7 +104,8 @@ const NewsPage = ({
     const newData = await getSearchedData(
       e.target.value,
       pagination.page,
-      limit
+      limit,
+      setLoading
     );
     if (newData.error) {
       toast.error(newData.error);
@@ -107,7 +114,7 @@ const NewsPage = ({
     setPagination(newData.pagination);
   };
   const handlePageChange = async (page: number) => {
-    const newData = await getSearchedData(searchTerm, page, limit);
+    const newData = await getSearchedData(searchTerm, page, limit, setLoading);
     if (newData.error) {
       toast.error(newData.error);
       return;
@@ -116,7 +123,9 @@ const NewsPage = ({
     setPagination(newData.pagination);
   };
   const handleDebouncedSearch = useCallback(debounce(handleSearch, 300), []);
-  return (
+  return loading ? (
+    <TableSkeleton limit={limit} />
+  ) : (
     <>
       <div className="flex items-center space-x-2 mb-3 w-full justify-between">
         <div className="relative flex-1 max-w-sm">
@@ -237,7 +246,7 @@ const NewsPage = ({
         </Table>
       </div>
       {pagination.total > limit && (
-        <Pagination>
+        <Pagination className="justify-end">
           <PaginationContent>
             {/* Prev tugmasi */}
             <PaginationItem>

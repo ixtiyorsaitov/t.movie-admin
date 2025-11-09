@@ -5,15 +5,21 @@ import { Heading } from "@/components/ui/heading";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Metadata } from "next";
+import { SITE_URL } from "@/lib/constants";
 export const dynamic = "force-dynamic";
-const limit = 9;
+export const metadata: Metadata = {
+  title: "Yangiliklar",
+  description: "Yangiliklarni boshqarish (Server jadval funksiyalari orqali)",
+};
+export const limit = 5;
 async function getNewsData() {
   const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/news?limit=${limit}`,
-    {
-      cache: "force-cache",
-      next: { tags: [CacheTags.NEWS] },
-    }
+    `${SITE_URL}/api/news?limit=${limit}`
+    // {
+    //   cache: "force-cache",
+    //   next: { tags: [CacheTags.NEWS] },
+    // }
   );
 
   if (!res.ok) return null;

@@ -23,29 +23,14 @@ import z from "zod";
 import { deleteSchema, categorySchema } from "@/lib/validation";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { Eye, Film, Loader2, Trash2 } from "lucide-react";
-import {
-  useDeleteCategory,
-  useCategoryFilmsModal,
-  useCategoryModal,
-} from "@/hooks/use-modals";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
-import Link from "next/link";
-import { Badge } from "../ui/badge";
-import { Skeleton } from "../ui/skeleton";
+import { Loader2, PlusIcon, SaveIcon, Trash2 } from "lucide-react";
+import { useDeleteCategory, useCategoryModal } from "@/hooks/use-modals";
 import {
   useCreateCategory,
   useDeleteCategoryMutation,
-  useGetCategoryFilms,
   useUpdateCategory,
 } from "@/hooks/useCategory";
-import { IFilm } from "@/types/film";
+import { Spinner } from "../ui/spinner";
 
 interface Props {
   setDatas: Dispatch<SetStateAction<ICategory[]>>;
@@ -77,6 +62,7 @@ const CategoryModal = ({ setDatas }: Props) => {
         {
           onSuccess: (response) => {
             if (response.success) {
+              categoryModal.setOpen(false);
               setDatas((prev) =>
                 prev.map((c) =>
                   c._id === response.data._id ? response.data : c
@@ -84,7 +70,6 @@ const CategoryModal = ({ setDatas }: Props) => {
               );
               toast.success("Kategoriya muvaffaqiyatli yangilandi!");
               categoryModal.setData(null);
-              categoryModal.setOpen(false);
               form.reset();
             } else {
               toast.error(response.error || "Kategoriya yangilashda xatolik");
@@ -96,11 +81,11 @@ const CategoryModal = ({ setDatas }: Props) => {
       createMutation.mutate(values, {
         onSuccess: (response) => {
           if (response.success) {
+            categoryModal.setOpen(false);
             setDatas((prev) => [...prev, response.data]);
             toast.success("Kategoriya muvaffaqiyatli qo'shildi!");
             form.reset();
             categoryModal.setData(null);
-            categoryModal.setOpen(false);
           } else {
             toast.error(response.error || "Kategoriya qo'shishda xatolik");
           }
@@ -108,7 +93,7 @@ const CategoryModal = ({ setDatas }: Props) => {
       });
     }
   }
-
+  const loading = createMutation.isPending || updateMutation.isPending;
   return (
     <AlertDialog open={categoryModal.open} onOpenChange={categoryModal.setOpen}>
       <AlertDialogContent>
@@ -136,9 +121,7 @@ const CategoryModal = ({ setDatas }: Props) => {
                   <Label>Nomi</Label>
                   <FormControl>
                     <Input
-                      disabled={
-                        createMutation.isPending || updateMutation.isPending
-                      }
+                      disabled={loading}
                       autoComplete="off"
                       placeholder="Kategoriya nomi..."
                       {...field}
@@ -150,17 +133,34 @@ const CategoryModal = ({ setDatas }: Props) => {
             />
             <AlertDialogFooter>
               <Button
-                variant={"secondary"}
+                variant={"outline"}
                 onClick={() => {
                   categoryModal.setData(null);
                   categoryModal.setOpen(false);
                 }}
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={loading}
                 type="button"
               >
                 Bekor qilish
               </Button>
-              <Button type="submit">Davom etish</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    {categoryModal.data ? "Saqlanyapti" : "Qo'shilyapti"}
+                    <Spinner />
+                  </>
+                ) : categoryModal.data ? (
+                  <>
+                    Saqlash
+                    <SaveIcon />
+                  </>
+                ) : (
+                  <>
+                    {"Qo'shish"}
+                    <PlusIcon />
+                  </>
+                )}
+              </Button>
             </AlertDialogFooter>
           </form>
         </Form>
@@ -243,7 +243,7 @@ export function CategoryDeleteModal({
                     <Input
                       autoComplete="off"
                       disabled={deleteMutation.isPending}
-                      placeholder="Type delete"
+                      placeholder="DELETE deb yozing"
                       {...field}
                     />
                   </FormControl>
@@ -252,7 +252,7 @@ export function CategoryDeleteModal({
             />
             <div className="w-full flex items-center justify-end gap-1">
               <Button
-                variant={"secondary"}
+                variant={"outline"}
                 disabled={deleteMutation.isPending}
                 type="button"
                 onClick={() => {
@@ -260,7 +260,7 @@ export function CategoryDeleteModal({
                   setOpen(false);
                 }}
               >
-                Cancel
+                Bekor qilish
               </Button>
               <Button
                 disabled={deleteMutation.isPending}
@@ -268,12 +268,8 @@ export function CategoryDeleteModal({
                 className="!bg-red-900"
                 variant={"destructive"}
               >
-                {deleteMutation.isPending ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <Trash2 />
-                )}
-                Submit
+                {deleteMutation.isPending ? <Spinner /> : <Trash2 />}
+                {"O'chirish"}
               </Button>
             </div>
           </form>
@@ -283,125 +279,125 @@ export function CategoryDeleteModal({
   ) : null;
 }
 
-export function CategoryFilmsModal() {
-  const modal = useCategoryFilmsModal();
-  const getDataQuery = useGetCategoryFilms(modal.data?._id);
+// export function CategoryFilmsModal() {
+//   const modal = useCategoryFilmsModal();
+//   const getDataQuery = useGetCategoryFilms(modal.data?._id);
 
-  return (
-    <Dialog open={modal.open} onOpenChange={modal.setOpen}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
-        <DialogHeader className="space-y-4 pb-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Film className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <DialogTitle className="text-xl font-semibold">
-                {modal.data?.name || "Kategoriya"} {"bo'yicha filmlar"}
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Ushbu kategoriya tegishli barcha filmlar {"ro'yxati"}
-              </p>
-            </div>
-          </div>
-        </DialogHeader>
+//   return (
+//     <Dialog open={modal.open} onOpenChange={modal.setOpen}>
+//       <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+//         <DialogHeader className="space-y-4 pb-4 border-b">
+//           <div className="flex items-center gap-3">
+//             <div className="p-2 rounded-lg bg-primary/10">
+//               <Film className="h-5 w-5 text-primary" />
+//             </div>
+//             <div>
+//               <DialogTitle className="text-xl font-semibold">
+//                 {modal.data?.name || "Kategoriya"} {"bo'yicha filmlar"}
+//               </DialogTitle>
+//               <p className="text-sm text-muted-foreground mt-1">
+//                 Ushbu kategoriya tegishli barcha filmlar {"ro'yxati"}
+//               </p>
+//             </div>
+//           </div>
+//         </DialogHeader>
 
-        <div className="space-y-4">
-          <Accordion type="single" collapsible defaultValue="item-1">
-            <AccordionItem value="item-1" className="border-none">
-              <AccordionTrigger className="hover:no-underline bg-muted/50 hover:bg-muted px-4 py-3 rounded-lg transition-colors">
-                <div className="flex items-center gap-2">
-                  {getDataQuery.isPending ? (
-                    <Skeleton className="h-4 w-20" />
-                  ) : (
-                    <>
-                      <Badge variant="secondary" className="font-medium">
-                        {getDataQuery.data?.datas?.length || 0}
-                      </Badge>
-                      <span className="text-sm font-medium">
-                        {(getDataQuery.data?.datas?.length || 0) === 1
-                          ? "film"
-                          : "filmlar"}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </AccordionTrigger>
+//         <div className="space-y-4">
+//           <Accordion type="single" collapsible defaultValue="item-1">
+//             <AccordionItem value="item-1" className="border-none">
+//               <AccordionTrigger className="hover:no-underline bg-muted/50 hover:bg-muted px-4 py-3 rounded-lg transition-colors">
+//                 <div className="flex items-center gap-2">
+//                   {getDataQuery.isPending ? (
+//                     <Skeleton className="h-4 w-20" />
+//                   ) : (
+//                     <>
+//                       <Badge variant="secondary" className="font-medium">
+//                         {getDataQuery.data?.datas?.length || 0}
+//                       </Badge>
+//                       <span className="text-sm font-medium">
+//                         {(getDataQuery.data?.datas?.length || 0) === 1
+//                           ? "film"
+//                           : "filmlar"}
+//                       </span>
+//                     </>
+//                   )}
+//                 </div>
+//               </AccordionTrigger>
 
-              <AccordionContent className="pt-4">
-                <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
-                  {getDataQuery.isPending ? (
-                    Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1">
-                          <Skeleton className="h-10 w-10 rounded-md" />
-                          <div className="space-y-2 flex-1">
-                            <Skeleton className="h-4 w-3/4" />
-                            <Skeleton className="h-3 w-1/2" />
-                          </div>
-                        </div>
-                        <Skeleton className="h-8 w-16 rounded-md" />
-                      </div>
-                    ))
-                  ) : getDataQuery.data?.datas?.length > 0 ? (
-                    getDataQuery.data.datas.map(
-                      (item: IFilm, index: number) => (
-                        <div
-                          key={item._id}
-                          className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-all duration-200 group"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="p-2 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                              <Film className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-                                {item.title}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Film #{index + 1}
-                              </p>
-                            </div>
-                          </div>
-                          <Link
-                            href={`/dashboard/films/${item._id}`}
-                            className="ml-3"
-                          >
-                            <Badge
-                              variant="outline"
-                              className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer gap-1"
-                            >
-                              <Eye className="h-3 w-3" />
-                              {"Ko'rish"}
-                            </Badge>
-                          </Link>
-                        </div>
-                      )
-                    )
-                  ) : (
-                    <div className="text-center py-8 space-y-3">
-                      <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto">
-                        <Film className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-muted-foreground">
-                          Filmlar topilmadi
-                        </p>
-                        <p className="text-sm text-muted-foreground/80">
-                          Ushbu kategoriya uchun filmlar hali {"qo'shilmagan"}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
+//               <AccordionContent className="pt-4">
+//                 <div className="max-h-[400px] overflow-y-auto space-y-2 pr-2">
+//                   {getDataQuery.isPending ? (
+//                     Array.from({ length: 4 }).map((_, i) => (
+//                       <div
+//                         key={i}
+//                         className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+//                       >
+//                         <div className="flex items-center gap-3 flex-1">
+//                           <Skeleton className="h-10 w-10 rounded-md" />
+//                           <div className="space-y-2 flex-1">
+//                             <Skeleton className="h-4 w-3/4" />
+//                             <Skeleton className="h-3 w-1/2" />
+//                           </div>
+//                         </div>
+//                         <Skeleton className="h-8 w-16 rounded-md" />
+//                       </div>
+//                     ))
+//                   ) : getDataQuery.data?.datas?.length > 0 ? (
+//                     getDataQuery.data.datas.map(
+//                       (item: IFilm, index: number) => (
+//                         <div
+//                           key={item._id}
+//                           className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-all duration-200 group"
+//                         >
+//                           <div className="flex items-center gap-3 flex-1 min-w-0">
+//                             <div className="p-2 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+//                               <Film className="h-4 w-4 text-primary" />
+//                             </div>
+//                             <div className="flex-1 min-w-0">
+//                               <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+//                                 {item.title}
+//                               </p>
+//                               <p className="text-xs text-muted-foreground">
+//                                 Film #{index + 1}
+//                               </p>
+//                             </div>
+//                           </div>
+//                           <Link
+//                             href={`/dashboard/films/${item._id}`}
+//                             className="ml-3"
+//                           >
+//                             <Badge
+//                               variant="outline"
+//                               className="hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer gap-1"
+//                             >
+//                               <Eye className="h-3 w-3" />
+//                               {"Ko'rish"}
+//                             </Badge>
+//                           </Link>
+//                         </div>
+//                       )
+//                     )
+//                   ) : (
+//                     <div className="text-center py-8 space-y-3">
+//                       <div className="p-3 rounded-full bg-muted/50 w-fit mx-auto">
+//                         <Film className="h-6 w-6 text-muted-foreground" />
+//                       </div>
+//                       <div>
+//                         <p className="font-medium text-muted-foreground">
+//                           Filmlar topilmadi
+//                         </p>
+//                         <p className="text-sm text-muted-foreground/80">
+//                           Ushbu kategoriya uchun filmlar hali {"qo'shilmagan"}
+//                         </p>
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+//               </AccordionContent>
+//             </AccordionItem>
+//           </Accordion>
+//         </div>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }

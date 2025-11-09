@@ -55,7 +55,7 @@ export async function PUT(
     } catch (error) {
       console.log(error);
       return NextResponse.json(
-        { success: false, message: "Server xatoligi" },
+        { error: "Kategoriyani yangilashda xatolik" },
         { status: 500 }
       );
     }
@@ -80,8 +80,8 @@ export async function DELETE(
       }
 
       await Film.updateMany(
-        { genres: categoryId },
-        { $pull: { genres: categoryId } }
+        { category: categoryId },
+        { $set: { category: null } }
       );
 
       await Category.findByIdAndDelete(categoryId);
@@ -90,14 +90,14 @@ export async function DELETE(
       return NextResponse.json(
         {
           success: true,
-          message: "Category deleted and removed from films",
+          message: "Kategoriya o'chirildi va barcha filmlardan olib tashlandi",
         },
         { status: 200 }
       );
     } catch (error) {
       console.log(error);
       return NextResponse.json(
-        { success: false, message: "Server xatoligi" },
+        { error: "Kategoriyani o'chirishda xatolik" },
         { status: 500 }
       );
     }

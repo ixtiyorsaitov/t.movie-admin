@@ -2,7 +2,6 @@
 
 import CategoryModal, {
   CategoryDeleteModal,
-  CategoryFilmsModal,
 } from "@/components/modals/category.modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,14 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useCategoryFilmsModal,
-  useCategoryModal,
-  useDeleteCategory,
-} from "@/hooks/use-modals";
+import { useCategoryModal, useDeleteCategory } from "@/hooks/use-modals";
 import type { ICategory, IGenre } from "@/types";
 import { format } from "date-fns";
-import { Edit, Film, MoreVertical, PlusIcon, Trash2 } from "lucide-react";
+import { Edit, MoreVertical, PlusIcon, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -39,7 +34,7 @@ const CategoriesPageMain = ({ datas }: Props) => {
   const [currentDatas, setCurrentDatas] = useState<ICategory[]>(datas);
   const categoryModal = useCategoryModal();
   const deleteModal = useDeleteCategory();
-  const categoryFilmModal = useCategoryFilmsModal();
+  // const categoryFilmModal = useCategoryFilmsModal();
 
   return (
     <>
@@ -118,7 +113,7 @@ const CategoriesPageMain = ({ datas }: Props) => {
                             <Edit className="mr-2 h-4 w-4" />
                             Tahrirlash
                           </DropdownMenuItem>
-                          <DropdownMenuItem
+                          {/* <DropdownMenuItem
                             onClick={() => {
                               categoryFilmModal.setData(data);
                               categoryFilmModal.setOpen(true);
@@ -127,7 +122,7 @@ const CategoriesPageMain = ({ datas }: Props) => {
                           >
                             <Film className="mr-2 h-4 w-4" />
                             Filmlar
-                          </DropdownMenuItem>
+                          </DropdownMenuItem> */}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => {
@@ -152,7 +147,7 @@ const CategoriesPageMain = ({ datas }: Props) => {
       </div>
       <CategoryModal setDatas={setCurrentDatas} />
       <CategoryDeleteModal setList={setCurrentDatas} />
-      {categoryFilmModal.data && <CategoryFilmsModal />}
+      {/* {categoryFilmModal.data && <CategoryFilmsModal />} */}
     </>
   );
 };

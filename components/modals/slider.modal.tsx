@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { sliderSchema } from "@/lib/validation";
 import { useSliderModal } from "@/hooks/use-slider-modal";
-import { Loader2 } from "lucide-react";
+import { Spinner } from "../ui/spinner";
 
 const SliderModal = ({
   onSubmit,
@@ -64,7 +64,7 @@ const SliderModal = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {data ? "Sliderni o'zgartirish" : "Slider qo'shish"}
+            {data ? "Slaydni o'zgartirish" : "Slayd qo'shish"}
           </DialogTitle>
           <DialogDescription />
           <Form {...form}>
@@ -89,7 +89,7 @@ const SliderModal = ({
               />
               <Button disabled={loading} type="submit" className="float-right">
                 {data ? "O'zgartirish" : "Qo'shish"}
-                {loading && <Loader2 className="animate-spin" />}
+                {loading && <Spinner />}
               </Button>
             </form>
           </Form>

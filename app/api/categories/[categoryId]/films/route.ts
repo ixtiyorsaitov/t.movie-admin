@@ -10,7 +10,7 @@ export async function GET(
     await connectToDatabase();
     const { categoryId } = await params;
 
-    const films = await Film.find({ categories: categoryId })
+    const films = await Film.find({ category: categoryId })
       .select("title")
       .lean();
 

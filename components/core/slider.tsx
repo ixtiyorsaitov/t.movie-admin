@@ -12,9 +12,12 @@ import { ISlider } from "@/types";
 import { sliderSchema } from "@/lib/validation";
 import { useDeleteSlider, useSliderModal } from "@/hooks/use-slider-modal";
 import DeleteSliderModal from "../modals/delete.slider.modal";
-import { useMutation } from "@tanstack/react-query";
-import api from "@/lib/axios";
 import { toast } from "sonner";
+import {
+  useCreateSliderMutation,
+  useDeleteSliderMutation,
+  useUpdateSliderMutation,
+} from "@/hooks/useSliders";
 
 export default function HeroSlider({
   datas: serverDatas,
@@ -34,98 +37,62 @@ export default function HeroSlider({
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
-  const createMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { data: res } = await api.post<{
-        success: boolean;
-        error: string;
-        data: ISlider;
-      }>("/slider", { id });
-      return res;
-    },
-    onSuccess: (res) => {
-      if (res.success) {
-        sliderModal.setData(null);
-        sliderModal.setOpen(false);
-        toast.success("Slider qo'shildi");
-        setSliders((prev) => [...prev, res.data]);
-      } else {
-        toast.error(res.error);
-      }
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Slider qo'shishda xatolik yuz berdi", {
-        description: "Keyinroq urinib ko'ring",
-      });
-    },
-  });
-  const updateMutation = useMutation({
-    mutationFn: async ({
-      filmId,
-      sliderId,
-    }: {
-      filmId: string;
-      sliderId: string;
-    }) => {
-      const { data: res } = await api.put(`/slider/${sliderId}`, { filmId });
-
-      return res;
-    },
-    onSuccess: (res) => {
-      if (res.success) {
-        sliderModal.setData(null);
-        sliderModal.setOpen(false);
-        toast.success("Slider yangilandi");
-        setSliders((prev) =>
-          prev.map((c) => (c?._id === res.data._id ? res.data : c))
-        );
-      } else {
-        toast.error(res.error);
-      }
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Sliderni yangilashda xatolik yuz berdi", {
-        description: "Keyinroq urinib ko'ring",
-      });
-    },
-  });
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const { data: res } = await api.delete(
-        `/slider/${deleteSlider.data?._id}`
-      );
-
-      return res;
-    },
-    onSuccess: (res) => {
-      if (res.success) {
-        deleteSlider.setData(null);
-        deleteSlider.setOpen(false);
-        setSliders((prev) => prev.filter((c) => c._id !== res.data._id));
-        toast.success("Slider o'chirildi");
-      } else {
-        toast.error(res.error);
-      }
-    },
-  });
+  const createMutation = useCreateSliderMutation();
+  const updateMutation = useUpdateSliderMutation();
+  const deleteMutation = useDeleteSliderMutation();
 
   const handleSubmit = (values: z.infer<typeof sliderSchema>) => {
     if (sliderModal.data) {
       // Update mutation
-      updateMutation.mutate({
-        filmId: values.id,
-        sliderId: sliderModal.data._id,
-      });
+      updateMutation.mutate(
+        {
+          filmId: values.id,
+          sliderId: sliderModal.data._id,
+        },
+        {
+          onSuccess: (res) => {
+            if (res.success) {
+              sliderModal.setData(null);
+              sliderModal.setOpen(false);
+              toast.success("Slayder yangilandi");
+              setSliders((prev) =>
+                prev.map((c) => (c?._id === res.data._id ? res.data : c))
+              );
+            } else {
+              toast.error(res.error);
+            }
+          },
+        }
+      );
     } else {
-      createMutation.mutate(values.id);
+      createMutation.mutate(values.id, {
+        onSuccess: (res) => {
+          if (res.success) {
+            sliderModal.setData(null);
+            sliderModal.setOpen(false);
+            toast.success("Slayder qo'shildi");
+            setSliders((prev) => [...prev, res.data]);
+          } else {
+            toast.error(res.error);
+          }
+        },
+      });
     }
   };
   const handleDelete = () => {
-    if (deleteSlider.data) {
-      deleteMutation.mutate();
-    }
+    if (!deleteSlider.data) return;
+    deleteMutation.mutate(deleteSlider.data._id, {
+      onSuccess: (res) => {
+        if (res.success) {
+          deleteSlider.setData(null);
+          deleteSlider.setOpen(false);
+          setSliders((prev) => prev.filter((c) => c._id !== res.data._id));
+          toast.success("Slayder o'chirildi");
+        } else {
+          toast.error(res.error);
+        }
+      },
+    });
   };
 
   return (
@@ -133,7 +100,7 @@ export default function HeroSlider({
       <div className="w-full flex items-center justify-center">
         <div className="embla w-full max-w-[1600px]">
           <div
-            className="embla__veiwport border mt-12 mx-auto h-[70vh] max-h-[600px]"
+            className="embla__veiwport border mt-12 mx-auto sm:h-[70vh] h-[40vh] max-h-[600px]"
             ref={emblaRef}
           >
             <div className="embla__container h-full w-full">
@@ -212,7 +179,7 @@ function Slider({ slider }: { slider: ISlider | null }) {
         <ImageIcon size={50} />
         <p className="text-center">
           {
-            "Agar slider qo'shmoqchi bo'lsangiz animening ID sini olib kelib qo'ying"
+            "Agar slayd qo'shmoqchi bo'lsangiz animening ID sini olib kelib qo'ying"
           }
         </p>
         <Button
@@ -221,7 +188,7 @@ function Slider({ slider }: { slider: ISlider | null }) {
             sliderModal.setOpen(true);
           }}
         >
-          {"Slide qo'shish"}
+          {"Slayd qo'shish"}
         </Button>
       </div>
     </div>

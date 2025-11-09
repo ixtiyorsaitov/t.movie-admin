@@ -11,7 +11,7 @@ export async function getGenres() {
   const data = await res.json();
   return data;
 }
-export async function getGenreFilms(genreId?: string) {
+export async function getGenreFilms(genreId: string) {
   const { data: response } = await api.get(`/genres/${genreId}/films`);
   return response;
 }

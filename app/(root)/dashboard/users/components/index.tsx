@@ -18,19 +18,16 @@ import {
   CopyIcon,
   CrownIcon,
   Edit,
-  FilmIcon,
   MoreVertical,
   PlusIcon,
   Search,
-  Star,
   StarIcon,
   Trash2,
-  User,
   UserIcon,
 } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import Loading from "../loading";
+import Loading, { TableSkeleton } from "../loading";
 import {
   Table,
   TableBody,
@@ -40,7 +37,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import CheckMarkIcon from "@/public/icons/checkmark";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -199,190 +195,198 @@ const UsersMainPage = ({
             </Select> */}
           </div>
         </div>
-        <div className="w-full rounded-lg border bg-card">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ism</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>{"Qo'shilgan sana"}</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {datas.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    Hech qanday foydalanuvchi topilmadi
-                  </TableCell>
-                </TableRow>
-              ) : (
-                datas.map((data) => (
-                  <TableRow
-                    key={data._id}
-                    className={cn(
-                      "hover:bg-muted/30 transition-colors",
-                      data.role === ROLE.SUPERADMIN && "bg-accent"
-                    )}
-                  >
-                    <TableCell>
-                      <div className="flex items-center justify-start gap-2 ">
-                        <Avatar className="border">
-                          <AvatarImage src={data.avatar || ""} />
-                          <AvatarFallback>
-                            {data.name.slice(0, 2)?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{data.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="max-w-[300px] truncate">{data.email}</p>
-                    </TableCell>
-                    <TableCell>
-                      {data.role === ROLE.USER ? (
-                        <div className="flex items-center justify-start gap-1">
-                          Oddiy foydalanuvchi <UserIcon className="h-4 w-4" />
-                        </div>
-                      ) : data.role === ROLE.ADMIN ? (
-                        <div className="flex items-center justify-start gap-1">
-                          Admin{" "}
-                          <StarIcon className="h-4 w-4 fill-primary text-primary" />
-                        </div>
-                      ) : data.role === ROLE.SUPERADMIN ? (
-                        <div className="flex items-center justify-start gap-1">
-                          Super admin{" "}
-                          <CrownIcon className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-start gap-1"></div>
-                      )}
-                    </TableCell>
-                    <TableCell>VIP</TableCell>
-                    <TableCell>
-                      {format(new Date(data.createdAt), "dd.MM.yyyy")}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0 hover:bg-muted rounded-full"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Amallar menyusi</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger asChild>
-                              <DropdownMenuItem>
-                                <CopyIcon />
-                                <span className="ml-2">Nusxalash</span>
-                              </DropdownMenuItem>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent>
-                                <DropdownMenuItem
-                                  onClick={() => onCopy(data._id)}
-                                >
-                                  <UserIcon />
-                                  ID
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => onCopy(data.name)}
-                                >
-                                  <Edit />
-                                  Ismi
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              userModal.setData(data);
-                              userModal.setOpen(true);
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Tahrirlash
-                          </DropdownMenuItem>
-
-                          <DropdownMenuSeparator />
-
-                          <DropdownMenuItem
-                            variant="destructive"
-                            className="cursor-pointer text-destructive focus:text-destructive"
-                            onClick={() => {
-                              deleteModal.setData(data);
-                              deleteModal.setOpen(true);
-                            }}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {"O'chirish"}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+        {loading ? (
+          <TableSkeleton limit={limit} />
+        ) : (
+          <>
+            <div className="w-full rounded-lg border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ism</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Rol</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>{"Qo'shilgan sana"}</TableHead>
+                    <TableHead />
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        {pagination.total > limit && (
-          <Pagination className="mt-5 justify-end">
-            <PaginationContent>
-              {/* Prev tugmasi */}
-              <PaginationItem>
-                <PaginationPrevious
-                  className="cursor-pointer"
-                  onClick={() =>
-                    pagination.page > 1 && handlePageChange(pagination.page - 1)
-                  }
-                />
-              </PaginationItem>
+                </TableHeader>
+                <TableBody>
+                  {datas.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-8 text-muted-foreground"
+                      >
+                        Hech qanday foydalanuvchi topilmadi
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    datas.map((data) => (
+                      <TableRow
+                        key={data._id}
+                        className={cn(
+                          "hover:bg-muted/30 transition-colors",
+                          data.role === ROLE.SUPERADMIN && "bg-accent"
+                        )}
+                      >
+                        <TableCell>
+                          <div className="flex items-center justify-start gap-2 ">
+                            <Avatar className="border">
+                              <AvatarImage src={data.avatar || ""} />
+                              <AvatarFallback>
+                                {data.name.slice(0, 2)?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{data.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <p className="max-w-[300px] truncate">{data.email}</p>
+                        </TableCell>
+                        <TableCell>
+                          {data.role === ROLE.USER ? (
+                            <div className="flex items-center justify-start gap-1">
+                              Oddiy foydalanuvchi{" "}
+                              <UserIcon className="h-4 w-4" />
+                            </div>
+                          ) : data.role === ROLE.ADMIN ? (
+                            <div className="flex items-center justify-start gap-1">
+                              Admin{" "}
+                              <StarIcon className="h-4 w-4 fill-primary text-primary" />
+                            </div>
+                          ) : data.role === ROLE.SUPERADMIN ? (
+                            <div className="flex items-center justify-start gap-1">
+                              Super admin{" "}
+                              <CrownIcon className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-start gap-1"></div>
+                          )}
+                        </TableCell>
+                        <TableCell>VIP</TableCell>
+                        <TableCell>
+                          {format(new Date(data.createdAt), "dd.MM.yyyy")}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 hover:bg-muted rounded-full"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Amallar menyusi</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger asChild>
+                                  <DropdownMenuItem>
+                                    <CopyIcon />
+                                    <span className="ml-2">Nusxalash</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                  <DropdownMenuSubContent>
+                                    <DropdownMenuItem
+                                      onClick={() => onCopy(data._id)}
+                                    >
+                                      <UserIcon />
+                                      ID
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => onCopy(data.name)}
+                                    >
+                                      <Edit />
+                                      Ismi
+                                    </DropdownMenuItem>
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                              </DropdownMenuSub>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  userModal.setData(data);
+                                  userModal.setOpen(true);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Tahrirlash
+                              </DropdownMenuItem>
 
-              {/* Sahifa tugmalari */}
-              {getPageNumbers(pagination).map((page, i) =>
-                page === "..." ? (
-                  <PaginationItem key={`ellipsis-${i}`}>
-                    <span className="px-2">...</span>
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem
-                    key={`page-${page}`}
-                    className="cursor-pointer"
-                  >
-                    <PaginationLink
-                      isActive={page === pagination.page}
-                      onClick={() => handlePageChange(page as number)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              )}
+                              <DropdownMenuSeparator />
 
-              {/* Next tugmasi */}
-              <PaginationItem>
-                <PaginationNext
-                  className="cursor-pointer"
-                  onClick={() =>
-                    pagination.page < pagination.totalPages &&
-                    handlePageChange(pagination.page + 1)
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                              <DropdownMenuItem
+                                variant="destructive"
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                                onClick={() => {
+                                  deleteModal.setData(data);
+                                  deleteModal.setOpen(true);
+                                }}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {"O'chirish"}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            {pagination.total > limit && (
+              <Pagination className="mt-5 justify-end">
+                <PaginationContent>
+                  {/* Prev tugmasi */}
+                  <PaginationItem>
+                    <PaginationPrevious
+                      className="cursor-pointer"
+                      onClick={() =>
+                        pagination.page > 1 &&
+                        handlePageChange(pagination.page - 1)
+                      }
+                    />
+                  </PaginationItem>
+
+                  {/* Sahifa tugmalari */}
+                  {getPageNumbers(pagination).map((page, i) =>
+                    page === "..." ? (
+                      <PaginationItem key={`ellipsis-${i}`}>
+                        <span className="px-2">...</span>
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem
+                        key={`page-${page}`}
+                        className="cursor-pointer"
+                      >
+                        <PaginationLink
+                          isActive={page === pagination.page}
+                          onClick={() => handlePageChange(page as number)}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+
+                  {/* Next tugmasi */}
+                  <PaginationItem>
+                    <PaginationNext
+                      className="cursor-pointer"
+                      onClick={() =>
+                        pagination.page < pagination.totalPages &&
+                        handlePageChange(pagination.page + 1)
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </>
         )}
       </div>
       <UserModal
