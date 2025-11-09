@@ -1,4 +1,4 @@
-import { CacheTags, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import React from "react";
 import NewsPage from "./_components";
 import { Heading } from "@/components/ui/heading";
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Yangiliklar",
   description: "Yangiliklarni boshqarish (Server jadval funksiyalari orqali)",
 };
-export const limit = 5;
+const limit = 5;
 async function getNewsData() {
   const res = await fetch(
     `${SITE_URL}/api/news?limit=${limit}`

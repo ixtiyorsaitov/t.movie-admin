@@ -63,8 +63,6 @@ export function translateRole(role: ROLE) {
       return "Superadmin";
     case ROLE.ADMIN:
       return "Admin";
-    case ROLE.MEMBER:
-      return "Xodim";
     case ROLE.USER:
       return "Oddiy foydalanuvchi";
     default:

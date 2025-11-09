@@ -269,7 +269,7 @@ export function GenreDeleteModal({
 
 export function GenreFilmsModal() {
   const modal = useGenreFilmsModal();
-  const getDataQuery = useGetGenreFilms(modal.data?._id);
+  const getDataQuery = useGetGenreFilms(modal.data?._id as string);
 
   return (
     <Dialog open={modal.open} onOpenChange={modal.setOpen}>

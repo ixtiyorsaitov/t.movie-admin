@@ -5,13 +5,11 @@ import {
   getGenres,
   updateGenre,
 } from "@/lib/api/genres";
-import api from "@/lib/axios";
+import { fiveMinutes } from "@/lib/constants";
 import { CacheTags } from "@/lib/utils";
 import { genreSchema } from "@/lib/validation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import z from "zod";
-
-const fiveMinutes = 1000 * 60 * 5;
 
 export const useGenres = () => {
   return useQuery({
@@ -21,7 +19,7 @@ export const useGenres = () => {
   });
 };
 
-export function useGetGenreFilms(genreId?: string) {
+export function useGetGenreFilms(genreId: string) {
   return useQuery({
     queryKey: [CacheTags.GENRE_FILMS, `${CacheTags.GENRE_FILMS}-${genreId}`],
     queryFn: () => getGenreFilms(genreId),
