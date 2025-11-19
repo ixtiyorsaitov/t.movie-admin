@@ -1,4 +1,4 @@
-import { FilmType, PeriodType } from "@/types";
+import { FilmType, NotificationType, PeriodType } from "@/types";
 import { z } from "zod";
 
 export const filmFormSchemaV1 = z.object({
@@ -128,3 +128,92 @@ export const priceSchema = z.object({
   }),
   recommended: z.boolean(),
 });
+
+export const notificationSchema = z
+  .object({
+    type: z.enum([
+      NotificationType.SYSTEM,
+      NotificationType.FILM,
+      NotificationType.EPISODE,
+      NotificationType.REVIEW_REPLY,
+      NotificationType.COMMENT_REPLY,
+      NotificationType.PRIVATE,
+    ]),
+    isGlobal: z.boolean(),
+    userId: z.string().optional(),
+    title: z.string().min(1, "Title is required"),
+    message: z.string().min(1, "Message is required"),
+    filmId: z.string().optional(),
+    episodeId: z.string().optional(),
+    reviewReplyId: z.string().optional(),
+    commentReplyId: z.string().optional(),
+    link: z.string().url("Invalid URL").optional().or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      // If isGlobal is false, userId is required
+      if (!data.isGlobal && !data.userId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Userning ID si majburiy qachonki bu global bo'lmasa",
+      path: ["userId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is film, filmId is required
+      if (data.type === NotificationType.FILM && !data.filmId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Filmning ID si majburiy film bildirishnomalari uchun",
+      path: ["filmId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is episode, episodeId is required
+      if (data.type === NotificationType.EPISODE && !data.episodeId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Epizodning ID si majburiy epizod bildirishnomalari uchun",
+      path: ["episodeId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is reviewReply, reviewReplyId is required
+      if (data.type === NotificationType.REVIEW_REPLY && !data.reviewReplyId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Sharhning ID si majburiy sharh javobi bildirishnomalari uchun",
+      path: ["reviewReplyId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is commentReply, commentReplyId is required
+      if (
+        data.type === NotificationType.COMMENT_REPLY &&
+        !data.commentReplyId
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Izohning ID si majburiy izoh javobi bildirishnomalari uchun",
+      path: ["commentReplyId"],
+    }
+  );

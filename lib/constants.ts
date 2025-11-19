@@ -12,13 +12,14 @@ import {
   Tag,
   Users,
   Users2,
+  Bell,
 } from "lucide-react";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN_URI!;
 export const fiveMinutes = 5 * 60 * 1000;
 export const sidebarItems = [
   {
-    title: "Dashboard",
+    title: "Umumiy",
     url: "/dashboard/overview",
     icon: Home,
   },
@@ -26,16 +27,6 @@ export const sidebarItems = [
     title: "Barcha filmlar",
     url: "/dashboard/films",
     icon: FilmIcon,
-  },
-  {
-    title: "Janrlar",
-    url: "/dashboard/genres",
-    icon: Layers,
-  },
-  {
-    title: "Kategoriyalar",
-    url: "/dashboard/categories",
-    icon: LayoutGrid,
   },
   {
     title: "Sliderlar",
@@ -48,9 +39,9 @@ export const sidebarItems = [
     icon: Newspaper,
   },
   {
-    title: "Anotatsiyalar",
-    icon: ClipboardList,
-    url: "/dashboard/annotations",
+    title: "Eslatmalar",
+    url: "/dashboard/notifications",
+    icon: Bell,
   },
   {
     title: "Sharhlar",
@@ -61,6 +52,21 @@ export const sidebarItems = [
     title: "Izohlar",
     icon: MessageSquare,
     url: "/dashboard/comments",
+  },
+  {
+    title: "Anotatsiyalar",
+    icon: ClipboardList,
+    url: "/dashboard/annotations",
+  },
+  {
+    title: "Janrlar",
+    url: "/dashboard/genres",
+    icon: Layers,
+  },
+  {
+    title: "Kategoriyalar",
+    url: "/dashboard/categories",
+    icon: LayoutGrid,
   },
   {
     title: "Foydalanuvchilar",

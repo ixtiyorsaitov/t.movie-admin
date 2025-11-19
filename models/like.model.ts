@@ -13,7 +13,4 @@ const LikeSchema = new mongoose.Schema(
 );
 
 const Like = mongoose.models.Like || mongoose.model("Like", LikeSchema);
-
-LikeSchema.index({ film: 1, user: 1 }, { unique: true });
-
 export default Like;

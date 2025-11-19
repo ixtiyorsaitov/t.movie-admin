@@ -43,7 +43,8 @@ export function AppSidebar() {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <DropdownMenu>
+              <h1 className="text-center font-semibold text-2xl">T-movies</h1>
+              {/* <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
                     Select Workspace
@@ -58,14 +59,14 @@ export function AppSidebar() {
                     <span>Acme Corp.</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> */}
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>
       )}
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>{"Bo'limlar"}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {sidebarItems.map((item) => (
@@ -102,7 +103,7 @@ export function AppSidebar() {
               <DropdownMenuContent
                 className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                 side="bottom"
-                align="end"
+                align="center"
                 sideOffset={4}
               >
                 <DropdownMenuLabel className="p-0 font-normal">

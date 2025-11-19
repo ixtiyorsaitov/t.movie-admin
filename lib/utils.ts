@@ -1,4 +1,4 @@
-import { PaginationType, ROLE } from "@/types";
+import { NotificationType, PaginationType, ROLE } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import slugify from "slugify";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export const CacheTags = {
   COMMENTS: "comments",
   USERS: "users",
   PRICES: "prices",
+  NOTIFICATIONS: "notifications",
 };
 export function getLettersOfName(fullName: string): string {
   if (!fullName) return "";
@@ -145,3 +146,22 @@ export function getVideoDuration(file: File): Promise<string> {
     video.src = URL.createObjectURL(file);
   });
 }
+
+export const defineNotificationType = (type: NotificationType) => {
+  switch (type) {
+    case NotificationType.FILM:
+      return "Film";
+    case NotificationType.EPISODE:
+      return "Epizod";
+    case NotificationType.REVIEW_REPLY:
+      return "Sharhga javob";
+    case NotificationType.COMMENT_REPLY:
+      return "Izohga javob";
+    case NotificationType.PRIVATE:
+      return "Shaxsiy";
+    case NotificationType.SYSTEM:
+      return "Tizim";
+    default:
+      return "Noma'lum";
+  }
+};

@@ -4,6 +4,16 @@ export enum FilmType {
   SERIES = "series",
   MOVIE = "movie",
 }
+
+export enum NotificationType {
+  SYSTEM = "system",
+  FILM = "film",
+  EPISODE = "episode",
+  COMMENT_REPLY = "comment_reply",
+  REVIEW_REPLY = "review_reply",
+  PRIVATE='private'
+}
+
 export enum PeriodType {
   MONTHLY = "monthly",
   YEARLY = "yearly",
@@ -98,14 +108,6 @@ export interface IUser {
   avatar: string;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface INotification {
-  _id: string;
-  film: IFilm;
-  episode: number;
-  season: number;
-  read: boolean;
 }
 
 export interface ICategory {
