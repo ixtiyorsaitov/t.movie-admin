@@ -74,6 +74,7 @@ import {
   PlusIcon,
   Reply,
   Search,
+  StarIcon,
   Trash2,
   User,
   XCircle,
@@ -442,6 +443,12 @@ const ReviewsPageMain = ({
                             </DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                               <DropdownMenuSubContent>
+                                <DropdownMenuItem
+                                  onClick={() => onCopy(data._id)}
+                                >
+                                  <StarIcon />
+                                  Sharh ID
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => onCopy(data.user._id)}
                                 >

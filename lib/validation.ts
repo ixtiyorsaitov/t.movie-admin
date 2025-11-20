@@ -145,8 +145,8 @@ export const notificationSchema = z
     message: z.string().min(1, "Message is required"),
     filmId: z.string().optional(),
     episodeId: z.string().optional(),
-    reviewReplyId: z.string().optional(),
-    commentReplyId: z.string().optional(),
+    reviewId: z.string().optional(),
+    commentId: z.string().optional(),
     link: z.string().url("Invalid URL").optional().or(z.literal("")),
   })
   .refine(
@@ -191,7 +191,7 @@ export const notificationSchema = z
   .refine(
     (data) => {
       // If type is reviewReply, reviewReplyId is required
-      if (data.type === NotificationType.REVIEW_REPLY && !data.reviewReplyId) {
+      if (data.type === NotificationType.REVIEW_REPLY && !data.reviewId) {
         return false;
       }
       return true;
@@ -204,10 +204,7 @@ export const notificationSchema = z
   .refine(
     (data) => {
       // If type is commentReply, commentReplyId is required
-      if (
-        data.type === NotificationType.COMMENT_REPLY &&
-        !data.commentReplyId
-      ) {
+      if (data.type === NotificationType.COMMENT_REPLY && !data.commentId) {
         return false;
       }
       return true;

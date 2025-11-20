@@ -2,6 +2,7 @@ import {
   createReview,
   deleteReplyReview,
   deleteReview,
+  getReviewById,
   getReviews,
   replyReview,
   updateReview,
@@ -11,7 +12,6 @@ import { reviewSchema } from "@/lib/validation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import z from "zod";
 
-const minute = 60 * 1000;
 export const useReviews = () => {
   return useQuery({
     queryKey: [CacheTags.REVIEWS],
@@ -85,5 +85,14 @@ export const useDeleteReplyReviewMutation = () => {
       const res = await deleteReplyReview(reviewId);
       return res;
     },
+  });
+};
+
+export const useGetReviewById = (id: string | null) => {
+  return useQuery({
+    queryKey: [CacheTags.REVIEWS, id],
+    queryFn: async () => await getReviewById(id!),
+    enabled: Boolean(id), // <-- faqat id bor bo‘lsa query ishlaydi
+    staleTime: Infinity,
   });
 };

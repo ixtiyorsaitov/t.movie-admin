@@ -1,3 +1,5 @@
+import api from "../axios";
+
 const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN_URI!;
 
 export async function getFilms(limit: number) {
@@ -31,4 +33,9 @@ export async function getSearchedFilms({
   );
   const data = await res.json();
   return data;
+}
+
+export async function getFilmByIdOnlyQuickInfo(filmId: string) {
+  const { data: res } = await api.get(`/films/${filmId}/quickInfo`);
+  return res;
 }

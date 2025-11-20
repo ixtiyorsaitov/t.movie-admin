@@ -71,3 +71,8 @@ export async function deleteReplyReview(reviewId: string) {
   const { data } = await api.delete(`/reviews/${reviewId}/reply`);
   return data;
 }
+
+export async function getReviewById(reviewId: string) {
+  const { data } = await api.get(`/reviews/${reviewId}`);
+  return data;
+}

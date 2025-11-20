@@ -5,6 +5,33 @@ import Review from "@/models/review.model";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ reviewId: string }> }
+) {
+  try {
+    await connectToDatabase();
+    const { reviewId } = await params;
+
+    const review = await Review.findById(reviewId)
+      .populate({
+        path: "user",
+        select: "name avatar",
+      })
+      // .populate("film", "title")
+      .lean();
+
+    if (!review) {
+      return NextResponse.json({ error: "Sharh topilmadi" }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: review, success: true }, { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
+  }
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }

@@ -2,6 +2,7 @@ import {
   createUser,
   deleteUser,
   getSearchedUsers,
+  getUserByIdOnlyQuickInfo,
   updateUser,
 } from "@/lib/api/users";
 import { CacheTags } from "@/lib/utils";
@@ -47,5 +48,14 @@ export const useDeleteUser = () => {
 export const useUpdateUser = () => {
   return useMutation({
     mutationFn: async (user: IUser) => await updateUser(user),
+  });
+};
+
+export const useGetUserByIdOnlyQuickInfo = (id: string | null) => {
+  return useQuery({
+    queryKey: [CacheTags.USERS, id],
+    queryFn: async () => await getUserByIdOnlyQuickInfo(id!),
+    enabled: Boolean(id), // <-- faqat id bor bo‘lsa query ishlaydi
+    staleTime: Infinity,
   });
 };

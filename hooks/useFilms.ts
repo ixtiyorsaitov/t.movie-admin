@@ -1,4 +1,4 @@
-import { getFilms } from "@/lib/api/films";
+import { getFilmByIdOnlyQuickInfo, getFilms } from "@/lib/api/films";
 import api from "@/lib/axios";
 import { removeImage, uploadImage } from "@/lib/supabase-utils";
 import { CacheTags } from "@/lib/utils";
@@ -197,5 +197,14 @@ export const useUpdateFilmMutationV1 = ({
       console.error("Update error:", error);
       setUpdatingStep(null);
     },
+  });
+};
+
+export const useGetFilmByIdOnlyQuickInfo = (id: string | null) => {
+  return useQuery({
+    queryKey: [CacheTags.FILMS, id],
+    queryFn: async () => await getFilmByIdOnlyQuickInfo(id!),
+    enabled: Boolean(id), // <-- faqat id bor bo‘lsa query ishlaydi
+    staleTime: Infinity,
   });
 };

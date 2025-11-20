@@ -50,6 +50,12 @@ export async function getUser(id: string) {
   return res;
 }
 
+export async function getUserByIdOnlyQuickInfo(id: string) {
+  const { data: res } = await api.get(`/users/${id}/quickInfo`);
+
+  return res;
+}
+
 export async function createUser(data: Partial<IUser>) {
   const { data: res } = await api.post("/users", data);
 

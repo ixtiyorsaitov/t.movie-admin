@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import type * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -23,10 +23,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { INotification } from "@/types/notification";
+import type { INotification } from "@/types/notification";
 import { NotificationType } from "@/types";
-import { defineNotificationType } from "@/lib/utils";
+import { defineNotificationType, getLettersOfName } from "@/lib/utils";
 import { notificationSchema } from "@/lib/validation";
+import { debounce } from "lodash";
+import { useCallback, useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useGetUserByIdOnlyQuickInfo } from "@/hooks/useUsers";
+import FindingUserSkeleton from "./skeletons/finding-user.skeleton";
+import { useGetFilmByIdOnlyQuickInfo } from "@/hooks/useFilms";
+import FindingFilmSkeleton from "./skeletons/finding-film.skeleton";
+import ReadOnlyStars from "@/components/core/read-ony-react-stars";
+import { useGetReviewById } from "@/hooks/useReviews";
+import { format } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 type NotificationFormValues = z.infer<typeof notificationSchema>;
 
@@ -45,14 +57,62 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
       message: defaultValues?.message || "",
       filmId: defaultValues?.film?._id || "",
       episodeId: defaultValues?.episode?._id || "",
-      reviewReplyId: defaultValues?.reviewReply?._id || "",
-      commentReplyId: defaultValues?.commentReply?._id || "",
+      reviewId: defaultValues?.reviewReply?._id || "",
+      commentId: defaultValues?.commentReply?._id || "",
       link: defaultValues?.link || "",
     },
   });
 
+  const [debouncedUserId, setDebouncedUserId] = useState(
+    defaultValues?.user?._id || ""
+  );
+  const [debouncedFilmId, setDebouncedFilmId] = useState(
+    defaultValues?.film?._id || ""
+  );
+  const [debouncedReviewId, setDebouncedReviewId] = useState(
+    defaultValues?.reviewReply?._id || ""
+  );
+
   const watchType = form.watch("type");
   const watchIsGlobal = form.watch("isGlobal");
+  const watchUserId = form.watch("userId");
+  const watchFilmId = form.watch("filmId");
+  const watchReviewId = form.watch("reviewId");
+
+  // This ensures the state only updates after the user stops typing for 500ms
+  const debouncedSetUserId = useCallback(
+    debounce((value) => setDebouncedUserId(value), 500),
+    []
+  );
+  const debouncedSetFilmId = useCallback(
+    debounce((value) => setDebouncedFilmId(value), 500),
+    []
+  );
+  const debouncedSetReviewId = useCallback(
+    debounce((value) => setDebouncedReviewId(value), 500),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSetUserId(watchUserId);
+  }, [watchUserId, debouncedSetUserId]);
+
+  useEffect(() => {
+    debouncedSetFilmId(watchFilmId);
+  }, [watchFilmId, debouncedSetFilmId]);
+
+  useEffect(() => {
+    debouncedSetReviewId(watchReviewId);
+  }, [watchReviewId, debouncedSetReviewId]);
+
+  // This prevents the query from firing on every keystroke
+  const getUserByIdOnlyQuickInfoQuery = useGetUserByIdOnlyQuickInfo(
+    debouncedUserId || null
+  );
+  const getFilmByIdOnlyQuickInfoQuery = useGetFilmByIdOnlyQuickInfo(
+    debouncedFilmId || null
+  );
+  const getReviewByIdQuery = useGetReviewById(debouncedReviewId || null);
 
   function onSubmit(data: NotificationFormValues) {
     console.log("Form submitted with values:", data);
@@ -85,16 +145,10 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
                   <SelectItem value={NotificationType.FILM}>
                     {defineNotificationType(NotificationType.FILM)}
                   </SelectItem>
-                  <SelectItem
-                    value={defineNotificationType(NotificationType.EPISODE)}
-                  >
+                  <SelectItem value={NotificationType.EPISODE}>
                     {defineNotificationType(NotificationType.EPISODE)}
                   </SelectItem>
-                  <SelectItem
-                    value={defineNotificationType(
-                      NotificationType.REVIEW_REPLY
-                    )}
-                  >
+                  <SelectItem value={NotificationType.REVIEW_REPLY}>
                     {defineNotificationType(NotificationType.REVIEW_REPLY)}
                   </SelectItem>
                   <SelectItem value={NotificationType.COMMENT_REPLY}>
@@ -148,6 +202,45 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
                     {...field}
                   />
                 </FormControl>
+                {getUserByIdOnlyQuickInfoQuery.isLoading ? (
+                  <FindingUserSkeleton />
+                ) : (
+                  getUserByIdOnlyQuickInfoQuery.data && (
+                    <>
+                      {getUserByIdOnlyQuickInfoQuery.data.success ? (
+                        <div className="flex items-center justify-start gap-2">
+                          <Avatar className="border border-primary w-11 h-11">
+                            <AvatarImage
+                              src={
+                                getUserByIdOnlyQuickInfoQuery.data.data
+                                  .avatar || "/placeholder.svg"
+                              }
+                              alt="user"
+                            />
+                            <AvatarFallback>
+                              {getLettersOfName(
+                                getUserByIdOnlyQuickInfoQuery.data.data
+                                  .name as string
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h1 className="text-sm">
+                              {getUserByIdOnlyQuickInfoQuery.data.data.name}
+                            </h1>
+                            <p className="text-muted-foreground text-xs">
+                              {getUserByIdOnlyQuickInfoQuery.data.data.email}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-destructive text-xs">
+                          {getUserByIdOnlyQuickInfoQuery.data.error}
+                        </p>
+                      )}
+                    </>
+                  )
+                )}
                 <FormDescription>
                   Ushbu bildirishnomani oluvchi foydalanuvchi
                 </FormDescription>
@@ -203,6 +296,44 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
                 <FormControl>
                   <Input placeholder="Filmning ID sini kiriting" {...field} />
                 </FormControl>
+
+                {getFilmByIdOnlyQuickInfoQuery.isLoading ? (
+                  <FindingFilmSkeleton />
+                ) : (
+                  getFilmByIdOnlyQuickInfoQuery.data && (
+                    <>
+                      {getFilmByIdOnlyQuickInfoQuery.data.success ? (
+                        <div className="flex items-center justify-start gap-2">
+                          <Avatar className="border border-primary w-11 h-15 rounded-lg">
+                            <AvatarImage
+                              src={
+                                getFilmByIdOnlyQuickInfoQuery.data.data.images
+                                  .image.url || "/placeholder.svg"
+                              }
+                              className="object-cover rounded-none"
+                              alt="film"
+                            />
+                            <AvatarFallback className="rounded-none">
+                              {getLettersOfName(
+                                getFilmByIdOnlyQuickInfoQuery.data.data.name
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h1 className="text-sm font-semibold">
+                              {getFilmByIdOnlyQuickInfoQuery.data.data.title}
+                            </h1>
+                            <ReadOnlyStars value={4} size={15} />
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-destructive text-xs">
+                          {getFilmByIdOnlyQuickInfoQuery.data.error}
+                        </p>
+                      )}
+                    </>
+                  )
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -228,13 +359,73 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
         {watchType === NotificationType.REVIEW_REPLY && (
           <FormField
             control={form.control}
-            name="reviewReplyId"
+            name="reviewId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Sharh ID</FormLabel>
                 <FormControl>
                   <Input placeholder="Sharhning ID si" {...field} />
                 </FormControl>
+                {getReviewByIdQuery.isLoading ? (
+                  <h1>Loading..</h1>
+                ) : (
+                  getReviewByIdQuery.data && (
+                    <>
+                      {getReviewByIdQuery.data.success ? (
+                        <div className="bg-secondary rounded-lg p-2">
+                          <div className="flex items-center justify-start gap-2">
+                            <Avatar className="border border-primary w-11 h-11">
+                              <AvatarImage
+                                src={
+                                  getReviewByIdQuery.data.data.user.avatar ||
+                                  "/placeholder.svg"
+                                }
+                                alt="user"
+                              />
+                              <AvatarFallback>
+                                {getLettersOfName(
+                                  getReviewByIdQuery.data.data.user
+                                    .name as string
+                                )}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h1 className="text-sm">
+                                {getReviewByIdQuery.data.data.user.name}
+                              </h1>
+                            </div>
+                          </div>
+                          <p className="mt-2 text-sm">
+                            {getReviewByIdQuery.data.data.text ?? (
+                              <Badge variant={"destructive"}>
+                                {"Fikr yo'q"}
+                              </Badge>
+                            )}
+                          </p>
+                          <Separator className="my-2" />
+                          <div className="w-full text-muted-foreground text-xs flex items-center justify-between">
+                            <ReadOnlyStars
+                              value={getReviewByIdQuery.data.data.rating}
+                              size={15}
+                            />
+                            <p>
+                              {format(
+                                new Date(
+                                  getReviewByIdQuery.data.data.createdAt
+                                ),
+                                "PPpp"
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-destructive text-xs">
+                          {getReviewByIdQuery.data.error}
+                        </p>
+                      )}
+                    </>
+                  )
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -244,7 +435,7 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
         {watchType === NotificationType.COMMENT_REPLY && (
           <FormField
             control={form.control}
-            name="commentReplyId"
+            name="commentId"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Izoh ID</FormLabel>
