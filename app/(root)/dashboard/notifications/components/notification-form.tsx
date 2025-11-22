@@ -44,9 +44,13 @@ type NotificationFormValues = z.infer<typeof notificationSchema>;
 
 interface NotificationFormProps {
   defaultValues?: INotification | null;
+  onSubmit: (values: NotificationFormValues) => void;
 }
 
-export function NotificationForm({ defaultValues }: NotificationFormProps) {
+export function NotificationForm({
+  defaultValues,
+  onSubmit,
+}: NotificationFormProps) {
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
     defaultValues: {
@@ -113,10 +117,6 @@ export function NotificationForm({ defaultValues }: NotificationFormProps) {
     debouncedFilmId || null
   );
   const getReviewByIdQuery = useGetReviewById(debouncedReviewId || null);
-
-  function onSubmit(data: NotificationFormValues) {
-    console.log("Form submitted with values:", data);
-  }
 
   return (
     <Form {...form}>

@@ -1,67 +1,58 @@
 import { adminOnly } from "@/lib/admin-only";
-import { authOnly } from "@/lib/auth-only";
 import { connectToDatabase } from "@/lib/mongoose";
-import { sendNotification } from "@/lib/send-notification";
+import { notificationSchema } from "@/lib/validation";
 import Notification from "@/models/notification.model";
+import "@/models/episode.model";
+import "@/models/review.model";
+import "@/models/comment.model";
+import "@/models/film.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  return authOnly(async (user) => {
+  return adminOnly(async () => {
     try {
       await connectToDatabase();
 
-      // 🔹 Query params: page, limit
       const { searchParams } = new URL(req.url);
-      const page = Number(searchParams.get("page")) || 1;
-      const limit = Number(searchParams.get("limit")) || 10;
+      const page = parseInt(searchParams.get("page") || "1");
+      const limit = parseInt(searchParams.get("limit") || "20");
+      const type = searchParams.get("type");
+      const isGlobal = searchParams.get("isGlobal");
 
       const skip = (page - 1) * limit;
 
-      // 🔹 Filter: user-specific + global
-      const filter = {
-        $or: [{ user: user._id }, { isGlobal: true }],
-      };
+      // Filter yaratish
+      const filter: any = {};
+      if (type) filter.type = type;
+      if (isGlobal !== null) filter.isGlobal = isGlobal === "true";
 
-      // 📌 Total count (pagination uchun)
-      const total = await Notification.countDocuments(filter);
-
-      // 📌 Notificationlarni olish
       const notifications = await Notification.find(filter)
+        .populate("user", "name email avatar")
+        .populate("sender", "name email avatar")
+        .populate("film", "title images")
+        .populate("episode", "title episodeNumber")
+        .populate("reviewReply", "text rating")
+        .populate("commentReply", "text")
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit)
-        .lean();
+        .limit(limit);
 
-      const formatted = notifications.map((n) => {
-        return { ...n, isReadBy: n.isReadBy?.length || 0 };
+      const total = await Notification.countDocuments(filter);
+
+      return NextResponse.json({
+        success: true,
+        data: notifications,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       });
-
-      // USER INTERFACE
-      // 📌 Current user notificationni o'qiganmi?
-      // isReadBy: ObjectId[] -> bizga isRead = true/false kerak
-      //   const formatted = notifications.map((n) => ({
-      //     ...n,
-      //     isRead: n.isReadBy?.some(
-      //       (id: string) => id.toString() === user._id.toString()
-      //     ),
-      //   }));
-
-      // 📌 Pagination structure
-      const pagination = {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      };
-
-      return NextResponse.json(
-        { success: true, datas: formatted, pagination },
-        { status: 200 }
-      );
     } catch (error) {
       console.error(error);
       return NextResponse.json(
-        { error: "Bildirishnomalarni olishda xatolik" },
+        { success: false, error: "Bildirishnomalarni olishda xatolik!" },
         { status: 500 }
       );
     }
@@ -72,19 +63,71 @@ export async function POST(req: NextRequest) {
   return adminOnly(async (admin) => {
     try {
       await connectToDatabase();
-      const datas = await req.json();
-      const notification = await sendNotification({
-        ...datas,
+
+      const body = await req.json();
+
+      // Validation
+      const validatedData = notificationSchema.parse(body);
+
+      // Notification yaratish
+      const notificationData: any = {
+        title: validatedData.title,
+        message: validatedData.message,
+        type: validatedData.type,
+        isGlobal: validatedData.isGlobal,
+        link: validatedData.link || null,
         sender: admin._id,
-      });
-      if (!notification.success) {
-        return NextResponse.json(notification, { status: 500 });
+      };
+
+      // Agar global bo'lmasa, userId kerak
+      if (!validatedData.isGlobal) {
+        if (!validatedData.userId) {
+          return NextResponse.json(
+            { success: false, error: "UserId kerak" },
+            { status: 400 }
+          );
+        }
+        notificationData.user = validatedData.userId;
       }
-      return NextResponse.json({ notification }, { status: 200 });
+
+      // Type ga qarab field qo'shish
+      if (validatedData.filmId) {
+        notificationData.film = validatedData.filmId;
+      }
+      if (validatedData.episodeId) {
+        notificationData.episode = validatedData.episodeId;
+      }
+      if (validatedData.reviewId) {
+        notificationData.reviewReply = validatedData.reviewId;
+      }
+      if (validatedData.commentId) {
+        notificationData.commentReply = validatedData.commentId;
+      }
+
+      const notification = await Notification.create(notificationData);
+
+      // Populate qilib qaytarish
+      const populatedNotification = await Notification.findById(
+        notification._id
+      )
+        .populate("user", "name email avatar")
+        .populate("film", "title images.image.url rating.average")
+        .populate("episode", "title episodeNumber")
+        .populate("reviewReply", "text rating")
+        .populate("commentReply", "text");
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: populatedNotification,
+          message: "Notification muvaffaqiyatli yaratildi",
+        },
+        { status: 201 }
+      );
     } catch (error) {
       console.error(error);
       return NextResponse.json(
-        { error: "Bildirishnoma yuborishda xatolik!" },
+        { success: false, error: "Bildirishnoma yaratishda xatolik!" },
         { status: 500 }
       );
     }

@@ -39,7 +39,7 @@ export const sidebarItems = [
     icon: Newspaper,
   },
   {
-    title: "Eslatmalar",
+    title: "Bildirishnomalar",
     url: "/dashboard/notifications",
     icon: Bell,
   },

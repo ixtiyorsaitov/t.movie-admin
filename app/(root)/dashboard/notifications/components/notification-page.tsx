@@ -1,7 +1,15 @@
+"use client";
+
 import { INotification } from "@/types/notification";
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NotificationForm } from "./notification-form";
+import { notificationSchema } from "@/lib/validation";
+import z from "zod";
+import { useCreateNotification } from "@/hooks/useNotifications";
+import { toast } from "sonner";
+
+type NotificationFormValues = z.infer<typeof notificationSchema>;
 
 interface Props {
   data: INotification | null;
@@ -10,6 +18,20 @@ interface Props {
 const NotificationPageMain = ({ data: defaultValue }: Props) => {
   const isEditing = !!defaultValue;
 
+  const createMutation = useCreateNotification();
+  const onSubmit = (values: NotificationFormValues) => {
+    console.log("Form submitted with values:", values);
+    createMutation.mutate(values, {
+      onSuccess: (res) => {
+        console.log(res);
+        if (res.success) {
+          toast.success(res.message);
+        } else {
+          toast.error(res.error);
+        }
+      },
+    });
+  };
   return (
     <div className="mx-auto">
       <Card className="w-full bg-transparent border-none">
@@ -21,7 +43,7 @@ const NotificationPageMain = ({ data: defaultValue }: Props) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <NotificationForm defaultValues={defaultValue} />
+          <NotificationForm defaultValues={defaultValue} onSubmit={onSubmit} />
         </CardContent>
       </Card>
     </div>
