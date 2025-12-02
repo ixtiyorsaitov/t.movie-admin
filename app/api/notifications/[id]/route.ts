@@ -1,6 +1,7 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Notification from "@/models/notification.model";
+import NotificationRead from "@/models/user.notification.model";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Bitta notificationni olish
@@ -13,7 +14,7 @@ export async function GET(
     const { id: notificationId } = await params;
     const notification = await Notification.findById(notificationId)
       .populate("user", "name email avatar")
-      .populate("sender", "name email avatar")
+      // .populate("sender", "name email avatar")
       .populate("film", "title images")
       .populate("episode", "title episodeNumber")
       .populate("reviewReply", "text rating user")
@@ -59,16 +60,33 @@ export async function PATCH(
         );
       }
 
-      // Yangilash
+      // 1️⃣ ID bilan kelgan fieldlarni avtomatik konvertatsiya qilamiz (filmId → film)
+      Object.keys(body).forEach((key) => {
+        if (key.endsWith("Id")) {
+          const realKey = key.replace("Id", "");
+
+          if (body[key] && body[key].trim() !== "") {
+            notification[realKey] = body[key]; // Faqat real ID bo‘lsa yoziladi
+          } else {
+            notification[realKey] = null; // Bo‘sh bo‘lsa, null qo‘yamiz
+          }
+        } else {
+          notification[key] = body[key];
+        }
+      });
+
+      // 2️⃣ Qolgan oddiy fieldlarni update qilamiz
       Object.assign(notification, body);
+
       await notification.save();
 
-      const updatedNotification = await Notification.findById(notificationId)
-        .populate("user", "name email avatar")
-        .populate("film", "title images")
-        .populate("episode", "title episodeNumber")
-        .populate("reviewReply", "text rating")
-        .populate("commentReply", "text");
+      // 3️⃣ Populate qilingan qaytarish
+      const updatedNotification = await Notification.findById(notificationId);
+      // .populate("user", "name email avatar")
+      // .populate("film", "title images")
+      // .populate("episode", "title episodeNumber")
+      // .populate("reviewReply", "text rating")
+      // .populate("commentReply", "text");
 
       return NextResponse.json({
         success: true,
@@ -102,7 +120,7 @@ export async function DELETE(
           { status: 404 }
         );
       }
-
+      await NotificationRead.deleteMany({ notification: notification._id });
       return NextResponse.json({
         success: true,
         message: "Notification o'chirildi",

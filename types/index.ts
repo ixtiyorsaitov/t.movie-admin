@@ -11,7 +11,14 @@ export enum NotificationType {
   EPISODE = "episode",
   COMMENT_REPLY = "comment_reply",
   REVIEW_REPLY = "review_reply",
-  PRIVATE='private'
+  PRIVATE = "private",
+}
+
+export enum NotificationSendingType {
+  ALL = "all",
+  USER = "user",
+  SELECTED_USERS = "selected_users",
+  FILM_SUBSCRIBERS = "film_subs",
 }
 
 export enum PeriodType {

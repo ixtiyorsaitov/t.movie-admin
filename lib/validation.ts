@@ -1,4 +1,9 @@
-import { FilmType, NotificationType, PeriodType } from "@/types";
+import {
+  FilmType,
+  NotificationSendingType,
+  NotificationType,
+  PeriodType,
+} from "@/types";
 import { z } from "zod";
 
 export const filmFormSchemaV1 = z.object({
@@ -139,29 +144,24 @@ export const notificationSchema = z
       NotificationType.COMMENT_REPLY,
       NotificationType.PRIVATE,
     ]),
-    isGlobal: z.boolean(),
-    userId: z.string().optional(),
-    title: z.string().min(1, "Title is required"),
-    message: z.string().min(1, "Message is required"),
     filmId: z.string().optional(),
     episodeId: z.string().optional(),
     reviewId: z.string().optional(),
     commentId: z.string().optional(),
+
+    title: z.string().min(1, "Sarvlaha majburiy"),
+    message: z.string().min(1, "Xabar majburiy"),
     link: z.string().url("Invalid URL").optional().or(z.literal("")),
+
+    sendingType: z.enum([
+      NotificationSendingType.ALL,
+      NotificationSendingType.USER,
+      NotificationSendingType.FILM_SUBSCRIBERS,
+      NotificationSendingType.SELECTED_USERS,
+    ]),
+    sendingFilmId: z.string().optional(),
+    sendingUserId: z.string().optional(),
   })
-  .refine(
-    (data) => {
-      // If isGlobal is false, userId is required
-      if (!data.isGlobal && !data.userId) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Userning ID si majburiy qachonki bu global bo'lmasa",
-      path: ["userId"],
-    }
-  )
   .refine(
     (data) => {
       // If type is film, filmId is required
@@ -212,5 +212,39 @@ export const notificationSchema = z
     {
       message: "Izohning ID si majburiy izoh javobi bildirishnomalari uchun",
       path: ["commentReplyId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is private, userId is required
+      if (
+        data.sendingType === NotificationSendingType.FILM_SUBSCRIBERS &&
+        !data.sendingFilmId
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Filmning id sini kiriting agarda uning obunachilariga jo'natmoqchi bo'lsangiz",
+      path: ["sendingFilmId"],
+    }
+  )
+  .refine(
+    (data) => {
+      // If type is private, userId is required
+      if (
+        data.sendingType === NotificationSendingType.USER &&
+        !data.sendingUserId
+      ) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Jo'natmoqchi bo'lgan usernig id sini kiriting",
+      path: ["sendingUserId"],
     }
   );

@@ -1,7 +1,7 @@
 import { authOnly } from "@/lib/auth-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Notification from "@/models/notification.model";
-import NotificationRead from "@/models/notification.read.schema";
+import NotificationRead from "@/models/user.notification.model";
 import { NextRequest, NextResponse } from "next/server";
 
 // POST - Notificationni o'qilgan deb belgilash

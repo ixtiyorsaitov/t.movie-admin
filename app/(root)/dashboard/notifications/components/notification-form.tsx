@@ -24,8 +24,12 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { INotification } from "@/types/notification";
-import { NotificationType } from "@/types";
-import { defineNotificationType, getLettersOfName } from "@/lib/utils";
+import { NotificationSendingType, NotificationType } from "@/types";
+import {
+  defineNotificationSendingType,
+  defineNotificationType,
+  getLettersOfName,
+} from "@/lib/utils";
 import { notificationSchema } from "@/lib/validation";
 import { debounce } from "lodash";
 import { useCallback, useEffect, useState } from "react";
@@ -39,57 +43,70 @@ import { useGetReviewById } from "@/hooks/useReviews";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 
 type NotificationFormValues = z.infer<typeof notificationSchema>;
 
 interface NotificationFormProps {
   defaultValues?: INotification | null;
+  loading: boolean;
   onSubmit: (values: NotificationFormValues) => void;
 }
 
 export function NotificationForm({
   defaultValues,
   onSubmit,
+  loading,
 }: NotificationFormProps) {
   const form = useForm<NotificationFormValues>({
     resolver: zodResolver(notificationSchema),
     defaultValues: {
       type: defaultValues?.type || NotificationType.SYSTEM,
-      isGlobal: defaultValues?.isGlobal || false,
-      userId: defaultValues?.user?._id || "",
       title: defaultValues?.title || "",
       message: defaultValues?.message || "",
       filmId: defaultValues?.film?._id || "",
       episodeId: defaultValues?.episode?._id || "",
       reviewId: defaultValues?.reviewReply?._id || "",
       commentId: defaultValues?.commentReply?._id || "",
+      sendingType: defaultValues?.sending.type || NotificationSendingType.ALL,
+      sendingFilmId: defaultValues?.sending.film || "",
+      sendingUserId: defaultValues?.sending.user || "",
       link: defaultValues?.link || "",
     },
   });
 
-  const [debouncedUserId, setDebouncedUserId] = useState(
-    defaultValues?.user?._id || ""
+  const [debouncedSendingUserId, setDebouncedSendingUserId] = useState(
+    defaultValues?.sending?.user || ""
   );
   const [debouncedFilmId, setDebouncedFilmId] = useState(
     defaultValues?.film?._id || ""
+  );
+  const [debouncedSendingFilmId, setDebouncedSendingFilmId] = useState(
+    defaultValues?.sending.film || ""
   );
   const [debouncedReviewId, setDebouncedReviewId] = useState(
     defaultValues?.reviewReply?._id || ""
   );
 
   const watchType = form.watch("type");
-  const watchIsGlobal = form.watch("isGlobal");
-  const watchUserId = form.watch("userId");
   const watchFilmId = form.watch("filmId");
   const watchReviewId = form.watch("reviewId");
 
+  const watchSendingType = form.watch("sendingType");
+  const watchSendingFilmId = form.watch("sendingFilmId");
+  const watchSendingUserId = form.watch("sendingUserId");
+
   // This ensures the state only updates after the user stops typing for 500ms
   const debouncedSetUserId = useCallback(
-    debounce((value) => setDebouncedUserId(value), 500),
+    debounce((value) => setDebouncedSendingUserId(value), 500),
     []
   );
   const debouncedSetFilmId = useCallback(
     debounce((value) => setDebouncedFilmId(value), 500),
+    []
+  );
+  const debouncedSetSendingFilmId = useCallback(
+    debounce((value) => setDebouncedSendingFilmId(value), 500),
     []
   );
   const debouncedSetReviewId = useCallback(
@@ -98,12 +115,16 @@ export function NotificationForm({
   );
 
   useEffect(() => {
-    debouncedSetUserId(watchUserId);
-  }, [watchUserId, debouncedSetUserId]);
+    debouncedSetUserId(watchSendingUserId);
+  }, [watchSendingUserId, debouncedSetUserId]);
 
   useEffect(() => {
     debouncedSetFilmId(watchFilmId);
   }, [watchFilmId, debouncedSetFilmId]);
+
+  useEffect(() => {
+    debouncedSetSendingFilmId(watchSendingFilmId);
+  }, [watchSendingFilmId, debouncedSetSendingFilmId]);
 
   useEffect(() => {
     debouncedSetReviewId(watchReviewId);
@@ -111,11 +132,13 @@ export function NotificationForm({
 
   // This prevents the query from firing on every keystroke
   const getUserByIdOnlyQuickInfoQuery = useGetUserByIdOnlyQuickInfo(
-    debouncedUserId || null
+    debouncedSendingUserId || null
   );
   const getFilmByIdOnlyQuickInfoQuery = useGetFilmByIdOnlyQuickInfo(
     debouncedFilmId || null
   );
+  const getFilmByIdOnlyQuickInfoQueryForSendingFilm =
+    useGetFilmByIdOnlyQuickInfo(debouncedSendingFilmId || null);
   const getReviewByIdQuery = useGetReviewById(debouncedReviewId || null);
 
   return (
@@ -131,14 +154,14 @@ export function NotificationForm({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                disabled={field.value === "private"}
+                disabled={field.value === "private" || loading}
               >
                 <FormControl>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select notification type" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent align="center">
                   <SelectItem value={NotificationType.SYSTEM}>
                     {defineNotificationType(NotificationType.SYSTEM)}
                   </SelectItem>
@@ -164,128 +187,6 @@ export function NotificationForm({
           )}
         />
 
-        {/* isGlobal Switch */}
-        <FormField
-          control={form.control}
-          name="isGlobal"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">
-                  Global bildirishnoma
-                </FormLabel>
-                <FormDescription>
-                  Bu bildirishnomani barcha foydalanuvchilarga {"jo'nating"}
-                </FormDescription>
-              </div>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        {/* User ID - only shown when isGlobal is false */}
-        {!watchIsGlobal && (
-          <FormField
-            control={form.control}
-            name="userId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Foydalanuvchi ID</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Jo'natish kerak bo'lgan foydalanuvchining ID si"
-                    {...field}
-                  />
-                </FormControl>
-                {getUserByIdOnlyQuickInfoQuery.isLoading ? (
-                  <FindingUserSkeleton />
-                ) : (
-                  getUserByIdOnlyQuickInfoQuery.data && (
-                    <>
-                      {getUserByIdOnlyQuickInfoQuery.data.success ? (
-                        <div className="flex items-center justify-start gap-2">
-                          <Avatar className="border border-primary w-11 h-11">
-                            <AvatarImage
-                              src={
-                                getUserByIdOnlyQuickInfoQuery.data.data
-                                  .avatar || "/placeholder.svg"
-                              }
-                              alt="user"
-                            />
-                            <AvatarFallback>
-                              {getLettersOfName(
-                                getUserByIdOnlyQuickInfoQuery.data.data
-                                  .name as string
-                              )}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h1 className="text-sm">
-                              {getUserByIdOnlyQuickInfoQuery.data.data.name}
-                            </h1>
-                            <p className="text-muted-foreground text-xs">
-                              {getUserByIdOnlyQuickInfoQuery.data.data.email}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-destructive text-xs">
-                          {getUserByIdOnlyQuickInfoQuery.data.error}
-                        </p>
-                      )}
-                    </>
-                  )
-                )}
-                <FormDescription>
-                  Ushbu bildirishnomani oluvchi foydalanuvchi
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
-
-        {/* Title */}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sarlavha</FormLabel>
-              <FormControl>
-                <Input placeholder="Bildirishnomaning sarvlahasi" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Message */}
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Xabar</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Bildirishnomaning xabari"
-                  className="resize-none"
-                  rows={4}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Conditional ID Fields based on type */}
         {watchType === NotificationType.FILM && (
           <FormField
             control={form.control}
@@ -294,7 +195,11 @@ export function NotificationForm({
               <FormItem>
                 <FormLabel>Film ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Filmning ID sini kiriting" {...field} />
+                  <Input
+                    disabled={loading}
+                    placeholder="Filmning ID sini kiriting"
+                    {...field}
+                  />
                 </FormControl>
 
                 {getFilmByIdOnlyQuickInfoQuery.isLoading ? (
@@ -348,7 +253,11 @@ export function NotificationForm({
               <FormItem>
                 <FormLabel>Epizod ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Epizodning ID sini kiriting" {...field} />
+                  <Input
+                    disabled={loading}
+                    placeholder="Epizodning ID sini kiriting"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -364,7 +273,11 @@ export function NotificationForm({
               <FormItem>
                 <FormLabel>Sharh ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Sharhning ID si" {...field} />
+                  <Input
+                    disabled={loading}
+                    placeholder="Sharhning ID si"
+                    {...field}
+                  />
                 </FormControl>
                 {getReviewByIdQuery.isLoading ? (
                   <h1>Loading..</h1>
@@ -440,13 +353,57 @@ export function NotificationForm({
               <FormItem>
                 <FormLabel>Izoh ID</FormLabel>
                 <FormControl>
-                  <Input placeholder="Izohning ID si" {...field} />
+                  <Input
+                    disabled={loading}
+                    placeholder="Izohning ID si"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
+
+        {/* Title */}
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sarlavha</FormLabel>
+              <FormControl>
+                <Input
+                  disabled={loading}
+                  placeholder="Bildirishnomaning sarvlahasi"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Message */}
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Xabar</FormLabel>
+              <FormControl>
+                <Textarea
+                  disabled={loading}
+                  placeholder="Bildirishnomaning xabari"
+                  className="resize-none"
+                  rows={4}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Optional Link */}
         <FormField
@@ -457,6 +414,7 @@ export function NotificationForm({
               <FormLabel>Link (Ixtiyoriy)</FormLabel>
               <FormControl>
                 <Input
+                  disabled={loading}
                   placeholder="https://example.com"
                   type="url"
                   {...field}
@@ -470,10 +428,180 @@ export function NotificationForm({
           )}
         />
 
-        <Button type="submit" className="w-full">
+        <Separator />
+
+        <h1 className="text-2xl font-bold">Kimga yuborilsin?</h1>
+
+        <FormField
+          control={form.control}
+          name="sendingType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{"Jo'natilish turi"}</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={loading}
+              >
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Jo'natilish turi" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value={NotificationSendingType.ALL}>
+                    {defineNotificationSendingType(NotificationSendingType.ALL)}
+                  </SelectItem>
+                  <SelectItem value={NotificationSendingType.USER}>
+                    {defineNotificationSendingType(
+                      NotificationSendingType.USER
+                    )}
+                  </SelectItem>
+                  <SelectItem value={NotificationSendingType.FILM_SUBSCRIBERS}>
+                    {defineNotificationSendingType(
+                      NotificationSendingType.FILM_SUBSCRIBERS
+                    )}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {watchSendingType === NotificationSendingType.USER && (
+          <FormField
+            control={form.control}
+            name="sendingUserId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Foydalanuvchi ID</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={loading}
+                    placeholder="Jo'natish kerak bo'lgan foydalanuvchining ID si"
+                    {...field}
+                  />
+                </FormControl>
+                {getUserByIdOnlyQuickInfoQuery.isLoading ? (
+                  <FindingUserSkeleton />
+                ) : (
+                  getUserByIdOnlyQuickInfoQuery.data && (
+                    <>
+                      {getUserByIdOnlyQuickInfoQuery.data.success ? (
+                        <div className="flex items-center justify-start gap-2">
+                          <Avatar className="border border-primary w-11 h-11">
+                            <AvatarImage
+                              src={
+                                getUserByIdOnlyQuickInfoQuery.data.data
+                                  .avatar || "/placeholder.svg"
+                              }
+                              alt="user"
+                            />
+                            <AvatarFallback>
+                              {getLettersOfName(
+                                getUserByIdOnlyQuickInfoQuery.data.data
+                                  .name as string
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h1 className="text-sm">
+                              {getUserByIdOnlyQuickInfoQuery.data.data.name}
+                            </h1>
+                            <p className="text-muted-foreground text-xs">
+                              {getUserByIdOnlyQuickInfoQuery.data.data.email}
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-destructive text-xs">
+                          {getUserByIdOnlyQuickInfoQuery.data.error}
+                        </p>
+                      )}
+                    </>
+                  )
+                )}
+                <FormDescription>
+                  Ushbu bildirishnomani oluvchi foydalanuvchi
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {watchSendingType === NotificationSendingType.FILM_SUBSCRIBERS && (
+          <FormField
+            control={form.control}
+            name="sendingFilmId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Film ID</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={loading}
+                    placeholder="Filmning ID sini kiriting"
+                    {...field}
+                  />
+                </FormControl>
+
+                {getFilmByIdOnlyQuickInfoQueryForSendingFilm.isLoading ? (
+                  <FindingFilmSkeleton />
+                ) : (
+                  getFilmByIdOnlyQuickInfoQueryForSendingFilm.data && (
+                    <>
+                      {getFilmByIdOnlyQuickInfoQueryForSendingFilm.data
+                        .success ? (
+                        <div className="flex items-center justify-start gap-2">
+                          <Avatar className="border border-primary w-11 h-15 rounded-lg">
+                            <AvatarImage
+                              src={
+                                getFilmByIdOnlyQuickInfoQueryForSendingFilm.data
+                                  .data.images.image.url || "/placeholder.svg"
+                              }
+                              className="object-cover rounded-none"
+                              alt="film"
+                            />
+                            <AvatarFallback className="rounded-none">
+                              {getLettersOfName(
+                                getFilmByIdOnlyQuickInfoQueryForSendingFilm.data
+                                  .data.name
+                              )}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <h1 className="text-sm font-semibold">
+                              {
+                                getFilmByIdOnlyQuickInfoQueryForSendingFilm.data
+                                  .data.title
+                              }
+                            </h1>
+                            <ReadOnlyStars value={4} size={15} />
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-destructive text-xs">
+                          {
+                            getFilmByIdOnlyQuickInfoQueryForSendingFilm.data
+                              .error
+                          }
+                        </p>
+                      )}
+                    </>
+                  )
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <Button disabled={loading} type="submit" className="w-full">
           {defaultValues
             ? "Bildirishnomani yangilash"
             : "Bildirishnoma yaratish"}
+          {loading && <Spinner />}
         </Button>
       </form>
     </Form>

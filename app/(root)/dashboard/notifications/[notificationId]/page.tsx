@@ -12,6 +12,8 @@ const NotificationPage = async ({
   let defaultData: null | INotification = null;
   if (notificationId !== "create") {
     const data = await getNotification(notificationId);
+    console.log(data);
+
     if (data.error) throw new Error(data.error);
 
     defaultData = data.data;

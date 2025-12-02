@@ -1,5 +1,20 @@
-import { NotificationType, PaginationType, ROLE } from "@/types";
+import {
+  NotificationSendingType,
+  NotificationType,
+  PaginationType,
+  ROLE,
+} from "@/types";
 import { clsx, type ClassValue } from "clsx";
+import {
+  CogIcon,
+  FilmIcon,
+  LucideIcon,
+  MessageCircleIcon,
+  MonitorIcon,
+  StarIcon,
+  TriangleAlertIcon,
+  UserLockIcon,
+} from "lucide-react";
 import slugify from "slugify";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -163,5 +178,41 @@ export const defineNotificationType = (type: NotificationType) => {
       return "Tizim";
     default:
       return "Noma'lum";
+  }
+};
+
+export const defineNotificationSendingType = (
+  type: NotificationSendingType
+) => {
+  switch (type) {
+    case NotificationSendingType.ALL:
+      return "Barcha foydalanuvchilarga";
+    case NotificationSendingType.USER:
+      return "Faqat 1 ta foydalanuvchi";
+    case NotificationSendingType.FILM_SUBSCRIBERS:
+      return "Film obunachilariga";
+    case NotificationSendingType.SELECTED_USERS:
+      return "Tanlangan foydalanuvchilarga";
+    default:
+      return "Noma'lum";
+  }
+};
+
+export const defineNotificationIcon = (type: NotificationType): LucideIcon => {
+  switch (type) {
+    case NotificationType.FILM:
+      return FilmIcon;
+    case NotificationType.EPISODE:
+      return MonitorIcon;
+    case NotificationType.REVIEW_REPLY:
+      return StarIcon;
+    case NotificationType.COMMENT_REPLY:
+      return MessageCircleIcon;
+    case NotificationType.PRIVATE:
+      return UserLockIcon;
+    case NotificationType.SYSTEM:
+      return CogIcon;
+    default:
+      return TriangleAlertIcon;
   }
 };

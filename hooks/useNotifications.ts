@@ -3,8 +3,8 @@ import { CacheTags } from "@/lib/utils";
 import { fiveMinutes } from "@/lib/constants";
 import {
   createNotification,
-  getNotification,
   getNotifications,
+  updateNotification,
 } from "@/lib/api/notifications";
 
 export const useNotifications = (limit: number) => {
@@ -22,6 +22,15 @@ export const useCreateNotification = () => {
   return useMutation({
     mutationFn: async (data: any) => {
       const res = await createNotification(data);
+      return res;
+    },
+  });
+};
+
+export const useUpdateNotification = () => {
+  return useMutation({
+    mutationFn: async (props: { data: any; id: string }) => {
+      const res = await updateNotification(props);
       return res;
     },
   });
