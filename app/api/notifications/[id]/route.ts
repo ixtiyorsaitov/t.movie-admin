@@ -12,13 +12,7 @@ export async function GET(
   try {
     await connectToDatabase();
     const { id: notificationId } = await params;
-    const notification = await Notification.findById(notificationId)
-      .populate("user", "name email avatar")
-      // .populate("sender", "name email avatar")
-      .populate("film", "title images")
-      .populate("episode", "title episodeNumber")
-      .populate("reviewReply", "text rating user")
-      .populate("commentReply", "text user");
+    const notification = await Notification.findById(notificationId);
 
     if (!notification) {
       return NextResponse.json(

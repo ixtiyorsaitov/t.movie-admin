@@ -198,3 +198,15 @@ export const useDeleteNotificationModal = create<ModalStore<INotification>>()(
     setData: (data) => set({ data }),
   })
 );
+export const useMemberModal = create<ModalStore<IMember>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));
+export const useDeleteMemberModal = create<ModalStore<IMember>>()((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+  data: null,
+  setData: (data) => set({ data }),
+}));

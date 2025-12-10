@@ -33,6 +33,7 @@ import { useDeleteNotificationModal } from "@/hooks/use-modals";
 import {
   cn,
   defineNotificationIcon,
+  defineNotificationSendingType,
   defineNotificationType,
   onCopy,
 } from "@/lib/utils";
@@ -90,7 +91,7 @@ const NotificationsPageMain = ({ datas, limit, pagination }: Props) => {
                 <TableHead className="w-[150px]">Tur</TableHead>
                 <TableHead className="min-w-[200px]">Sarlavha</TableHead>
                 <TableHead className="w-[100px] text-center">
-                  {"Ko'rishlar"}
+                  {"Jo'natilish turi"}
                 </TableHead>
                 <TableHead className="w-[150px] text-right">Vaqti</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -154,7 +155,7 @@ const NotificationsPageMain = ({ datas, limit, pagination }: Props) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Tooltip>
+                        {/* <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex items-center justify-center gap-1.5 cursor-help py-1 px-2 rounded-md hover:bg-muted/50 transition-colors w-fit mx-auto">
                               <EyeIcon className="w-3.5 h-3.5 text-muted-foreground" />
@@ -197,7 +198,10 @@ const NotificationsPageMain = ({ datas, limit, pagination }: Props) => {
                               </div>
                             </div>
                           </TooltipContent>
-                        </Tooltip>
+                        </Tooltip> */}
+                        <Badge>
+                          {defineNotificationSendingType(data.sending.type)}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right tabular-nums text-muted-foreground">
                         <p className="text-xs">
@@ -228,14 +232,6 @@ const NotificationsPageMain = ({ datas, limit, pagination }: Props) => {
                               </DropdownMenuSubTrigger>
                               <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                  {data.batchId && (
-                                    <DropdownMenuItem
-                                      onClick={() => onCopy(data.batchId!)}
-                                    >
-                                      <KeyIcon />
-                                      Batch ID
-                                    </DropdownMenuItem>
-                                  )}
                                   {!data.isGlobal && data.user && (
                                     <DropdownMenuItem
                                       onClick={() => onCopy(data.user!._id)}

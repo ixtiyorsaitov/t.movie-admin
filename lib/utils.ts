@@ -1,4 +1,5 @@
 import {
+  MemberType,
   NotificationSendingType,
   NotificationType,
   PaginationType,
@@ -8,8 +9,10 @@ import { clsx, type ClassValue } from "clsx";
 import {
   CogIcon,
   FilmIcon,
+  LanguagesIcon,
   LucideIcon,
   MessageCircleIcon,
+  MicIcon,
   MonitorIcon,
   StarIcon,
   TriangleAlertIcon,
@@ -212,6 +215,28 @@ export const defineNotificationIcon = (type: NotificationType): LucideIcon => {
       return UserLockIcon;
     case NotificationType.SYSTEM:
       return CogIcon;
+    default:
+      return TriangleAlertIcon;
+  }
+};
+
+export const defineMemberType = (type: MemberType) => {
+  switch (type) {
+    case MemberType.ACTOR:
+      return "ovoz aktyori";
+    case MemberType.TRANSLATOR:
+      return "tarjimon";
+    default:
+      return "Noma'lum";
+  }
+};
+
+export const defineMemberTypeIcon = (type: MemberType) => {
+  switch (type) {
+    case MemberType.ACTOR:
+      return MicIcon;
+    case MemberType.TRANSLATOR:
+      return LanguagesIcon;
     default:
       return TriangleAlertIcon;
   }

@@ -1,5 +1,6 @@
 import {
   FilmType,
+  MemberType,
   NotificationSendingType,
   NotificationType,
   PeriodType,
@@ -243,8 +244,14 @@ export const notificationSchema = z
       return true;
     },
     {
-      message:
-        "Jo'natmoqchi bo'lgan usernig id sini kiriting",
+      message: "Jo'natmoqchi bo'lgan usernig id sini kiriting",
       path: ["sendingUserId"],
     }
   );
+
+export const memberSchema = z.object({
+  userId: z.string().min(1, { message: "User ID is required" }),
+  type: z.array(z.enum([MemberType.ACTOR, MemberType.TRANSLATOR])).min(1, {
+    message: "Kamida bitta tur tanlang",
+  }),
+});

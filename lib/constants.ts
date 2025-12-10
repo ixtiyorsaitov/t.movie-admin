@@ -17,6 +17,8 @@ import {
 
 export const SITE_URL = process.env.NEXT_PUBLIC_DOMAIN_URI!;
 export const fiveMinutes = 5 * 60 * 1000;
+export const fiveMinutesInSeconds = 5 * 60;
+
 export const sidebarItems = [
   {
     title: "Umumiy",

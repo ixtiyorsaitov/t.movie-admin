@@ -21,11 +21,11 @@ export interface INotification {
     film: string | null;
   };
 
-  stats: {
-    totalSent: number;
-    totalRead: number;
-    readPercentage: number;
-  };
+  // stats: {
+  //   totalSent: number;
+  //   totalRead: number;
+  //   readPercentage: number;
+  // };
   createdAt: string;
   updatedAt: string;
 }

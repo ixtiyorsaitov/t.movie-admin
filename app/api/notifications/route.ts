@@ -20,181 +20,22 @@ export async function GET(req: NextRequest) {
       await connectToDatabase();
 
       const { searchParams } = new URL(req.url);
+
       const page = parseInt(searchParams.get("page") || "1");
       const limit = parseInt(searchParams.get("limit") || "20");
       const type = searchParams.get("type");
-      const isGlobal = searchParams.get("isGlobal");
 
       const skip = (page - 1) * limit;
 
       // Filter
       const filter: any = {};
       if (type) filter.type = type;
-      if (isGlobal !== null) filter.isGlobal = isGlobal === "true";
 
-      const notifications = await Notification.aggregate([
-        { $match: filter },
-        { $sort: { createdAt: -1 } },
-        { $skip: skip },
-        { $limit: limit },
-
-        // FULL USER
-        {
-          $lookup: {
-            from: "users",
-            localField: "user",
-            foreignField: "_id",
-            as: "user",
-          },
-        },
-
-        // FULL SENDER
-        {
-          $lookup: {
-            from: "users",
-            localField: "sender",
-            foreignField: "_id",
-            as: "sender",
-          },
-        },
-
-        // FULL FILM
-        {
-          $lookup: {
-            from: "films",
-            localField: "film",
-            foreignField: "_id",
-            as: "film",
-          },
-        },
-
-        // FULL EPISODE
-        {
-          $lookup: {
-            from: "episodes",
-            localField: "episode",
-            foreignField: "_id",
-            as: "episode",
-          },
-        },
-
-        // REVIEW REPLY (minimal fields)
-        {
-          $lookup: {
-            from: "reviews",
-            localField: "reviewReply",
-            foreignField: "_id",
-            as: "reviewReply",
-            pipeline: [
-              { $project: { text: 1, rating: 1, createdAt: 1, user: 1 } },
-            ],
-          },
-        },
-
-        // COMMENT REPLY (minimal fields)
-        {
-          $lookup: {
-            from: "comments",
-            localField: "commentReply",
-            foreignField: "_id",
-            as: "commentReply",
-            pipeline: [{ $project: { text: 1, createdAt: 1, user: 1 } }],
-          },
-        },
-
-        // BATCH STATS
-        {
-          $lookup: {
-            from: "notifications",
-            let: { batch: "$batchId" },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ["$batchId", "$$batch"] },
-                      { $ne: ["$$batch", null] },
-                    ],
-                  },
-                },
-              },
-              {
-                $group: {
-                  _id: null,
-                  totalSent: { $sum: 1 },
-                  totalRead: {
-                    $sum: {
-                      $cond: [{ $eq: ["$isRead", true] }, 1, 0],
-                    },
-                  },
-                },
-              },
-            ],
-            as: "batchStats",
-          },
-        },
-
-        // UNWIND ALL
-        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: "$sender", preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: "$film", preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: "$episode", preserveNullAndEmptyArrays: true } },
-        { $unwind: { path: "$reviewReply", preserveNullAndEmptyArrays: true } },
-        {
-          $unwind: { path: "$commentReply", preserveNullAndEmptyArrays: true },
-        },
-        { $unwind: { path: "$batchStats", preserveNullAndEmptyArrays: true } },
-
-        // FINAL SHAPE
-        {
-          $project: {
-            _id: 1,
-            user: 1,
-            sender: 1,
-            film: 1,
-            episode: 1,
-            reviewReply: 1,
-            commentReply: 1,
-
-            title: 1,
-            message: 1,
-            type: 1,
-            isGlobal: 1,
-            isRead: 1,
-            link: 1,
-            batchId: 1,
-            createdAt: 1,
-            updatedAt: 1,
-
-            stats: {
-              totalSent: { $ifNull: ["$batchStats.totalSent", 1] },
-              totalRead: { $ifNull: ["$batchStats.totalRead", 0] },
-              readPercentage: {
-                $cond: {
-                  if: { $gt: ["$batchStats.totalSent", 0] },
-                  then: {
-                    $round: [
-                      {
-                        $multiply: [
-                          {
-                            $divide: [
-                              "$batchStats.totalRead",
-                              "$batchStats.totalSent",
-                            ],
-                          },
-                          100,
-                        ],
-                      },
-                      2,
-                    ],
-                  },
-                  else: 0,
-                },
-              },
-            },
-          },
-        },
-      ]);
+      // Basic pagination
+      const notifications = await Notification.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
       const total = await Notification.countDocuments(filter);
 
@@ -378,12 +219,12 @@ export async function POST(req: NextRequest) {
       // 5) Populate: schema da sender bor, shuning uchun sender ni populate qilamiz
       const populatedNotification = await Notification.findById(
         notification._id
-      )
-        // .populate("sender", "name email avatar")
-        // .populate("film", "title images rating")
-        // .populate("episode", "title episodeNumber")
-        // .populate("reviewReply", "text rating")
-        // .populate("commentReply", "text");
+      );
+      // .populate("sender", "name email avatar")
+      // .populate("film", "title images rating")
+      // .populate("episode", "title episodeNumber")
+      // .populate("reviewReply", "text rating")
+      // .populate("commentReply", "text");
 
       return NextResponse.json(
         {
