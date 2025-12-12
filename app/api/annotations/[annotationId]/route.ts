@@ -2,7 +2,6 @@ import { adminOnly } from "@/lib/admin-only";
 import { CacheTags, generateSlug } from "@/lib/utils";
 import Annotation from "@/models/annotation.model";
 import { IAnnotation } from "@/types/annotation";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -39,7 +38,6 @@ export async function PUT(
           { status: 400 }
         );
       }
-      revalidateTag(CacheTags.ANNOTATION);
       return NextResponse.json(
         { success: true, data: annotation },
         { status: 200 }
@@ -65,7 +63,6 @@ export async function DELETE(
           { status: 400 }
         );
       }
-      revalidateTag(CacheTags.ANNOTATION);
       return NextResponse.json({ success: true, data: annotation });
     } catch (error) {
       console.log(error);

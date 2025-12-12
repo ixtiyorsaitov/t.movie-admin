@@ -2,7 +2,6 @@ import { adminOnly } from "@/lib/admin-only";
 import { CacheTags } from "@/lib/utils";
 import Film from "@/models/film.model";
 import Slider from "@/models/slider.model";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -40,8 +39,6 @@ export async function PUT(
           { status: 404 }
         );
       }
-      revalidateTag(CacheTags.SLIDER);
-      revalidateTag(`${CacheTags.SLIDER}-${sliderId}`);
 
       return NextResponse.json(
         { success: true, data: { ...slider.toObject(), film } },
@@ -72,8 +69,6 @@ export async function DELETE(
           { status: 404 }
         );
       }
-      revalidateTag(CacheTags.SLIDER);
-      revalidateTag(`${CacheTags.SLIDER}-${sliderId}`);
 
       return NextResponse.json(
         { success: true, message: "Slider deleted successfully", data: slider },

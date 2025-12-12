@@ -1,8 +1,6 @@
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags } from "@/lib/utils";
 import Price from "@/models/price.model";
 import { IPrice } from "@/types/price";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -66,8 +64,6 @@ export async function PUT(
       new: true,
     })) as IPrice;
 
-    // revalidateTag(CacheTags.PRICES);
-    // revalidateTag(`${CacheTags.PRICES}-${priceId}`);
     return NextResponse.json(
       {
         message: "Ta'rif muvaffaqiyatli yangilandi",
@@ -93,8 +89,7 @@ export async function DELETE(
     if (!price) {
       return NextResponse.json({ error: "Ta'rif topilmadi" }, { status: 404 });
     }
-    // revalidateTag(CacheTags.PRICES);
-    // revalidateTag(`${CacheTags.PRICES}-${priceId}`);
+    
     return NextResponse.json({ success: true, data: price }, { status: 200 });
   } catch (error) {
     console.error("DELETE /prices error:", error);

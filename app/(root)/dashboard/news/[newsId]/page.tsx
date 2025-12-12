@@ -1,19 +1,17 @@
-import React from "react";
 import NewsForm from "./_components/news-form";
 import { Heading } from "@/components/ui/heading";
 import { INews } from "@/types";
 import { notFound } from "next/navigation";
-import { CacheTags } from "@/lib/utils";
 
 type PageProps = { params: Promise<{ newsId: string }> };
 
 async function getNewsById(id: string) {
   const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/news/${id}`,
-    {
-      cache: "force-cache",
-      next: { tags: [CacheTags.NEWS, `${CacheTags.NEWS}-${id}`] },
-    }
+    `${process.env.NEXTAUTH_URL}/api/news/${id}`
+    // {
+    //   cache: "force-cache",
+    //   next: { tags: [CacheTags.NEWS, `${CacheTags.NEWS}-${id}`] },
+    // }
   );
 
   if (!res.ok) return null;

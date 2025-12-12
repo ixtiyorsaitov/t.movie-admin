@@ -3,7 +3,6 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { CacheTags, generateSlug } from "@/lib/utils";
 import Annotation from "@/models/annotation.model";
 import { IAnnotation } from "@/types/annotation";
-import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -44,7 +43,6 @@ export async function POST(req: Request) {
         ytUrl,
         slug,
       });
-      revalidateTag(CacheTags.ANNOTATION);
       return NextResponse.json({ success: true, data: annotation });
     } catch (error) {
       console.log(error);

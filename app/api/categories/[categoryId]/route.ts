@@ -1,16 +1,10 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags, generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/lib/utils";
 import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import { ICategory } from "@/types";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-
-const revalidateCtg = (categoryId: string) => {
-  revalidateTag(CacheTags.CATEGORIES);
-  revalidateTag(`${CacheTags.CATEGORIES}-${categoryId}`);
-};
 
 export async function PUT(
   req: NextRequest,
@@ -41,13 +35,11 @@ export async function PUT(
         { new: true }
       );
       if (!updatedCategory) {
-        revalidateCtg(categoryId);
         return NextResponse.json(
           { error: "Kategoriya topilmadi" },
           { status: 404 }
         );
       }
-      revalidateCtg(categoryId);
       return NextResponse.json(
         { success: true, data: updatedCategory },
         { status: 200 }
@@ -72,7 +64,6 @@ export async function DELETE(
 
       const genre = await Category.findById(categoryId);
       if (!genre) {
-        revalidateCtg(categoryId);
         return NextResponse.json(
           { error: "Kategoriya topilmadi" },
           { status: 404 }
@@ -85,8 +76,6 @@ export async function DELETE(
       );
 
       await Category.findByIdAndDelete(categoryId);
-      revalidateTag(CacheTags.FILMS);
-      revalidateCtg(categoryId);
       return NextResponse.json(
         {
           success: true,

@@ -1,9 +1,8 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags, generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/lib/utils";
 import Genre from "@/models/genre.model";
 import { IGenre } from "@/types";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -34,7 +33,6 @@ export async function POST(req: NextRequest) {
         name: data.name,
         slug,
       });
-      revalidateTag(CacheTags.GENRES);
       return NextResponse.json(
         { success: true, data: newGenre },
         { status: 201 }

@@ -1,12 +1,11 @@
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags, generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/lib/utils";
 import Category from "@/models/category.model";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
 import Member from "@/models/member.model";
 import { FilmType } from "@/types";
 import { IFilm } from "@/types/film";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -148,8 +147,6 @@ export async function POST(req: NextRequest) {
       },
       disableComments: datas.disableComments ?? false,
     });
-
-    revalidateTag(CacheTags.FILMS);
 
     return NextResponse.json({ success: true, data: newFilm }, { status: 201 });
   } catch (error) {

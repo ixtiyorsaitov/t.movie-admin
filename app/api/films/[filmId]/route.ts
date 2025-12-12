@@ -12,7 +12,7 @@ import { FilmType } from "@/types";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ filmId: string; episodeId: string }> }
+  { params }: { params: Promise<{ filmId: string }> }
 ) {
   try {
     await connectToDatabase();
@@ -152,10 +152,6 @@ export async function PUT(
     if (!updatedFilm) {
       return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
     }
-
-    // revalidateTag(CacheTags.FILMS);
-    // revalidateTag(`${CacheTags.FILMS}-${filmId}`);
-    // revalidateTag(CacheTags.SLIDER);
 
     return NextResponse.json({ success: true, data: updatedFilm });
   } catch (error) {

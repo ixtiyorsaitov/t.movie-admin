@@ -1,12 +1,10 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags } from "@/lib/utils";
 import Film from "@/models/film.model";
 import "@/models/genre.model";
 import Slider from "@/models/slider.model";
 import { IFilm } from "@/types/film";
 import mongoose from "mongoose";
-import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -63,8 +61,6 @@ export async function POST(request: Request) {
         const newSlider = await Slider.create({
           film: data._id,
         });
-
-        revalidateTag(CacheTags.SLIDER);
 
         return NextResponse.json(
           { success: true, data: { ...newSlider.toObject(), film: data } },

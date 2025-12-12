@@ -3,7 +3,6 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { CacheTags } from "@/lib/utils";
 import Price from "@/models/price.model";
 import { IPrice } from "@/types/price";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -28,7 +27,6 @@ export async function POST(req: NextRequest) {
         expiresPeriodCount: Number(reqBody.expiresPeriodCount),
       };
       const newPrice = await Price.create(body);
-      revalidateTag(CacheTags.PRICES);
       return NextResponse.json({ success: true, data: newPrice });
     } catch (error) {
       console.error(error);

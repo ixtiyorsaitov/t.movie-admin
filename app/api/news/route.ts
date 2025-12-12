@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongoose";
 import News from "@/models/news.model";
 import slugify from "slugify";
-import { revalidateTag } from "next/cache";
 import { CacheTags } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
@@ -86,7 +85,6 @@ export async function POST(req: NextRequest) {
       tags,
       published,
     });
-    revalidateTag(CacheTags.NEWS);
 
     return NextResponse.json(
       {

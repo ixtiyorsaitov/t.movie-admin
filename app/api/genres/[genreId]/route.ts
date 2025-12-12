@@ -4,13 +4,7 @@ import { CacheTags, generateSlug } from "@/lib/utils";
 import Film from "@/models/film.model";
 import Genre from "@/models/genre.model";
 import { IGenre } from "@/types";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-
-const revalidateGenre = (genreId: string) => {
-  revalidateTag(CacheTags.GENRES);
-  revalidateTag(`${CacheTags.GENRES}-${genreId}`);
-};
 
 export async function PUT(
   req: NextRequest,
@@ -37,10 +31,8 @@ export async function PUT(
         { new: true }
       );
       if (!updatedGenre) {
-        revalidateGenre(genreId);
         return NextResponse.json({ error: "Janr topilmadi" }, { status: 404 });
       }
-      revalidateGenre(genreId);
       return NextResponse.json({ success: true, data: updatedGenre });
     } catch (error) {
       console.log(error);
@@ -68,8 +60,6 @@ export async function DELETE(
       );
 
       await Genre.findByIdAndDelete(genreId);
-      revalidateTag(CacheTags.FILMS);
-      revalidateGenre(genreId);
       return NextResponse.json({
         success: true,
         message: "Genre deleted and removed from films",

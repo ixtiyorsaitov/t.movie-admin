@@ -1,9 +1,8 @@
 import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
-import { CacheTags, generateSlug } from "@/lib/utils";
+import { generateSlug } from "@/lib/utils";
 import Category from "@/models/category.model";
 import { ICategory } from "@/types";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
         name: data.name,
         slug,
       });
-      revalidateTag(CacheTags.CATEGORIES);
       return NextResponse.json(
         { success: true, data: newCategory },
         { status: 201 }

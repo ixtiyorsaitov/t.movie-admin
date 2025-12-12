@@ -2,7 +2,6 @@ import { connectToDatabase } from "@/lib/mongoose";
 import { CacheTags } from "@/lib/utils";
 import News from "@/models/news.model";
 import { INews } from "@/types";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 
@@ -94,9 +93,6 @@ export async function PUT(
       return NextResponse.json({ error: "Maqola topilmadi" }, { status: 404 });
     }
 
-    revalidateTag(CacheTags.NEWS);
-    revalidateTag(`${CacheTags.NEWS}-${newsId}`);
-
     return NextResponse.json(
       {
         message: "Yangilik muvaffaqiyatli yangilandi",
@@ -125,8 +121,6 @@ export async function DELETE(
         { status: 404 }
       );
     }
-    revalidateTag(CacheTags.NEWS);
-    revalidateTag(`${CacheTags.NEWS}-${newsId}`);
     return NextResponse.json({ success: true, data: news });
   } catch (error) {
     console.error("DELETE /news error:", error);
