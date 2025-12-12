@@ -5,6 +5,7 @@ import { unstable_cache } from "next/cache";
 import { CacheTags } from "@/lib/utils";
 import { fiveMinutesInSeconds } from "@/lib/constants";
 import { MemberType } from "@/types";
+import { connectToDatabase } from "@/lib/mongoose";
 
 interface GetMembersParams {
   page?: number;
@@ -20,6 +21,7 @@ export const getMembersAction = async ({
   typeFilter = "all",
 }: GetMembersParams = {}) => {
   try {
+    await connectToDatabase();
     const match: any = {};
 
     // TYPE FILTER

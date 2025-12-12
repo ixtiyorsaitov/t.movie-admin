@@ -100,13 +100,13 @@ export async function PATCH(
 // DELETE - Notificationni o'chirish
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   return adminOnly(async () => {
     try {
       await connectToDatabase();
-
-      const notification = await Notification.findByIdAndDelete(params.id);
+      const { id: notificationId } = await params;
+      const notification = await Notification.findByIdAndDelete(notificationId);
 
       if (!notification) {
         return NextResponse.json(

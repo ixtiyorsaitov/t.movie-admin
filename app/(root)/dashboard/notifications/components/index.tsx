@@ -37,7 +37,7 @@ import {
   defineNotificationType,
   onCopy,
 } from "@/lib/utils";
-import type { PaginationType } from "@/types";
+import { NotificationSendingType, type PaginationType } from "@/types";
 import type { INotification } from "@/types/notification";
 import { format } from "date-fns";
 import {
@@ -232,9 +232,12 @@ const NotificationsPageMain = ({ datas, limit, pagination }: Props) => {
                               </DropdownMenuSubTrigger>
                               <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                  {!data.isGlobal && data.user && (
+                                  {data.sending.type ==
+                                    NotificationSendingType.USER && (
                                     <DropdownMenuItem
-                                      onClick={() => onCopy(data.user!._id)}
+                                      onClick={() =>
+                                        onCopy(data.sending.user as string)
+                                      }
                                     >
                                       <UserIcon />
                                       Foydalanuvchi ID
