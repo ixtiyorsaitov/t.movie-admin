@@ -41,7 +41,7 @@ const NotificationSchema = new mongoose.Schema(
         NotificationType.COMMENT_REPLY,
         NotificationType.PRIVATE,
       ],
-      default: NotificationType.PRIVATE,
+      default: NotificationType.SYSTEM,
     },
 
     sending: {

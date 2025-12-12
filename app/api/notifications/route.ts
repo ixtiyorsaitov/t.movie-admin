@@ -13,6 +13,9 @@ import {
   defineNotificationSendingType,
   defineNotificationType,
 } from "@/lib/utils";
+import UserNotification from "@/models/user.notification.model";
+import User from "@/models/user.model";
+import Subscriber from "@/models/subscriber.model";
 
 export async function GET(req: NextRequest) {
   return adminOnly(async () => {
@@ -225,6 +228,43 @@ export async function POST(req: NextRequest) {
       // .populate("episode", "title episodeNumber")
       // .populate("reviewReply", "text rating")
       // .populate("commentReply", "text");
+
+      // 6) USER NOTIFICATION yaratish (sending turiga qarab)
+      if (sendingType === NotificationSendingType.ALL) {
+        // Barcha userlarni olish
+        const allUsers = await User.find().select("_id");
+
+        const bulkData = allUsers.map((u) => ({
+          user: u._id,
+          notification: notification._id,
+        }));
+
+        if (bulkData.length > 0) {
+          await UserNotification.insertMany(bulkData);
+        }
+      } else if (sendingType === NotificationSendingType.USER) {
+        // Faqat bitta userga
+        await UserNotification.create({
+          user: sendingUserId,
+          notification: notification._id,
+        });
+      } else if (sendingType === NotificationSendingType.FILM_SUBSCRIBERS) {
+        // Film obunachilarini olish
+        const subscribers = await Subscriber.find({
+          film: sendingFilmId,
+        }).select("user");
+
+        const bulkData = subscribers.map((s) => ({
+          user: s.user,
+          notification: notification._id,
+        }));
+
+        if (bulkData.length > 0) {
+          await UserNotification.insertMany(bulkData);
+        }
+      }
+
+      
 
       return NextResponse.json(
         {
