@@ -1,10 +1,9 @@
 // app/(protected)/page.tsx
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth-options";
 
 export default async function RootPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (session) {
     redirect("/dashboard/overview");

@@ -1,9 +1,6 @@
 import { adminOnly } from "@/lib/admin-only";
-import { authOptions } from "@/lib/auth-options";
 import { connectToDatabase } from "@/lib/mongoose";
 import Review from "@/models/review.model";
-import { IReview } from "@/types/review";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -37,9 +34,7 @@ export async function PATCH(
         console.log("currentUserId", admin._id.toString());
         console.log("replyUserId", reply.reply.user.toString());
 
-        if (
-          admin._id.toString() === reply.reply.user.toString()
-        ) {
+        if (admin._id.toString() === reply.reply.user.toString()) {
           reply.reply = {
             text,
             user: admin._id,
@@ -74,12 +69,10 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  return adminOnly(async () => {
+  return adminOnly(async (admin) => {
     try {
       await connectToDatabase();
       const { reviewId } = await params;
-
-      const session = await getServerSession(authOptions);
 
       const review = await Review.findById(reviewId);
 
@@ -88,9 +81,7 @@ export async function DELETE(
       }
 
       if (review.reply) {
-        if (
-          review.reply.user.toString() !== session?.currentUser._id.toString()
-        ) {
+        if (review.reply.user.toString() !== admin._id.toString()) {
           return NextResponse.json(
             { error: "Javobni faqat uni yozgan odam o'chira oladi" },
             { status: 400 }

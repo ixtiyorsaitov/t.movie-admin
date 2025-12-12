@@ -1,8 +1,7 @@
-import { authOptions } from "@/lib/auth-options";
+import { authOnly } from "@/lib/auth-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
 import Review from "@/models/review.model";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -102,51 +101,49 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  try {
-    await connectToDatabase();
-    const session = await getServerSession(authOptions);
+  return authOnly(async (user) => {
+    try {
+      await connectToDatabase();
 
-    if (!session?.currentUser) {
-      return NextResponse.json(
-        { error: "Ro'yhatdan o'tilmagan" },
-        { status: 401 }
-      );
-    }
+      const { reviewId } = await params;
+      const review = await Review.findById(reviewId);
 
-    const { reviewId } = await params;
-    const review = await Review.findById(reviewId);
+      if (review.user.toString() !== user._id.toString()) {
+        return NextResponse.json({ error: "Ruxsat yo'q!" }, { status: 400 });
+      }
 
-    if (!review) {
-      return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });
-    }
+      if (!review) {
+        return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });
+      }
 
-    await review.deleteOne();
+      await review.deleteOne();
 
-    const updatedFilm = await Film.findByIdAndUpdate(
-      review.film,
-      {
-        $inc: {
-          "rating.total": -review.rating,
-          "rating.count": -1,
+      const updatedFilm = await Film.findByIdAndUpdate(
+        review.film,
+        {
+          $inc: {
+            "rating.total": -review.rating,
+            "rating.count": -1,
+          },
         },
-      },
-      { new: true }
-    );
+        { new: true }
+      );
 
-    if (!updatedFilm) {
-      return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
-    }
+      if (!updatedFilm) {
+        return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
+      }
 
-    if (updatedFilm.rating.count > 0) {
-      const avg = updatedFilm.rating.total / updatedFilm.rating.count;
-      updatedFilm.rating.average = Math.round(avg * 10) / 10;
-    } else {
-      updatedFilm.rating.average = 0;
+      if (updatedFilm.rating.count > 0) {
+        const avg = updatedFilm.rating.total / updatedFilm.rating.count;
+        updatedFilm.rating.average = Math.round(avg * 10) / 10;
+      } else {
+        updatedFilm.rating.average = 0;
+      }
+      await updatedFilm.save();
+      return NextResponse.json({ success: true, data: review });
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
-    await updatedFilm.save();
-    return NextResponse.json({ success: true, data: review });
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  });
 }

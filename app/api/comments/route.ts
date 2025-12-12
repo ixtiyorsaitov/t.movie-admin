@@ -1,9 +1,8 @@
-import { authOptions } from "@/lib/auth-options";
+import { authOnly } from "@/lib/auth-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Comment from "@/models/comment.model";
 import "@/models/film.model";
 import "@/models/user.model";
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -54,26 +53,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    await connectToDatabase();
-    const session = await getServerSession(authOptions);
-    if (!session?.currentUser) {
+  return authOnly(async (user) => {
+    try {
+      await connectToDatabase();
+      const { filmId, content } = await req.json();
+      const comment = await Comment.create({
+        user: user._id,
+        film: filmId,
+        content,
+      });
+      await comment.populate({ path: "user", select: "name avatar" });
+      await comment.populate({ path: "film", select: "title" });
       return NextResponse.json(
-        { error: "Ro'yhatdan o'tilmagan" },
-        { status: 401 }
+        { success: true, data: comment },
+        { status: 200 }
       );
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
-    const { filmId, content } = await req.json();
-    const comment = await Comment.create({
-      user: session.currentUser._id,
-      film: filmId,
-      content,
-    });
-    await comment.populate({ path: "user", select: "name avatar" });
-    await comment.populate({ path: "film", select: "title" });
-    return NextResponse.json({ success: true, data: comment }, { status: 200 });
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  });
 }

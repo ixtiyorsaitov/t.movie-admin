@@ -1,9 +1,8 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
-import { authOptions } from "./auth-options";
 import { IUser } from "@/types";
+import { auth } from "./auth";
 export async function authOnly(handler: (user: IUser) => Promise<Response>) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.currentUser) {
     return NextResponse.json(
