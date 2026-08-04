@@ -40,7 +40,6 @@ import {
 } from "@/components/ui/pagination";
 import { getPageNumbers } from "@/lib/utils";
 import { format } from "date-fns";
-import { SITE_URL } from "@/lib/constants";
 import Loading, { TableSkeleton } from "../loading";
 
 const getSearchedData = async (
@@ -51,7 +50,7 @@ const getSearchedData = async (
 ) => {
   setLoading?.(true);
   const res = await fetch(
-    `${SITE_URL}/api/news?search=${searchTerm}&page=${page}&limit=${limit}`
+    `/api/news?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
   setLoading?.(false);

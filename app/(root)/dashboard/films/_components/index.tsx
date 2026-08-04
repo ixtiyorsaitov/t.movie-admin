@@ -30,6 +30,17 @@ import {
 } from "@/components/ui/table";
 import { getSearchedFilms } from "@/lib/api/films";
 import { cn, getPageNumbers } from "@/lib/utils";
+import { useDeleteFilmMutation } from "@/hooks/useFilms";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { FilmType, PaginationType } from "@/types";
 import { IFilm } from "@/types/film";
 import { format } from "date-fns";
@@ -63,6 +74,8 @@ const FilmsPageMain = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [pagination, setPagination] =
     useState<PaginationType>(defaultPagination);
+  const [filmToDelete, setFilmToDelete] = useState<IFilm | null>(null);
+  const deleteMutation = useDeleteFilmMutation();
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -249,6 +262,7 @@ const FilmsPageMain = ({
                         <DropdownMenuItem
                           variant="destructive"
                           className="cursor-pointer text-destructive focus:text-destructive"
+                          onClick={() => setFilmToDelete(data)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           {"O'chirish"}
@@ -306,6 +320,52 @@ const FilmsPageMain = ({
           </PaginationContent>
         </Pagination>
       )}
+
+      {/* Film o'chirish tasdiqlash dialogi */}
+      <AlertDialog
+        open={Boolean(filmToDelete)}
+        onOpenChange={(open) => {
+          if (!open) setFilmToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              &ldquo;{filmToDelete?.title}&rdquo; filmini o&apos;chirasizmi?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu amalni ortga qaytarib bo&apos;lmaydi. Film bilan birga uning
+              epizodlari, izohlari, sharhlari va boshqa bog&apos;liq
+              ma&apos;lumotlar ham o&apos;chiriladi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Bekor qilish
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              disabled={deleteMutation.isPending}
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!filmToDelete) return;
+                const res = await deleteMutation.mutateAsync(filmToDelete._id);
+                if (res?.success) {
+                  toast.success("Film o'chirildi");
+                  setCurrentDatas((prev) =>
+                    prev.filter((f) => f._id !== filmToDelete._id)
+                  );
+                } else {
+                  toast.error(res?.error || "Filmni o'chirishda xatolik");
+                }
+                setFilmToDelete(null);
+              }}
+            >
+              {deleteMutation.isPending ? "O'chirilmoqda..." : "O'chirish"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

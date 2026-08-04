@@ -1,6 +1,6 @@
 import React from "react";
 import UsersMainPage from "./components";
-import { getUsers } from "../../../../lib/api/users";
+import { serverFetch } from "@/lib/server-fetch";
 import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -11,7 +11,8 @@ export const metadata: Metadata = {
 const limit = 10;
 
 const UsersPage = async () => {
-  const response = await getUsers({ limit, page: 1 });
+  const res = await serverFetch(`/api/users?limit=${limit}&page=1`);
+  const response = await res.json();
   if (!response.success) throw new Error(response.error);
 
   return (

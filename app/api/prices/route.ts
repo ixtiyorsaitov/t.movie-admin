@@ -6,14 +6,16 @@ import { IPrice } from "@/types/price";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    await connectToDatabase();
-    const prices = await Price.find().lean();
-    return NextResponse.json({ success: true, datas: prices });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server xatosi" });
-  }
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const prices = await Price.find().lean();
+      return NextResponse.json({ success: true, datas: prices });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Server xatosi" });
+    }
+  });
 }
 
 export async function POST(req: NextRequest) {

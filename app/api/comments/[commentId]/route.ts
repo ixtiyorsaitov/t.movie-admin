@@ -1,3 +1,4 @@
+import { adminOnly } from "@/lib/admin-only";
 import { authOnly } from "@/lib/auth-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Comment from "@/models/comment.model";
@@ -49,7 +50,8 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ commentId: string }> }
 ) {
-  return authOnly(async (user) => {
+  // Admin moderatsiyasi uchun — istalgan izohni o'chira oladi (adminOnly)
+  return adminOnly(async () => {
     try {
       await connectToDatabase();
       const { commentId } = await params;
@@ -58,12 +60,6 @@ export async function DELETE(
         return NextResponse.json(
           { error: "Komentariya topilmadi" },
           { status: 404 }
-        );
-      }
-      if (comment.user.toString() !== user._id.toString()) {
-        return NextResponse.json(
-          { error: "Komentariyaning egasi emassiz!" },
-          { status: 401 }
         );
       }
       if (comment.parent) {

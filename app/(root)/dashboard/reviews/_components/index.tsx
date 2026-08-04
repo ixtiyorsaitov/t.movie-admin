@@ -57,7 +57,6 @@ import {
   useReviewModal,
   useReviewReplyModal,
 } from "@/hooks/use-modals";
-import { SITE_URL } from "@/lib/constants";
 import { getPageNumbers, onCopy } from "@/lib/utils";
 import { PaginationType } from "@/types";
 import { IReview } from "@/types/review";
@@ -113,7 +112,7 @@ const getSearchedData = async ({
   try {
     setLoading(true);
     const res = await fetch(
-      `${SITE_URL}/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
+      `/api/reviews?search=${searchTerm}&page=${page}&limit=${limit}&replyFilter=${replyFilter}&ratingFilter=${ratingFilter}&sortBy=${sortBy}`
     );
     const data = await res.json();
     return data;

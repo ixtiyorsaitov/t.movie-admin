@@ -48,17 +48,17 @@ export const uploadVideo = async (
 ) => {
   const fileName = `${Date.now()}-${file.name}`;
 
-  // Simulate upload progress for demonstration
+  // Real progress supabase-js da mavjud emas, shuning uchun yumshoq simulyatsiya.
+  // Interval 90 da to'xtab qolmaydi — upload tugaguncha ishlaydi va 100% ni
+  // yakunlash handleri qo'yadi.
   let currentProgress = 0;
   const interval = setInterval(() => {
-    currentProgress += 10;
-    if (currentProgress <= 90) {
-      // Stop before 100 to simulate actual upload finishing
+    if (currentProgress < 90) {
+      currentProgress += 10;
       onProgress?.(currentProgress);
-    } else {
-      clearInterval(interval);
     }
-  }, 100); // Update progress every 100ms
+    // 90 da qotib qoladi, lekin interval ochiq qoladi — tugagach tozalanadi
+  }, 100);
 
   try {
     const { data, error } = await supabase.storage

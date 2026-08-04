@@ -1,7 +1,7 @@
 import { IPrice } from "@/types/price";
 import React from "react";
 import PricePageMain from "../components/price";
-import { getPrice } from "@/lib/api/prices";
+import { serverFetch } from "@/lib/server-fetch";
 export const dynamic = "force-dynamic";
 const PricePage = async ({
   params,
@@ -11,7 +11,8 @@ const PricePage = async ({
   const { priceId } = await params;
   let defaultData: null | IPrice = null;
   if (priceId !== "create") {
-    const data = await getPrice(priceId);
+    const res = await serverFetch(`/api/prices/${priceId}`);
+    const data = await res.json();
     if (data.error) throw new Error(data.error);
 
     defaultData = data.data;

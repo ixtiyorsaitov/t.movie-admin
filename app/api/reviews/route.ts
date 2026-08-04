@@ -6,8 +6,9 @@ import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  try {
-    await connectToDatabase();
+  return authOnly(async () => {
+    try {
+      await connectToDatabase();
 
     const { searchParams } = new URL(req.url);
 
@@ -110,13 +111,14 @@ export async function GET(req: NextRequest) {
         hasPrevPage: page > 1,
       },
     });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Sharhlarni olishda xatolik yuz berdi" },
-      { status: 500 }
-    );
-  }
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Sharhlarni olishda xatolik yuz berdi" },
+        { status: 500 }
+      );
+    }
+  });
 }
 
 export async function POST(req: NextRequest) {
@@ -140,7 +142,7 @@ export async function POST(req: NextRequest) {
 
       const existingReview = await Review.findOne({
         user: user._id,
-        filmId,
+        film: filmId,
       });
       if (existingReview) {
         return NextResponse.json(

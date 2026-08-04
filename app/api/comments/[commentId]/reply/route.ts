@@ -16,12 +16,6 @@ export async function POST(
       if (!comment) {
         return NextResponse.json({ error: "Izoh topilmadi" }, { status: 404 });
       }
-      if (comment.user.toString() !== admin._id.toString()) {
-        return NextResponse.json(
-          { error: "Izohning egasi emassiz" },
-          { status: 401 }
-        );
-      }
       const { content, filmId, asAdmin } = body;
 
       if (!content) {
@@ -69,36 +63,38 @@ export async function PUT(
       if (!comment) {
         return NextResponse.json({ error: "Izoh topilmadi" }, { status: 404 });
       }
-      if (comment.user.toString() !== admin._id.toString()) {
-        return NextResponse.json(
-          { error: "Izohning egasi emassiz" },
-          { status: 401 }
-        );
-      }
       const { content, asAdmin } = body;
 
       if (!content) {
         return NextResponse.json({ error: "Izoh majburiy" }, { status: 400 });
       }
 
-      const replyComment = await Comment.findByIdAndUpdate(
-        comment.reply?.comment,
-        {
-          content,
-          asAdmin,
-        },
-        { new: true }
-      )
-        .populate({ path: "user", select: "name avatar" })
-        .populate({ path: "film", select: "title" });
+      // Javob mavjudligini va uni shu admin yozganini tekshiramiz
+      if (!comment.reply?.comment) {
+        return NextResponse.json(
+          { error: "Izoh javobi topilmadi" },
+          { status: 404 }
+        );
+      }
+      const replyComment = await Comment.findById(comment.reply.comment);
       if (!replyComment) {
         return NextResponse.json(
           { error: "Izoh javobi topilmadi" },
           { status: 404 }
         );
       }
+      if (replyComment.user.toString() !== admin._id.toString()) {
+        return NextResponse.json(
+          { error: "Javobni faqat uni yozgan odam tahrirlaydi" },
+          { status: 403 }
+        );
+      }
 
+      replyComment.content = content;
+      await replyComment.save();
+      comment.reply.asAdmin = asAdmin;
       await comment.save();
+
       await comment.populate({ path: "reply.comment" });
       await comment.populate({ path: "user", select: "name avatar" });
       await comment.populate({ path: "film", select: "title" });
@@ -118,7 +114,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ commentId: string }> }
 ) {
-  return adminOnly(async (admin) => {
+  return adminOnly(async () => {
     try {
       await connectToDatabase();
       const { commentId } = await params;
@@ -126,12 +122,14 @@ export async function DELETE(
       if (!comment) {
         return NextResponse.json({ error: "Izoh topilmadi" }, { status: 404 });
       }
-      if (comment.user.toString() !== admin._id.toString()) {
+
+      if (!comment.reply?.comment) {
         return NextResponse.json(
-          { error: "Izohning egasi emassiz" },
-          { status: 401 }
+          { error: "Javob hali yozilmagan" },
+          { status: 400 }
         );
       }
+
       const deletedReply = await Comment.findByIdAndDelete(
         comment.reply.comment
       );

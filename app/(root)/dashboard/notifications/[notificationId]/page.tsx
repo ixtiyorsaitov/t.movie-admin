@@ -1,5 +1,5 @@
 import React from "react";
-import { getNotification } from "@/lib/api/notifications";
+import { serverFetch } from "@/lib/server-fetch";
 import { INotification } from "@/types/notification";
 import NotificationPageMain from "../components/notification-page";
 export const dynamic = "force-dynamic";
@@ -11,8 +11,8 @@ const NotificationPage = async ({
   const { notificationId } = await params;
   let defaultData: null | INotification = null;
   if (notificationId !== "create") {
-    const data = await getNotification(notificationId);
-    console.log(data);
+    const res = await serverFetch(`/api/notifications/${notificationId}`);
+    const data = await res.json();
 
     if (data.error) throw new Error(data.error);
 

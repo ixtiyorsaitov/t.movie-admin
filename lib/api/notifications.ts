@@ -1,5 +1,4 @@
 import api from "../axios";
-import { SITE_URL } from "../constants";
 
 export async function getNotifications(limit: number) {
   const { data: res } = await api.get(`/notifications?limit=${limit}`);
@@ -8,7 +7,7 @@ export async function getNotifications(limit: number) {
 }
 
 export async function getNotification(notificationId: string) {
-  const req = await fetch(`${SITE_URL}/api/notifications/${notificationId}`);
+  const req = await fetch(`/api/notifications/${notificationId}`);
   const res = await req.json();
   return res;
 }

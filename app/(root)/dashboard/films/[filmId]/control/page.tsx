@@ -1,13 +1,14 @@
 import { FilmType } from "@/types";
 import SeriesControl from "../../_components/control/series";
 import MovieControl from "../../_components/control/movie";
-import { getEpisodes } from "@/lib/api/episode";
+import { serverFetch } from "@/lib/server-fetch";
 const limit = 10;
 type PageProps = { params: Promise<{ filmId: string }> };
 
 const ControlPage = async ({ params }: PageProps) => {
   const { filmId } = await params;
-  const data = await getEpisodes(filmId, limit);
+  const res = await serverFetch(`/api/films/${filmId}/episodes?limit=${limit}`);
+  const data = await res.json();
 
   if (!data.success) throw new Error(data.error);
 

@@ -2,6 +2,8 @@
 
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongoose";
+import { auth } from "@/lib/auth";
+import { ROLE } from "@/types";
 import Member from "@/models/member.model";
 import Film from "@/models/film.model";
 
@@ -9,6 +11,12 @@ type DeleteMemberParams = string;
 
 export async function deleteMemberAction(memberId: DeleteMemberParams) {
   try {
+    // 🔒 Faqat SuperAdmin hodimni o'chira oladi
+    const session = await auth();
+    if (!session?.currentUser || session.currentUser.role !== ROLE.SUPERADMIN) {
+      return { success: false, error: "Sizga bu amalni bajarish mumkin emas" };
+    }
+
     await connectToDatabase();
 
     // 1️⃣ Tekshirish

@@ -3,7 +3,6 @@ import api from "../axios";
 import { commentSchema } from "../validation";
 import { ReplyFilterTypeComments, SortByTypeComments } from "@/types/comment";
 import { Dispatch, SetStateAction } from "react";
-import { SITE_URL } from "../constants";
 
 export async function getComments({
   page,
@@ -12,9 +11,7 @@ export async function getComments({
   page: number;
   limit: number;
 }) {
-  const res = await fetch(
-    `${SITE_URL}/api/comments?page=${page}&limit=${limit}`
-  );
+  const res = await fetch(`/api/comments?page=${page}&limit=${limit}`);
   const data = await res.json();
   return data;
 }

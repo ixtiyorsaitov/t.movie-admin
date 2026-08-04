@@ -54,7 +54,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       await connectToDatabase();
 
-      const user = await User.findOne({ email: session.user?.email });
+      // JWT cookie 4KB limitini oshirmaslik uchun faqat kerakli maydonlarni olib o'tamiz
+      const user = await User.findOne({ email: session.user?.email }).select(
+        "_id name email avatar role"
+      );
 
       if (user) {
         session.currentUser = user;

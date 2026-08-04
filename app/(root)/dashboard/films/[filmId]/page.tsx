@@ -1,4 +1,4 @@
-import { getFilmById } from "@/lib/api/films";
+import { serverFetch } from "@/lib/server-fetch";
 import { IFilm } from "@/types/film";
 import { FilmFormV2 } from "../_components/film-form-v2";
 
@@ -13,7 +13,8 @@ export default async function Page(props: PageProps) {
   let film: null | IFilm = null;
 
   if (filmId !== "create") {
-    const data = await getFilmById(filmId);
+    const res = await serverFetch(`/api/films/${filmId}`);
+    const data = await res.json();
 
     if (!data.success) {
       throw new Error(data.error);

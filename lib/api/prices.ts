@@ -4,7 +4,7 @@ import { CacheTags } from "../utils";
 import { priceSchema } from "../validation";
 
 export async function getPrices() {
-  const res = await fetch(`${process.env.NEXTAUTH_URL}/api/prices`, {
+  const res = await fetch(`/api/prices`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.PRICES] },
   });
@@ -13,13 +13,10 @@ export async function getPrices() {
 }
 
 export async function getPrice(priceId: string) {
-  const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/prices/${priceId}`,
-    {
-      // cache: "force-cache",
-      // next: { tags: [`${CacheTags.PRICES}-${priceId}`] },
-    }
-  );
+  const res = await fetch(`/api/prices/${priceId}`, {
+    // cache: "force-cache",
+    // next: { tags: [`${CacheTags.PRICES}-${priceId}`] },
+  });
   const data = await res.json();
   return data;
 }

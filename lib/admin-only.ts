@@ -7,10 +7,10 @@ export const allowedRoles = [ROLE.ADMIN, ROLE.SUPERADMIN];
 export async function adminOnly(handler: (admin: IUser) => Promise<Response>) {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.currentUser) {
     return NextResponse.json(
       { error: "Ro'yhatdan o'tilmagan" },
-      { status: 403 }
+      { status: 401 }
     );
   } else if (!allowedRoles.includes(session.currentUser.role)) {
     return NextResponse.json({ error: "Ruxsat yo'q" }, { status: 403 });

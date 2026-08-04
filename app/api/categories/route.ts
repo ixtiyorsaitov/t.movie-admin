@@ -46,19 +46,21 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  try {
-    await connectToDatabase();
-    const categories = await Category.find();
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const categories = await Category.find();
 
-    return NextResponse.json(
-      { datas: categories, success: true },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Server xatoligi. Keyinroq urinib ko'ring" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json(
+        { datas: categories, success: true },
+        { status: 200 }
+      );
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Server xatoligi. Keyinroq urinib ko'ring" },
+        { status: 500 }
+      );
+    }
+  });
 }

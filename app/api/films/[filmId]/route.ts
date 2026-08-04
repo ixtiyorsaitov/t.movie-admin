@@ -1,3 +1,4 @@
+import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
 
@@ -8,154 +9,227 @@ import { generateSlug } from "@/lib/utils";
 import Genre from "@/models/genre.model";
 import Member from "@/models/member.model";
 import Category from "@/models/category.model";
+import Episode from "@/models/episode.model";
+import Comment from "@/models/comment.model";
+import Review from "@/models/review.model";
+import Watchlist from "@/models/watchlist.model";
+import Like from "@/models/like.model";
+import Views from "@/models/views.model";
 import { FilmType } from "@/types";
+import { removeImage } from "@/lib/supabase-utils";
+import { BUCKETS } from "@/types";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ filmId: string }> }
 ) {
-  try {
-    await connectToDatabase();
-    const { filmId } = await params;
-    if (!mongoose.Types.ObjectId.isValid(filmId)) {
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { filmId } = await params;
+      if (!mongoose.Types.ObjectId.isValid(filmId)) {
+        return NextResponse.json(
+          { error: "Film ID formati xato" },
+          { status: 400 }
+        );
+      }
+      const film = await Film.findById(filmId)
+        .populate("genres")
+        .populate("category")
+        .populate({
+          path: "actors",
+          select: "_id",
+        })
+        .populate({
+          path: "translators",
+          select: "_id",
+        });
+
+      if (!film) {
+        return NextResponse.json({ error: "Film topilmadi" });
+      }
+      return NextResponse.json({ success: true, data: film }, { status: 200 });
+    } catch (error) {
+      console.log(error);
       return NextResponse.json(
-        { error: "Film ID formati xato" },
-        { status: 400 }
+        { error: "Filmni olishda xatolik" },
+        { status: 500 }
       );
     }
-    const film = await Film.findById(filmId)
-      .populate("genres")
-      .populate("category")
-      .populate({
-        path: "actors",
-        select: "_id",
-      })
-      .populate({
-        path: "translators",
-        select: "_id",
-      });
-
-    if (!film) {
-      return NextResponse.json({ error: "Film topilmadi" });
-    }
-    return NextResponse.json({ success: true, data: film }, { status: 200 });
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json(
-      { error: "Filmni olishda xatolik" },
-      { status: 500 }
-    );
-  }
+  });
 }
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ filmId: string }> }
 ) {
-  try {
-    const { filmId } = await params;
+  return adminOnly(async () => {
+    try {
+      const { filmId } = await params;
 
-    await connectToDatabase();
+      await connectToDatabase();
 
-    if (!mongoose.Types.ObjectId.isValid(filmId)) {
-      return NextResponse.json(
-        { error: "Film ID formati xato" },
-        { status: 400 }
+      if (!mongoose.Types.ObjectId.isValid(filmId)) {
+        return NextResponse.json(
+          { error: "Film ID formati xato" },
+          { status: 400 }
+        );
+      }
+
+      const reqjson = await req.json();
+
+      const body = reqjson as IFilm;
+
+      if (!body.title?.trim() || !body.description?.trim()) {
+        return NextResponse.json(
+          { error: "Maydonlarni to'ldiring" },
+          { status: 400 }
+        );
+      }
+
+      if (!body.category?.toString().trim().length) {
+        return NextResponse.json(
+          { error: "Kategoriya tanlang" },
+          { status: 400 }
+        );
+      }
+
+      const categoryDoc = await Category.findById(body.category);
+      if (!categoryDoc) {
+        return NextResponse.json(
+          { error: "Kategoriya topilmadi" },
+          { status: 404 }
+        );
+      }
+
+      if (!body.genres || body.genres.length === 0) {
+        return NextResponse.json(
+          { error: "Kamida 1 ta janr tanlang" },
+          { status: 400 }
+        );
+      }
+
+      // --- Genres ---
+      const genreDocs = await Promise.all(
+        reqjson.genres.map((g: string) => Genre.findById(g))
       );
-    }
+      const sortedGenres = genreDocs.filter((g) => g !== null).map((g) => g!._id);
 
-    const reqjson = await req.json();
-
-    const body = reqjson as IFilm;
-
-    if (!body.title.trim() || !body.description.trim()) {
-      return NextResponse.json(
-        { error: "Maydonlarni to'ldiring" },
-        { status: 400 }
+      // --- Actors ---
+      const actorDocs = await Promise.all(
+        (reqjson.actors || []).map((a: string) => Member.findById(a))
       );
-    }
+      const sortedActors = actorDocs.filter((a) => a !== null).map((a) => a!._id);
 
-    if (!body.category.toString().trim().length) {
-      return NextResponse.json(
-        { error: "Kategoriya tanlang" },
-        { status: 400 }
+      // --- Translators ---
+      const translatorDocs = await Promise.all(
+        (reqjson.translators || []).map((t: string) => Member.findById(t))
       );
-    }
+      const sortedTranslators = translatorDocs
+        .filter((t) => t !== null)
+        .map((t) => t!._id);
 
-    const categoryDoc = await Category.findById(body.category);
-    if (!categoryDoc) {
-      return NextResponse.json(
-        { error: "Kategoriya topilmadi" },
-        { status: 404 }
-      );
-    }
+      // --- Slug ---
+      const slug = !body.slug?.trim()
+        ? generateSlug(body.title)
+        : body.slug.trim();
 
-    if (!body.genres || body.genres.length === 0) {
-      return NextResponse.json(
-        { error: "Kamida 1 ta janr tanlang" },
-        { status: 400 }
-      );
-    }
-
-    // --- Genres ---
-    const genreDocs = await Promise.all(
-      reqjson.genres.map((g: string) => Genre.findById(g))
-    );
-    const sortedGenres = genreDocs.filter((g) => g !== null).map((g) => g!._id);
-
-    // --- Actors ---
-    const actorDocs = await Promise.all(
-      reqjson.actors.map((a: string) => Member.findById(a))
-    );
-    const sortedActors = actorDocs.filter((a) => a !== null).map((a) => a!._id);
-
-    // --- Translators ---
-    const translatorDocs = await Promise.all(
-      reqjson.translators.map((t: string) => Member.findById(t))
-    );
-    const sortedTranslators = translatorDocs
-      .filter((t) => t !== null)
-      .map((t) => t!._id);
-
-    // --- Slug ---
-    const slug = !body.slug.trim()
-      ? generateSlug(body.title)
-      : body.slug.trim();
-
-    const updatedFilm = await Film.findByIdAndUpdate(
-      filmId,
-      {
-        title: body.title,
-        description: body.description,
-        slug,
-        type: body.type ?? FilmType.SERIES,
-        published: body.published ?? false,
-        disableComments: body.disableComments ?? false,
-        category: categoryDoc._id,
-        genres: sortedGenres,
-        actors: sortedActors,
-        translators: sortedTranslators,
-        images: {
-          image: {
-            url: body.images.image.url,
-            name: body.images.image.name,
+      const updatedFilm = await Film.findByIdAndUpdate(
+        filmId,
+        {
+          title: body.title,
+          description: body.description,
+          slug,
+          type: body.type ?? FilmType.SERIES,
+          published: body.published ?? false,
+          disableComments: body.disableComments ?? false,
+          category: categoryDoc._id,
+          genres: sortedGenres,
+          actors: sortedActors,
+          translators: sortedTranslators,
+          images: {
+            image: {
+              url: body.images?.image?.url,
+              name: body.images?.image?.name,
+            },
+            backgroundImage: {
+              url: body.images?.backgroundImage?.url,
+              name: body.images?.backgroundImage?.name,
+            },
+            additionImage: body.images?.additionImage,
           },
-          backgroundImage: {
-            url: body.images.backgroundImage.url,
-            name: body.images.backgroundImage.name,
-          },
-          additionImages: body.images.additionImages,
         },
-      },
-      { new: true }
-    );
+        { new: true }
+      );
 
-    if (!updatedFilm) {
-      return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
+      if (!updatedFilm) {
+        return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
+      }
+
+      return NextResponse.json({ success: true, data: updatedFilm });
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
+  });
+}
 
-    return NextResponse.json({ success: true, data: updatedFilm });
-  } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ filmId: string }> }
+) {
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { filmId } = await params;
+
+      if (!mongoose.Types.ObjectId.isValid(filmId)) {
+        return NextResponse.json(
+          { error: "Film ID formati xato" },
+          { status: 400 }
+        );
+      }
+
+      const film = await Film.findById(filmId);
+      if (!film) {
+        return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
+      }
+
+      // Supabase'dan rasmlarni o'chirish (best-effort) — har bir bucket'ga o'z rasmlari
+      const imageNames = [
+        film.images?.image?.name,
+        ...(film.images?.additionImage || []).map((i: { name?: string }) => i.name),
+      ].filter((n): n is string => Boolean(n));
+      const backgroundNames = [film.images?.backgroundImage?.name].filter(
+        (n): n is string => Boolean(n)
+      );
+
+      await Promise.allSettled([
+        imageNames.length
+          ? removeImage(imageNames, BUCKETS.IMAGES)
+          : Promise.resolve({ success: true }),
+        backgroundNames.length
+          ? removeImage(backgroundNames, BUCKETS.BACKGROUNDS)
+          : Promise.resolve({ success: true }),
+      ]);
+
+      // Bog'liq ma'lumotlarni tozalash
+      await Promise.all([
+        Episode.deleteMany({ film: filmId }),
+        Comment.deleteMany({ film: filmId }),
+        Review.deleteMany({ film: filmId }),
+        Watchlist.deleteMany({ film: filmId }),
+        Like.deleteMany({ film: filmId }),
+        Views.deleteMany({ film: filmId }),
+        film.deleteOne(),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        message: "Film va unga bog'liq ma'lumotlar o'chirildi",
+      });
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
+    }
+  });
 }

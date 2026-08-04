@@ -9,49 +9,51 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ filmId: string }> }
 ) {
-  try {
-    await connectToDatabase();
-    const { filmId } = await params;
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { filmId } = await params;
 
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const search = searchParams.get("search") || "";
+      const { searchParams } = new URL(req.url);
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
+      const search = searchParams.get("search") || "";
 
-    const film = await Film.findById(filmId);
-    if (!film) {
-      return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
-    }
+      const film = await Film.findById(filmId);
+      if (!film) {
+        return NextResponse.json({ error: "Film topilmadi" }, { status: 404 });
+      }
 
-    const query: Record<string, unknown> = { film: film._id };
-    if (search) {
-      query["title"] = { $regex: search, $options: "i" };
-    }
+      const query: Record<string, unknown> = { film: film._id };
+      if (search) {
+        query["title"] = { $regex: search, $options: "i" };
+      }
 
-    const skip = (page - 1) * limit;
-    const [episodes, total] = await Promise.all([
-      Episode.find(query).skip(skip).limit(limit).sort({ episodeNumber: -1 }),
-      Episode.countDocuments(query),
-    ]);
+      const skip = (page - 1) * limit;
+      const [episodes, total] = await Promise.all([
+        Episode.find(query).skip(skip).limit(limit).sort({ episodeNumber: -1 }),
+        Episode.countDocuments(query),
+      ]);
 
-    return NextResponse.json(
-      {
-        success: true,
-        datas: episodes,
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
+      return NextResponse.json(
+        {
+          success: true,
+          datas: episodes,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+          },
+          film,
         },
-        film,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+        { status: 200 }
+      );
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
+    }
+  });
 }
 
 export async function POST(

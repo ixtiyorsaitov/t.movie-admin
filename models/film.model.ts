@@ -18,6 +18,14 @@ const FilmSchema = new mongoose.Schema<IFilm>(
     },
     slug: { type: String, required: true, unique: true },
     published: Boolean,
+    // Movie'lar uchun to'g'ridan-to'g'ri video (control/movie orqali yuklanadi)
+    video: {
+      url: String,
+      name: String,
+      resolution: String,
+      size: String,
+      duration: String,
+    },
     images: {
       image: {
         url: String,

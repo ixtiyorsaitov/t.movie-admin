@@ -1,4 +1,4 @@
-import { authOnly } from "@/lib/auth-only";
+import { adminOnly } from "@/lib/admin-only";
 import { connectToDatabase } from "@/lib/mongoose";
 import Film from "@/models/film.model";
 import Review from "@/models/review.model";
@@ -8,109 +8,109 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  try {
-    await connectToDatabase();
-    const { reviewId } = await params;
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { reviewId } = await params;
 
-    const review = await Review.findById(reviewId)
-      .populate({
-        path: "user",
-        select: "name avatar",
-      })
-      // .populate("film", "title")
-      .lean();
+      const review = await Review.findById(reviewId)
+        .populate({
+          path: "user",
+          select: "name avatar",
+        })
+        // .populate("film", "title")
+        .lean();
 
-    if (!review) {
-      return NextResponse.json({ error: "Sharh topilmadi" }, { status: 404 });
+      if (!review) {
+        return NextResponse.json({ error: "Sharh topilmadi" }, { status: 404 });
+      }
+
+      return NextResponse.json({ data: review, success: true }, { status: 200 });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
-
-    return NextResponse.json({ data: review, success: true }, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  });
 }
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  try {
-    const { reviewId } = await params;
-    const body = await req.json();
-    const { text, rating } = body as {
-      text: string;
-      rating: number;
-    };
+  return adminOnly(async () => {
+    try {
+      const { reviewId } = await params;
+      const body = await req.json();
+      const { text, rating } = body as {
+        text: string;
+        rating: number;
+      };
 
-    if (!text || !rating) {
-      return NextResponse.json(
-        { error: "Kerakli ma'lumotlarni to'liq kiriting" },
-        { status: 400 }
-      );
-    }
+      if (!text || !rating) {
+        return NextResponse.json(
+          { error: "Kerakli ma'lumotlarni to'liq kiriting" },
+          { status: 400 }
+        );
+      }
 
-    // Eski reviewni olish
-    const oldReview = await Review.findById(reviewId);
-    if (!oldReview) {
-      return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });
-    }
+      // Eski reviewni olish
+      const oldReview = await Review.findById(reviewId);
+      if (!oldReview) {
+        return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });
+      }
 
-    const oldRating = oldReview.rating;
+      const oldRating = oldReview.rating;
 
-    // Reviewni yangilash
-    oldReview.text = text;
-    oldReview.rating = rating;
-    await oldReview.save();
-    const populatedReview = await Review.findById(reviewId)
-      .populate("user", "name avatar")
-      .populate("film", "title")
-      .lean();
+      // Reviewni yangilash
+      oldReview.text = text;
+      oldReview.rating = rating;
+      await oldReview.save();
+      const populatedReview = await Review.findById(reviewId)
+        .populate("user", "name avatar")
+        .populate("film", "title")
+        .lean();
 
-    // Film reytingini yangilash
-    const updatedFilm = await Film.findByIdAndUpdate(
-      oldReview.film,
-      {
-        $inc: {
-          "rating.total": -oldRating + rating,
+      // Film reytingini yangilash
+      const updatedFilm = await Film.findByIdAndUpdate(
+        oldReview.film,
+        {
+          $inc: {
+            "rating.total": -oldRating + rating,
+          },
         },
-      },
-      { new: true }
-    );
+        { new: true }
+      );
 
-    if (!updatedFilm) {
-      return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
+      if (!updatedFilm) {
+        return NextResponse.json({ error: "Film topilmadi" }, { status: 400 });
+      }
+
+      // O‘rtacha hisoblash
+      const avg = updatedFilm.rating.total / updatedFilm.rating.count;
+      updatedFilm.rating.average = Math.round(avg * 10) / 10;
+      await updatedFilm.save();
+
+      return NextResponse.json(
+        { success: true, data: populatedReview },
+        { status: 200 }
+      );
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
-
-    // O‘rtacha hisoblash
-    const avg = updatedFilm.rating.total / updatedFilm.rating.count;
-    updatedFilm.rating.average = Math.round(avg * 10) / 10;
-    await updatedFilm.save();
-
-    return NextResponse.json(
-      { success: true, data: populatedReview },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  });
 }
 
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
-  return authOnly(async (user) => {
+  return adminOnly(async () => {
     try {
       await connectToDatabase();
 
       const { reviewId } = await params;
       const review = await Review.findById(reviewId);
-
-      if (review.user.toString() !== user._id.toString()) {
-        return NextResponse.json({ error: "Ruxsat yo'q!" }, { status: 400 });
-      }
 
       if (!review) {
         return NextResponse.json({ error: "Sharh topilmadi" }, { status: 400 });

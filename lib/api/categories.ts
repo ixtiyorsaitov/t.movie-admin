@@ -5,7 +5,7 @@ import { ICategory } from "@/types";
 
 export async function getCategories() {
   const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/categories`
+    `/api/categories`
     // {
     //   cache: "force-cache",
     //   next: { tags: [CacheTags.CATEGORIES] },

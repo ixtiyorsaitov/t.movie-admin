@@ -1,9 +1,7 @@
 import api from "../axios";
 
-const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN_URI!;
-
 export async function getFilms(limit: number) {
-  const res = await fetch(`${DOMAIN}/api/films?limit=${limit}`, {
+  const res = await fetch(`/api/films?limit=${limit}`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.FILMS] },
   });
@@ -11,7 +9,7 @@ export async function getFilms(limit: number) {
   return data;
 }
 export async function getFilmById(filmId: string) {
-  const req = await fetch(`${DOMAIN}/api/films/${filmId}`, {
+  const req = await fetch(`/api/films/${filmId}`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.FILMS, `${CacheTags.FILMS}-${filmId}`] },
   });
@@ -29,7 +27,7 @@ export async function getSearchedFilms({
   limit: number;
 }) {
   const res = await fetch(
-    `${DOMAIN}/api/films?search=${searchTerm}&page=${page}&limit=${limit}`
+    `/api/films?search=${searchTerm}&page=${page}&limit=${limit}`
   );
   const data = await res.json();
   return data;

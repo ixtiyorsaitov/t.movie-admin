@@ -45,16 +45,18 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  try {
-    await connectToDatabase();
-    const genres = await Genre.find();
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const genres = await Genre.find();
 
-    return NextResponse.json({ datas: genres, success: true }, { status: 200 });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { success: false, message: "Server error" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json({ datas: genres, success: true }, { status: 200 });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json(
+        { success: false, message: "Server error" },
+        { status: 500 }
+      );
+    }
+  });
 }

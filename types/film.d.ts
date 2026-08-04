@@ -31,7 +31,7 @@ export interface IFilm {
   published: boolean;
   images: {
     image: ImageType;
-    additionImages?: ImageType[];
+    additionImage?: ImageType[];
     backgroundImage: ImageType;
   };
   video: IVideo;

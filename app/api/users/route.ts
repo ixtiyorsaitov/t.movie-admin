@@ -5,58 +5,58 @@ import { IUser, ROLE } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  try {
-    await connectToDatabase();
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
 
-    const { searchParams } = new URL(request.url);
+      const { searchParams } = new URL(request.url);
 
-    // query params
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const search = searchParams.get("search") || "";
-    const roleFilter = searchParams.get("roleFilter") || "all";
+      // query params
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
+      const search = searchParams.get("search") || "";
+      const roleFilter = searchParams.get("roleFilter") || "all";
 
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
 
-    // filter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: any = {
-      role: { $ne: ROLE.SUPERADMIN }, // superadminlar chiqmaydi
-    };
+      // filter — superadminlar hech qachon ro'yxatda chiqmaydi
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filter: any = { role: { $ne: ROLE.SUPERADMIN } };
 
-    if (roleFilter !== "all") {
-      filter.role = roleFilter;
+      if (roleFilter !== "all") {
+        filter.role = { $eq: roleFilter, $ne: ROLE.SUPERADMIN };
+      }
+
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      const users = await User.find(filter)
+        .sort({ createdAt: -1 }) // eng oxirgi qo‘shilganlardan boshlab
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await User.countDocuments(filter);
+
+      return NextResponse.json({
+        success: true,
+        datas: users,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
     }
-
-    if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    const users = await User.find(filter)
-      .sort({ createdAt: -1 }) // eng oxirgi qo‘shilganlardan boshlab
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const total = await User.countDocuments(filter);
-
-    return NextResponse.json({
-      success: true,
-      datas: users,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -66,14 +66,22 @@ export async function POST(request: NextRequest) {
 
       const body = await request.json();
       const { name, email, role } = body as IUser;
-      if (role === ROLE.ADMIN || admin.role === ROLE.SUPERADMIN) {
-        if (admin.role !== ROLE.SUPERADMIN) {
-          return NextResponse.json(
-            { error: "Adminni boshqara olmaysiz" },
-            { status: 401 }
-          );
-        }
+
+      // 🔒 Hech kim API orqali SuperAdmin yarata olmaydi
+      if (role === ROLE.SUPERADMIN) {
+        return NextResponse.json(
+          { error: "SuperAdmin yaratib bo'lmaydi" },
+          { status: 400 }
+        );
       }
+      // 🔒 Faqat SuperAdmin boshqa admin yarata oladi
+      if (role === ROLE.ADMIN && admin.role !== ROLE.SUPERADMIN) {
+        return NextResponse.json(
+          { error: "Admin yaratish huquqi yo'q" },
+          { status: 403 }
+        );
+      }
+
       const existingUser = await User.findOne({ email }).lean();
       if (existingUser) {
         return NextResponse.json(

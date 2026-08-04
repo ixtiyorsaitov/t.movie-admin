@@ -6,7 +6,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Metadata } from "next";
-import { SITE_URL } from "@/lib/constants";
+import { serverFetch } from "@/lib/server-fetch";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Yangiliklar",
@@ -14,13 +14,8 @@ export const metadata: Metadata = {
 };
 const limit = 5;
 async function getNewsData() {
-  const res = await fetch(
-    `${SITE_URL}/api/news?limit=${limit}`
-    // {
-    //   cache: "force-cache",
-    //   next: { tags: [CacheTags.NEWS] },
-    // }
-  );
+  // serverFetch — absolute URL + session cookie uzatadi
+  const res = await serverFetch(`/api/news?limit=${limit}`);
 
   if (!res.ok) return null;
   const data = await res.json();

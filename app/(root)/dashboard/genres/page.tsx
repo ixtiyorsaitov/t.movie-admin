@@ -1,8 +1,9 @@
-import { getGenres } from "@/lib/api/genres";
+import { serverFetch } from "@/lib/server-fetch";
 import GenresPageMain from "./_components";
 export const dynamic = "force-dynamic";
 async function getGenreData() {
-  const data = await getGenres();
+  const res = await serverFetch(`/api/genres`);
+  const data = await res.json();
   if (!data.success) {
     throw new Error(data.error);
   }

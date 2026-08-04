@@ -9,29 +9,31 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    await connectToDatabase();
-    const { id: notificationId } = await params;
-    const notification = await Notification.findById(notificationId);
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { id: notificationId } = await params;
+      const notification = await Notification.findById(notificationId);
 
-    if (!notification) {
+      if (!notification) {
+        return NextResponse.json(
+          { success: false, error: "Notification topilmadi" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: notification,
+      });
+    } catch (error) {
+      console.error(error);
       return NextResponse.json(
-        { success: false, error: "Notification topilmadi" },
-        { status: 404 }
+        { success: false, error: "Notificationni olishda xatolik!" },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({
-      success: true,
-      data: notification,
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { success: false, error: "Notificationni olishda xatolik!" },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 // PATCH - Notificationni yangilash
@@ -54,33 +56,25 @@ export async function PATCH(
         );
       }
 
-      // 1️⃣ ID bilan kelgan fieldlarni avtomatik konvertatsiya qilamiz (filmId → film)
+      // 1️⃣ ID bilan kelgan fieldlarni konvertatsiya qilamiz (filmId → film)
       Object.keys(body).forEach((key) => {
         if (key.endsWith("Id")) {
           const realKey = key.replace("Id", "");
 
           if (body[key] && body[key].trim() !== "") {
-            notification[realKey] = body[key]; // Faqat real ID bo‘lsa yoziladi
+            notification[realKey as keyof typeof notification] = body[key];
           } else {
-            notification[realKey] = null; // Bo‘sh bo‘lsa, null qo‘yamiz
+            notification[realKey as keyof typeof notification] = null;
           }
         } else {
-          notification[key] = body[key];
+          notification[key as keyof typeof notification] = body[key];
         }
       });
 
-      // 2️⃣ Qolgan oddiy fieldlarni update qilamiz
-      Object.assign(notification, body);
-
       await notification.save();
 
-      // 3️⃣ Populate qilingan qaytarish
+      // 2️⃣ Populate qilingan qaytarish
       const updatedNotification = await Notification.findById(notificationId);
-      // .populate("user", "name email avatar")
-      // .populate("film", "title images")
-      // .populate("episode", "title episodeNumber")
-      // .populate("reviewReply", "text rating")
-      // .populate("commentReply", "text");
 
       return NextResponse.json({
         success: true,

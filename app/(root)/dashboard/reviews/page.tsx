@@ -1,6 +1,6 @@
 import React from "react";
 import ReviewsPageMain from "./_components";
-import { getReviews } from "@/lib/api/reviews";
+import { serverFetch } from "@/lib/server-fetch";
 import { Metadata } from "next";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 const limit = 10;
 
 const ReviewsPage = async () => {
-  const datas = await getReviews({ limit, page: 1 });
-  console.log(datas);
+  const res = await serverFetch(`/api/reviews?limit=${limit}&page=1`);
+  const datas = await res.json();
 
   if (!datas.success) throw new Error(datas.error);
 

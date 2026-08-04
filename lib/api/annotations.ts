@@ -1,10 +1,9 @@
 import z from "zod";
 import { annotationSchema } from "../validation";
 import api from "../axios";
-import { SITE_URL } from "../constants";
 
 export async function getAnnotations() {
-  const res = await fetch(`${SITE_URL}/api/annotations`, {
+  const res = await fetch(`/api/annotations`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.ANNOTATION] },
   });

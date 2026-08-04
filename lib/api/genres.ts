@@ -1,10 +1,9 @@
 import z from "zod";
 import api from "../axios";
 import { genreSchema } from "../validation";
-import { SITE_URL } from "../constants";
 
 export async function getGenres() {
-  const res = await fetch(`${SITE_URL}/api/genres`, {
+  const res = await fetch(`/api/genres`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.GENRES] },
   });

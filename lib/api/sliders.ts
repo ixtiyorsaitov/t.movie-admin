@@ -1,8 +1,7 @@
 import api from "../axios";
-import { SITE_URL } from "../constants";
 
 export const getSliders = async () => {
-  const res = await fetch(`${SITE_URL}/api/sliders`, {
+  const res = await fetch(`/api/sliders`, {
     // cache: "force-cache",
     // next: { tags: [CacheTags.SLIDER] },
   });

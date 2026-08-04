@@ -20,19 +20,41 @@ export async function PUT(
       if (!existingUser) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
+
+      // 🔒 Admin superadminni tahrirlay olmaydi
+      if (
+        existingUser.role === ROLE.SUPERADMIN &&
+        admin.role !== ROLE.SUPERADMIN
+      ) {
+        return NextResponse.json(
+          { error: "SuperAdmin hisobini o'zgartira olmaysiz" },
+          { status: 403 }
+        );
+      }
+
+      // 🔒 Hech kim API orqali SuperAdmin rolini bera olmaydi
+      if (role === ROLE.SUPERADMIN) {
+        return NextResponse.json(
+          { error: "SuperAdmin rolini berib bo'lmaydi" },
+          { status: 400 }
+        );
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updateData: Record<string, any> = {};
       if (name) updateData.name = name;
       if (email) updateData.email = email;
-      if (role === ROLE.ADMIN || admin.role === ROLE.SUPERADMIN) {
-        if (admin.role !== ROLE.SUPERADMIN) {
+      if (role) {
+        // 🔒 Admin rolini faqat SuperAdmin o'zgartira oladi
+        if (role === ROLE.ADMIN && admin.role !== ROLE.SUPERADMIN) {
           return NextResponse.json(
             { error: "Admin huquqini berish sizgamas" },
-            { status: 401 }
+            { status: 403 }
           );
         }
         updateData.role = role;
       }
+
       if (existingUser.email !== email) {
         const existingEmail = await User.findOne({ email }).lean();
 

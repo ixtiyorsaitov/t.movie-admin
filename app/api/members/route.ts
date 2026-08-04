@@ -8,39 +8,41 @@ import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  try {
-    await connectToDatabase();
-    const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const { searchParams } = new URL(req.url);
+      const page = parseInt(searchParams.get("page") || "1", 10);
+      const limit = parseInt(searchParams.get("limit") || "10", 10);
 
-    const skip = (page - 1) * limit;
+      const skip = (page - 1) * limit;
 
-    const members = (await Member.find({})
-      .populate({
-        path: "user",
-        select: "name email avatar",
-      })
-      .skip(skip)
-      .limit(limit)) as IMember[];
+      const members = (await Member.find({})
+        .populate({
+          path: "user",
+          select: "name email avatar",
+        })
+        .skip(skip)
+        .limit(limit)) as IMember[];
 
-    return NextResponse.json<IResponse<IMember>>({
-      success: true,
-      datas: members,
-      pagination: {
-        total: await Member.countDocuments({}),
-        page,
-        limit,
-        totalPages: Math.ceil((await Member.countDocuments({})) / limit),
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json(
-      { error: "Xodimlarlarni olishda xatolik" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json<IResponse<IMember>>({
+        success: true,
+        datas: members,
+        pagination: {
+          total: await Member.countDocuments({}),
+          page,
+          limit,
+          totalPages: Math.ceil((await Member.countDocuments({})) / limit),
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Xodimlarlarni olishda xatolik" },
+        { status: 500 }
+      );
+    }
+  });
 }
 
 export async function POST(req: NextRequest) {

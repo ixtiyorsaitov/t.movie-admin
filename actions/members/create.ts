@@ -1,7 +1,8 @@
 "use server";
 
-import { MemberType, MemberTypes } from "@/types";
+import { MemberType, MemberTypes, ROLE } from "@/types";
 import { connectToDatabase } from "@/lib/mongoose";
+import { auth } from "@/lib/auth";
 import mongoose from "mongoose";
 import User from "@/models/user.model";
 import Member from "@/models/member.model";
@@ -13,6 +14,12 @@ interface UpdateMemberParams {
 
 export async function createMemberAction({ userId, type }: UpdateMemberParams) {
   try {
+    // 🔒 Faqat SuperAdmin hodim yarata oladi
+    const session = await auth();
+    if (!session?.currentUser || session.currentUser.role !== ROLE.SUPERADMIN) {
+      return { success: false, error: "Sizga bu amalni bajarish mumkin emas" };
+    }
+
     await connectToDatabase();
 
     // 🔎 1. Tekshirish: ma'lumotlar to'liq kiritilganmi

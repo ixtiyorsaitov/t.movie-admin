@@ -46,6 +46,15 @@ export const useUpdateFilmMutation = () => {
   });
 };
 
+export const useDeleteFilmMutation = () => {
+  return useMutation({
+    mutationFn: async (filmId: string) => {
+      const { data: res } = await api.delete(`/films/${filmId}`);
+      return res;
+    },
+  });
+};
+
 export const useCreateFilmMutationV1 = ({
   setCreatingStep,
   selectedGenres,

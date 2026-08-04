@@ -2,17 +2,13 @@ import NewsForm from "./_components/news-form";
 import { Heading } from "@/components/ui/heading";
 import { INews } from "@/types";
 import { notFound } from "next/navigation";
+import { serverFetch } from "@/lib/server-fetch";
 
 type PageProps = { params: Promise<{ newsId: string }> };
 
 async function getNewsById(id: string) {
-  const res = await fetch(
-    `${process.env.NEXTAUTH_URL}/api/news/${id}`
-    // {
-    //   cache: "force-cache",
-    //   next: { tags: [CacheTags.NEWS, `${CacheTags.NEWS}-${id}`] },
-    // }
-  );
+  // serverFetch — absolute URL + session cookie uzatadi
+  const res = await serverFetch(`/api/news/${id}`);
 
   if (!res.ok) return null;
   return res.json();

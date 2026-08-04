@@ -3,6 +3,7 @@ import { CacheTags } from "@/lib/utils";
 import Film from "@/models/film.model";
 import Slider from "@/models/slider.model";
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function PUT(
   req: NextRequest,
@@ -13,9 +14,12 @@ export async function PUT(
       const { sliderId } = await params;
       const { filmId } = await req.json();
 
-      if (!filmId) {
+      if (
+        !mongoose.isValidObjectId(sliderId) ||
+        !mongoose.isValidObjectId(filmId)
+      ) {
         return NextResponse.json(
-          { error: "Film ID is required" },
+          { error: "Noto'g'ri ID format" },
           { status: 400 }
         );
       }
@@ -61,6 +65,13 @@ export async function DELETE(
   try {
     return adminOnly(async () => {
       const { sliderId } = await params;
+
+      if (!mongoose.isValidObjectId(sliderId)) {
+        return NextResponse.json(
+          { error: "Noto'g'ri ID format" },
+          { status: 400 }
+        );
+      }
 
       const slider = await Slider.findByIdAndDelete(sliderId);
       if (!slider) {

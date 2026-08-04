@@ -6,14 +6,16 @@ import { IAnnotation } from "@/types/annotation";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    await connectToDatabase();
-    const datas = await Annotation.find().lean();
-    return NextResponse.json({ success: true, datas });
-  } catch (error) {
-    console.log(error);
-    NextResponse.json({ error: "Server xatosi" }, { status: 500 });
-  }
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
+      const datas = await Annotation.find().lean();
+      return NextResponse.json({ success: true, datas });
+    } catch (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Server xatosi" }, { status: 500 });
+    }
+  });
 }
 
 export async function POST(req: Request) {

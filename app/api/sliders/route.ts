@@ -8,22 +8,24 @@ import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    await connectToDatabase();
+  return adminOnly(async () => {
+    try {
+      await connectToDatabase();
 
-    const datas = await Slider.find().populate({
-      path: "film",
-      select: "title images.backgroundImage",
-    });
+      const datas = await Slider.find().populate({
+        path: "film",
+        select: "title images.backgroundImage",
+      });
 
-    return NextResponse.json({ success: true, datas }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching carousel data:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch carousel data" },
-      { status: 500 }
-    );
-  }
+      return NextResponse.json({ success: true, datas }, { status: 200 });
+    } catch (error) {
+      console.error("Error fetching carousel data:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch carousel data" },
+        { status: 500 }
+      );
+    }
+  });
 }
 
 export async function POST(request: Request) {

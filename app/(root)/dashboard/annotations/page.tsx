@@ -1,4 +1,4 @@
-import { getAnnotations } from "@/lib/api/annotations";
+import { serverFetch } from "@/lib/server-fetch";
 import React from "react";
 import AnnotationsPageMain from "./_components";
 import { Metadata } from "next";
@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   title: "Annotatsiyalar",
 };
 const AnnotationsPage = async () => {
-  const datas = await getAnnotations();
+  const res = await serverFetch(`/api/annotations`);
+  const datas = await res.json();
 
   if (!datas.success) throw new Error(datas.error);
 

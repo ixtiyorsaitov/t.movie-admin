@@ -1,8 +1,9 @@
 "use server";
 
-import { MemberType, MemberTypes } from "@/types";
+import { MemberType, MemberTypes, ROLE } from "@/types";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongoose";
+import { auth } from "@/lib/auth";
 import User from "@/models/user.model";
 import Member from "@/models/member.model";
 
@@ -18,6 +19,12 @@ export async function updateMemberAction({
   memberId,
 }: UpdateMemberParams) {
   try {
+    // 🔒 Faqat SuperAdmin hodimni tahrirlay oladi
+    const session = await auth();
+    if (!session?.currentUser || session.currentUser.role !== ROLE.SUPERADMIN) {
+      return { success: false, error: "Sizga bu amalni bajarish mumkin emas" };
+    }
+
     await connectToDatabase();
 
     // 🔎 2. Validatsiyalar
